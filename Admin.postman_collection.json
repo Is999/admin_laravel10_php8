@@ -1,0 +1,4070 @@
+{
+  "info": {
+    "_postman_id": "e5f31790-c505-4f06-853a-ade7f1b56000",
+    "name": "Admin",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "角色权限",
+      "item": [
+        {
+          "name": "角色下拉列表 role.list",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Request-Id",
+                "value": "{{$guid}}",
+                "type": "default"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "default"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/list",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "list"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "角色下拉列表 role.list",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "default"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "default"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/list",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "list"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 03 Apr 2022 17:03:54 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 03 Apr 2022 17:03:54 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "230bc688-fccc-4d75-89cf-fc4224531219"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"title\": \"超级管理员\"\n        },\n        {\n            \"id\": 2,\n            \"title\": \"管理员\"\n        },\n        {\n            \"id\": 3,\n            \"title\": \"客服\"\n        },\n        {\n            \"id\": 6,\n            \"title\": \"管理员A\"\n        },\n        {\n            \"id\": 7,\n            \"title\": \"管理员\"\n        },\n        {\n            \"id\": 8,\n            \"title\": \"管理员A\"\n        },\n        {\n            \"id\": 9,\n            \"title\": \"管理员B\"\n        },\n        {\n            \"id\": 10,\n            \"title\": \"管理员B\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "列表,搜索 role.index",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "管理员",
+                  "description": "角色名称",
+                  "type": "default"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "角色状态 0 禁用, 1正常",
+                  "type": "default"
+                },
+                {
+                  "key": "pid",
+                  "value": "0",
+                  "description": "上级角色id",
+                  "type": "default"
+                },
+                {
+                  "key": "isGenealogy",
+                  "value": "1",
+                  "description": "0 直属, 1 家谱",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "列表,搜索 role.index",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "title",
+                      "value": "管理员",
+                      "description": "角色名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "角色状态 0 禁用, 1正常",
+                      "type": "default"
+                    },
+                    {
+                      "key": "isGenealogy",
+                      "value": "0",
+                      "description": "0 直属, 1 家谱",
+                      "type": "default"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "1",
+                      "description": "上级id",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 03 Apr 2022 17:03:18 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 03 Apr 2022 17:03:18 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "de586e20-9d94-48b6-b693-e1a0e710766d"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 2,\n            \"title\": \"管理员\",\n            \"pid\": 1,\n            \"pids\": \"1\",\n            \"status\": 1,\n            \"permissions_id\": \"1,2,3,4,5,6,7\",\n            \"describe\": \"管理员\",\n            \"created_at\": \"2022-03-21T04:34:47.000000Z\",\n            \"parent_role\": {\n                \"id\": 1,\n                \"title\": \"超级管理员\"\n            }\n        },\n        {\n            \"id\": 7,\n            \"title\": \"管理员\",\n            \"pid\": 3,\n            \"pids\": \"1,2,3\",\n            \"status\": 1,\n            \"permissions_id\": \"\",\n            \"describe\": \"客服管理员\",\n            \"created_at\": \"2022-04-03T14:18:46.000000Z\",\n            \"parent_role\": {\n                \"id\": 3,\n                \"title\": \"客服\"\n            }\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "添加 role.add",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "客服",
+                  "description": "角色名称",
+                  "type": "default"
+                },
+                {
+                  "key": "pid",
+                  "value": "11",
+                  "description": "上级角色id",
+                  "type": "default"
+                },
+                {
+                  "key": "describe",
+                  "value": "管理员F",
+                  "description": "描述",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/add",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "add"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "添加 role.add",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "title",
+                      "value": "管理员",
+                      "description": "角色名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "3",
+                      "description": "上级角色id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "客服管理员",
+                      "description": "描述",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/add",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 03 Apr 2022 14:18:46 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 03 Apr 2022 14:18:46 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "22191312-439d-4399-b581-4f2d3ebbc4cf"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1000,\n    \"message\": \"添加成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "编辑 role.edit",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "客服",
+                  "description": "角色名称",
+                  "type": "default"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "角色状态 0 禁用, 1正常",
+                  "type": "default"
+                },
+                {
+                  "key": "describe",
+                  "value": "客服管理员",
+                  "description": "描述",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/edit/7",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "edit",
+                "7"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "编辑 role.edit",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "title",
+                      "value": "管理员(客服)",
+                      "description": "角色名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "角色状态 0 禁用, 1正常",
+                      "type": "default"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "客服管理员",
+                      "description": "描述",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/edit/7",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "edit",
+                    "7"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 Apr 2022 03:17:10 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 Apr 2022 03:17:10 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "3c2cfd6c-508e-44a1-9dbd-3fd680839e95"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1001,\n    \"message\": \"更新成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "启用禁用 role.editStatus",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "角色状态 0 禁用, 1正常",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/editStatus/2",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "editStatus",
+                "2"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "启用禁用 role.editStatus",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "角色状态 0 禁用, 1正常",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/editStatus/7",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "editStatus",
+                    "7"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 Apr 2022 03:43:58 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 Apr 2022 03:43:58 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "5ba7fe61-0c02-4e9e-ab6e-df60f51b19a7"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1004,\n    \"message\": \"已启用\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "角色权限 role.permission",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "default"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "default"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/permission/9",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "permission",
+                "9"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "角色权限 role.permission",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "default"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "default"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/permission/9",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "permission",
+                    "9"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 06 Apr 2022 14:49:00 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 06 Apr 2022 14:49:00 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "34fe8f75-6c08-444f-baf5-e9360dafd236"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"uuid\": \"100001\",\n            \"title\": \"RBAC管理\",\n            \"module\": \"4\",\n            \"pid\": 0,\n            \"pids\": \"\",\n            \"type\": 4,\n            \"describe\": \"目录\",\n            \"created_at\": \"2022-03-21T13:06:17.000000Z\",\n            \"updated_at\": \"2022-03-22T09:06:21.000000Z\",\n            \"checked\": 0,\n            \"isChecked\": 1,\n            \"child_permission\": [\n                {\n                    \"id\": 2,\n                    \"uuid\": \"100002\",\n                    \"title\": \"角色管理\",\n                    \"module\": \"role.index\",\n                    \"pid\": 1,\n                    \"pids\": \"1\",\n                    \"type\": 5,\n                    \"describe\": \"菜单,页面\",\n                    \"created_at\": \"2022-03-21T13:07:41.000000Z\",\n                    \"updated_at\": \"2022-03-22T09:09:30.000000Z\",\n                    \"checked\": 0,\n                    \"isChecked\": 1,\n                    \"child_permission\": [\n                        {\n                            \"id\": 3,\n                            \"uuid\": \"100003\",\n                            \"title\": \"添加\",\n                            \"module\": \"7\",\n                            \"pid\": 2,\n                            \"pids\": \"1,2\",\n                            \"type\": 7,\n                            \"describe\": \"添加角色(按钮,页面)\",\n                            \"created_at\": \"2022-03-21T13:17:07.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:55:53.000000Z\",\n                            \"checked\": 1,\n                            \"isChecked\": 1,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 4,\n                                    \"uuid\": \"100004\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"role.add\",\n                                    \"pid\": 3,\n                                    \"pids\": \"1,2,3\",\n                                    \"type\": 1,\n                                    \"describe\": \"添加角色(新增)\",\n                                    \"created_at\": \"2022-03-21T13:17:14.000000Z\",\n                                    \"updated_at\": \"2022-03-22T08:56:04.000000Z\",\n                                    \"checked\": 1,\n                                    \"isChecked\": 1\n                                }\n                            ]\n                        },\n                        {\n                            \"id\": 5,\n                            \"uuid\": \"100005\",\n                            \"title\": \"编辑\",\n                            \"module\": \"7\",\n                            \"pid\": 2,\n                            \"pids\": \"1,2\",\n                            \"type\": 7,\n                            \"describe\": \"编辑角色(按钮,页面)\",\n                            \"created_at\": \"2022-03-21T13:41:53.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:56:17.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 6,\n                                    \"uuid\": \"100006\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"role.edit\",\n                                    \"pid\": 5,\n                                    \"pids\": \"1,2,5\",\n                                    \"type\": 2,\n                                    \"describe\": \"编辑角色(修改)\",\n                                    \"created_at\": \"2022-03-21T13:44:27.000000Z\",\n                                    \"updated_at\": \"2022-03-22T08:56:29.000000Z\",\n                                    \"checked\": 0,\n                                    \"isChecked\": 0\n                                }\n                            ]\n                        },\n                        {\n                            \"id\": 7,\n                            \"uuid\": \"100007\",\n                            \"title\": \"删除\",\n                            \"module\": \"role.del\",\n                            \"pid\": 2,\n                            \"pids\": \"1,2\",\n                            \"type\": 3,\n                            \"describe\": \"删除角色(按钮, 删除)\",\n                            \"created_at\": \"2022-03-22T04:13:51.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:56:49.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0\n                        },\n                        {\n                            \"id\": 8,\n                            \"uuid\": \"100008\",\n                            \"title\": \"启用/禁用\",\n                            \"module\": \"role.editStatus\",\n                            \"pid\": 2,\n                            \"pids\": \"1,2\",\n                            \"type\": 2,\n                            \"describe\": \"启用/禁用 角色(按钮,修改)\",\n                            \"created_at\": \"2022-03-22T04:10:36.000000Z\",\n                            \"updated_at\": \"2022-03-22T09:21:23.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0\n                        },\n                        {\n                            \"id\": 9,\n                            \"uuid\": \"100009\",\n                            \"title\": \"权限\",\n                            \"module\": \"role.permission\",\n                            \"pid\": 2,\n                            \"pids\": \"1,2\",\n                            \"type\": 6,\n                            \"describe\": \"编辑角色权限(按钮,页面)\",\n                            \"created_at\": \"2022-03-22T03:22:18.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:57:21.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 10,\n                                    \"uuid\": \"100010\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"role.editPermission\",\n                                    \"pid\": 9,\n                                    \"pids\": \"1,2,9\",\n                                    \"type\": 2,\n                                    \"describe\": \"编辑角色权限(修改)\",\n                                    \"created_at\": \"2022-03-22T03:37:44.000000Z\",\n                                    \"updated_at\": \"2022-03-22T08:57:36.000000Z\",\n                                    \"checked\": 0,\n                                    \"isChecked\": 0\n                                }\n                            ]\n                        }\n                    ]\n                },\n                {\n                    \"id\": 11,\n                    \"uuid\": \"100011\",\n                    \"title\": \"权限管理\",\n                    \"module\": \"permission.index\",\n                    \"pid\": 1,\n                    \"pids\": \"1\",\n                    \"type\": 5,\n                    \"describe\": \"菜单,页面\",\n                    \"created_at\": \"2022-03-22T08:05:41.000000Z\",\n                    \"updated_at\": \"2022-03-22T09:10:20.000000Z\",\n                    \"checked\": 0,\n                    \"isChecked\": 0,\n                    \"child_permission\": [\n                        {\n                            \"id\": 12,\n                            \"uuid\": \"100012\",\n                            \"title\": \"添加\",\n                            \"module\": \"7\",\n                            \"pid\": 11,\n                            \"pids\": \"1,11\",\n                            \"type\": 7,\n                            \"describe\": \"添加权限(按钮,页面)\",\n                            \"created_at\": \"2022-03-22T08:09:35.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:09:39.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 13,\n                                    \"uuid\": \"100013\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"permission.add\",\n                                    \"pid\": 12,\n                                    \"pids\": \"1,11,12\",\n                                    \"type\": 1,\n                                    \"describe\": \"添加权限(新增)\",\n                                    \"created_at\": \"2022-03-22T08:12:04.000000Z\",\n                                    \"updated_at\": \"2022-03-22T08:12:07.000000Z\",\n                                    \"checked\": 0,\n                                    \"isChecked\": 0\n                                }\n                            ]\n                        },\n                        {\n                            \"id\": 14,\n                            \"uuid\": \"100014\",\n                            \"title\": \"编辑\",\n                            \"module\": \"7\",\n                            \"pid\": 11,\n                            \"pids\": \"1,11\",\n                            \"type\": 7,\n                            \"describe\": \"编辑权限(按钮,页面)\",\n                            \"created_at\": \"2022-03-22T08:14:05.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:14:08.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 15,\n                                    \"uuid\": \"100015\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"permission.edit\",\n                                    \"pid\": 14,\n                                    \"pids\": \"1,11,14\",\n                                    \"type\": 2,\n                                    \"describe\": \"编辑权限(修改)\",\n                                    \"created_at\": \"2022-03-22T08:21:45.000000Z\",\n                                    \"updated_at\": \"2022-03-22T08:21:48.000000Z\",\n                                    \"checked\": 0,\n                                    \"isChecked\": 0\n                                }\n                            ]\n                        },\n                        {\n                            \"id\": 16,\n                            \"uuid\": \"100016\",\n                            \"title\": \"删除\",\n                            \"module\": \"permission.del\",\n                            \"pid\": 11,\n                            \"pids\": \"1,11\",\n                            \"type\": 3,\n                            \"describe\": \"删除权限(按钮, 删除)\",\n                            \"created_at\": \"2022-03-22T08:26:05.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:26:08.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0\n                        }\n                    ]\n                },\n                {\n                    \"id\": 17,\n                    \"uuid\": \"100017\",\n                    \"title\": \"菜单管理\",\n                    \"module\": \"menu.index\",\n                    \"pid\": 1,\n                    \"pids\": \"1\",\n                    \"type\": 5,\n                    \"describe\": \"菜单,页面\",\n                    \"created_at\": \"2022-03-22T09:08:54.000000Z\",\n                    \"updated_at\": \"2022-03-22T09:12:17.000000Z\",\n                    \"checked\": 0,\n                    \"isChecked\": 0,\n                    \"child_permission\": [\n                        {\n                            \"id\": 18,\n                            \"uuid\": \"100018\",\n                            \"title\": \"添加\",\n                            \"module\": \"7\",\n                            \"pid\": 17,\n                            \"pids\": \"1,17\",\n                            \"type\": 7,\n                            \"describe\": \"添加菜单(按钮,页面)\",\n                            \"created_at\": \"2022-03-22T09:11:43.000000Z\",\n                            \"updated_at\": \"2022-03-22T09:12:44.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 19,\n                                    \"uuid\": \"100019\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"menu.add\",\n                                    \"pid\": 18,\n                                    \"pids\": \"1,17,18\",\n                                    \"type\": 1,\n                                    \"describe\": \"添加菜单(新增)\",\n                                    \"created_at\": \"2022-03-22T09:13:48.000000Z\",\n                                    \"updated_at\": \"2022-03-22T09:15:47.000000Z\",\n                                    \"checked\": 0,\n                                    \"isChecked\": 0\n                                }\n                            ]\n                        },\n                        {\n                            \"id\": 20,\n                            \"uuid\": \"100020\",\n                            \"title\": \"编辑\",\n                            \"module\": \"7\",\n                            \"pid\": 17,\n                            \"pids\": \"1,17\",\n                            \"type\": 7,\n                            \"describe\": \"编辑菜单(按钮,页面)\",\n                            \"created_at\": \"2022-03-22T08:14:05.000000Z\",\n                            \"updated_at\": \"2022-03-22T08:14:08.000000Z\",\n                            \"checked\": 1,\n                            \"isChecked\": 1,\n                            \"child_permission\": [\n                                {\n                                    \"id\": 21,\n                                    \"uuid\": \"100021\",\n                                    \"title\": \"保存\",\n                                    \"module\": \"menu.edit\",\n                                    \"pid\": 20,\n                                    \"pids\": \"1,17,20\",\n                                    \"type\": 1,\n                                    \"describe\": \"编辑菜单(修改)\",\n                                    \"created_at\": \"2022-03-22T09:13:48.000000Z\",\n                                    \"updated_at\": \"2022-03-22T09:15:52.000000Z\",\n                                    \"checked\": 0,\n                                    \"isChecked\": 1\n                                }\n                            ]\n                        },\n                        {\n                            \"id\": 22,\n                            \"uuid\": \"100022\",\n                            \"title\": \"显示/隐藏\",\n                            \"module\": \"menu.editStatus\",\n                            \"pid\": 17,\n                            \"pids\": \"1,17\",\n                            \"type\": 2,\n                            \"describe\": \"显示/隐藏 菜单(按钮,修改)\",\n                            \"created_at\": \"2022-03-22T09:19:17.000000Z\",\n                            \"updated_at\": \"2022-03-22T09:21:09.000000Z\",\n                            \"checked\": 0,\n                            \"isChecked\": 0\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "编辑角色权限 role.editPermission",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "isExtends",
+                  "value": "1",
+                  "description": "下级继承本次新增或取消的权限 0 不继承, 1 继承",
+                  "type": "default"
+                },
+                {
+                  "key": "permissions[]",
+                  "value": "20",
+                  "description": "权限id",
+                  "type": "default"
+                },
+                {
+                  "key": "permissions[]",
+                  "value": "21",
+                  "description": "权限id",
+                  "type": "default"
+                },
+                {
+                  "key": "permissions[]",
+                  "value": "1",
+                  "description": "权限id",
+                  "type": "default"
+                },
+                {
+                  "key": "permissions[]",
+                  "value": "2",
+                  "description": "权限id",
+                  "type": "default"
+                },
+                {
+                  "key": "permissions[]",
+                  "value": "3",
+                  "description": "权限id",
+                  "type": "default"
+                },
+                {
+                  "key": "permissions[]",
+                  "value": "4",
+                  "description": "权限id",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/editPermission/6",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "editPermission",
+                "6"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "编辑角色权限 role.editPermission",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "isExtends",
+                      "value": "1",
+                      "description": "下级继承本次新增或取消的权限 0 不继承, 1 继承",
+                      "type": "default"
+                    },
+                    {
+                      "key": "permissions[]",
+                      "value": "20",
+                      "description": "权限id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "permissions[]",
+                      "value": "21",
+                      "description": "权限id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "permissions[]",
+                      "value": "1",
+                      "description": "权限id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "permissions[]",
+                      "value": "2",
+                      "description": "权限id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "permissions[]",
+                      "value": "3",
+                      "description": "权限id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "permissions[]",
+                      "value": "4",
+                      "description": "权限id",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/editPermission/6",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "editPermission",
+                    "6"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 05 Apr 2022 15:43:49 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 05 Apr 2022 15:43:49 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "c5b72c30-6bf0-4050-961f-e3fbc0e63b72"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1003,\n    \"message\": \"保存成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "删除 role.del",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "管理员(客服)",
+                  "description": "角色",
+                  "type": "default"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "状态",
+                  "type": "default"
+                },
+                {
+                  "key": "describe",
+                  "value": "客服管理员",
+                  "description": "描述",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/role/del/13",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "role",
+                "del",
+                "13"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "删除 role.del",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "title",
+                      "value": "管理员(客服)",
+                      "description": "角色",
+                      "type": "default"
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "状态",
+                      "type": "default"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "客服管理员",
+                      "description": "描述",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/role/del/8",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "role",
+                    "del",
+                    "8"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 Apr 2022 03:28:55 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 Apr 2022 03:28:55 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "26c5699a-dcd4-41d2-978b-eb2957686f77"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1002,\n    \"message\": \"删除成功\",\n    \"data\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "权限管理",
+      "item": [
+        {
+          "name": "列表,搜索 permission.index",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "uuid",
+                  "value": "100002",
+                  "description": "唯一标识",
+                  "type": "default"
+                },
+                {
+                  "key": "title",
+                  "value": "角色管理",
+                  "description": "权限名称",
+                  "type": "default"
+                },
+                {
+                  "key": "module",
+                  "value": "role.index",
+                  "description": "权限匹配模型",
+                  "type": "default"
+                },
+                {
+                  "key": "type",
+                  "value": "",
+                  "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                  "type": "default"
+                },
+                {
+                  "key": "pid",
+                  "value": "0",
+                  "description": "上级角色id",
+                  "type": "default"
+                },
+                {
+                  "key": "isGenealogy",
+                  "value": "1",
+                  "description": "0 直属, 1 家谱",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/permission/",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "permission",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "列表,搜索 permission.index",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "uuid",
+                      "value": "100002",
+                      "description": "唯一标识",
+                      "type": "default"
+                    },
+                    {
+                      "key": "title",
+                      "value": "角色管理",
+                      "description": "权限名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "module",
+                      "value": "role.index",
+                      "description": "权限匹配模型",
+                      "type": "default"
+                    },
+                    {
+                      "key": "type",
+                      "value": "",
+                      "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                      "type": "default"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "0",
+                      "description": "上级角色id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "isGenealogy",
+                      "value": "1",
+                      "description": "0 直属, 1 家谱",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/permission/",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "permission",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 09:15:52 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 09:15:52 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "ff0ad950-dffd-4322-9913-5c27e9538884"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "56"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 2,\n            \"uuid\": \"100002\",\n            \"title\": \"角色管理\",\n            \"module\": \"role.index\",\n            \"pid\": 1,\n            \"pids\": \"1\",\n            \"type\": 5,\n            \"describe\": \"菜单,页面\",\n            \"created_at\": \"2022-03-21T13:07:41.000000Z\",\n            \"parent_permission\": {\n                \"id\": 1,\n                \"title\": \"RBAC管理\"\n            }\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "添加 permission.add",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "uuid",
+                  "value": "110002",
+                  "description": "唯一标识",
+                  "type": "default"
+                },
+                {
+                  "key": "title",
+                  "value": "充值订单",
+                  "description": "权限名称",
+                  "type": "default"
+                },
+                {
+                  "key": "module",
+                  "value": "deposits.index",
+                  "description": "权限匹配模型",
+                  "type": "default"
+                },
+                {
+                  "key": "type",
+                  "value": "5",
+                  "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                  "type": "default"
+                },
+                {
+                  "key": "pid",
+                  "value": "0",
+                  "description": "上级角色id",
+                  "type": "default"
+                },
+                {
+                  "key": "describe",
+                  "value": "充值订单",
+                  "description": "描述",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/permission/add/",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "permission",
+                "add",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "添加 permission.add",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "uuid",
+                      "value": "110001",
+                      "description": "唯一标识",
+                      "type": "default"
+                    },
+                    {
+                      "key": "title",
+                      "value": "充值订单",
+                      "description": "权限名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "module",
+                      "value": "deposits.index",
+                      "description": "权限匹配模型",
+                      "type": "default"
+                    },
+                    {
+                      "key": "type",
+                      "value": "5",
+                      "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                      "type": "default"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "0",
+                      "description": "上级角色id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "充值订单",
+                      "description": "描述",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/permission/add/",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "permission",
+                    "add",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 09:41:48 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 09:41:48 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "d6bc2ae8-d95b-4596-b182-3d26168d68cc"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1000,\n    \"message\": \"添加成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "编辑 permission.edit",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "uuid",
+                  "value": "110001",
+                  "description": "唯一标识",
+                  "type": "default"
+                },
+                {
+                  "key": "title",
+                  "value": "充值管理",
+                  "description": "权限名称",
+                  "type": "default"
+                },
+                {
+                  "key": "module",
+                  "value": "4",
+                  "description": "权限匹配模型",
+                  "type": "default"
+                },
+                {
+                  "key": "type",
+                  "value": "4",
+                  "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                  "type": "default"
+                },
+                {
+                  "key": "describe",
+                  "value": "充值订单2",
+                  "description": "描述",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/permission/edit/10001",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "permission",
+                "edit",
+                "10001"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "编辑 permission.edit",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "uuid",
+                      "value": "110001",
+                      "description": "唯一标识",
+                      "type": "default"
+                    },
+                    {
+                      "key": "title",
+                      "value": "充值管理",
+                      "description": "权限名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "module",
+                      "value": "4",
+                      "description": "权限匹配模型",
+                      "type": "default"
+                    },
+                    {
+                      "key": "type",
+                      "value": "4",
+                      "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                      "type": "default"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "充值订单2",
+                      "description": "描述",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/permission/edit/10001",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "permission",
+                    "edit",
+                    "10001"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 10:22:33 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 10:22:33 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "e10bc974-4da2-418c-a95d-0dbbea64d1dd"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1001,\n    \"message\": \"更新成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "删除 permission.del",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{HOST}}/api/permission/del/10002",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "permission",
+                "del",
+                "10002"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "删除 permission.del",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/permission/del/10002",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "permission",
+                    "del",
+                    "10002"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 11:09:23 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 07 Apr 2022 11:09:23 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "c8cdfa66-6d9a-4c3a-84b7-9a103d2b6a7b"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1002,\n    \"message\": \"删除成功\",\n    \"data\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "菜单管理",
+      "item": [
+        {
+          "name": "列表,搜索 menu.index",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "uuid",
+                  "value": "100002",
+                  "description": "唯一标识",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "title",
+                  "value": "角色管理",
+                  "description": "菜单名称",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "href",
+                  "value": "role.index",
+                  "description": "链接地址",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "状态：1显示, 0隐藏",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "pid",
+                  "value": "1",
+                  "description": "上级角色id",
+                  "type": "default"
+                },
+                {
+                  "key": "isGenealogy",
+                  "value": "1",
+                  "description": "0 直属, 1 家谱",
+                  "type": "default",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/menu/",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "列表,搜索 menu.index",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "uuid",
+                      "value": "100002",
+                      "description": "唯一标识",
+                      "type": "default"
+                    },
+                    {
+                      "key": "title",
+                      "value": "角色管理",
+                      "description": "菜单名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "href",
+                      "value": "role.index",
+                      "description": "链接地址",
+                      "type": "default"
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "状态：1显示, 0隐藏",
+                      "type": "default"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "1",
+                      "description": "上级角色id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "isGenealogy",
+                      "value": "1",
+                      "description": "0 直属, 1 家谱",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/menu/",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "menu",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 06:30:12 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 06:30:12 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "9006aad6-da07-4852-8117-f6a75b603f13"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 2,\n            \"permissions_uuid\": \"100002\",\n            \"title\": \"角色管理\",\n            \"status\": 1,\n            \"pid\": 1,\n            \"pids\": \"1\",\n            \"href\": \"\",\n            \"icon\": \"\",\n            \"sort\": 0,\n            \"target\": \"_self\",\n            \"is_shortcut\": 0,\n            \"describe\": \"\",\n            \"created_at\": \"2022-03-22T09:55:10.000000Z\",\n            \"parent_menu\": {\n                \"id\": 1,\n                \"title\": \"RBAC管理\"\n            }\n        },\n        {\n            \"id\": 3,\n            \"permissions_uuid\": \"100011\",\n            \"title\": \"权限管理\",\n            \"status\": 1,\n            \"pid\": 1,\n            \"pids\": \"1\",\n            \"href\": \"\",\n            \"icon\": \"\",\n            \"sort\": 0,\n            \"target\": \"_self\",\n            \"is_shortcut\": 0,\n            \"describe\": \"\",\n            \"created_at\": \"2022-03-22T10:18:28.000000Z\",\n            \"parent_menu\": {\n                \"id\": 1,\n                \"title\": \"RBAC管理\"\n            }\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "导航栏 menu.nav",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "uuid",
+                  "value": "100002",
+                  "description": "唯一标识",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "title",
+                  "value": "角色管理",
+                  "description": "菜单名称",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "href",
+                  "value": "role.index",
+                  "description": "链接地址",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "状态：1显示, 0隐藏",
+                  "type": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "pid",
+                  "value": "1",
+                  "description": "上级角色id",
+                  "type": "default"
+                },
+                {
+                  "key": "isGenealogy",
+                  "value": "1",
+                  "description": "0 直属, 1 家谱",
+                  "type": "default",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/menu/nav",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                "nav"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "导航栏 menu.nav",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "uuid",
+                      "value": "100002",
+                      "description": "唯一标识",
+                      "type": "default",
+                      "disabled": true
+                    },
+                    {
+                      "key": "title",
+                      "value": "角色管理",
+                      "description": "菜单名称",
+                      "type": "default",
+                      "disabled": true
+                    },
+                    {
+                      "key": "href",
+                      "value": "role.index",
+                      "description": "链接地址",
+                      "type": "default",
+                      "disabled": true
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "状态：1显示, 0隐藏",
+                      "type": "default",
+                      "disabled": true
+                    },
+                    {
+                      "key": "pid",
+                      "value": "1",
+                      "description": "上级角色id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "isGenealogy",
+                      "value": "1",
+                      "description": "0 直属, 1 家谱",
+                      "type": "default",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/menu/nav",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "menu",
+                    "nav"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 17 Apr 2022 14:15:26 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 17 Apr 2022 14:15:26 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "f491b2a7-d895-4496-b393-e21d8fa21224"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 100,\n            \"uuid\": \"110004\",\n            \"title\": \"充值管理\",\n            \"href\": \"\",\n            \"pid\": 0,\n            \"icon\": \"icon1\",\n            \"target\": \"_self\",\n            \"child_menu\": [\n                {\n                    \"id\": 101,\n                    \"uuid\": \"110005\",\n                    \"title\": \"订单管理\",\n                    \"href\": \"deposits.index\",\n                    \"pid\": 100,\n                    \"icon\": \"icon1\",\n                    \"target\": \"_self\",\n                    \"child_menu\": []\n                }\n            ]\n        },\n        {\n            \"id\": 102,\n            \"uuid\": \"110010\",\n            \"title\": \"提现管理\",\n            \"href\": \"\",\n            \"pid\": 0,\n            \"icon\": \"icon1\",\n            \"target\": \"_self\",\n            \"child_menu\": [\n                {\n                    \"id\": 103,\n                    \"uuid\": \"110011\",\n                    \"title\": \"订单管理\",\n                    \"href\": \"withdrawals.index\",\n                    \"pid\": 102,\n                    \"icon\": \"icon1\",\n                    \"target\": \"_self\",\n                    \"child_menu\": []\n                }\n            ]\n        },\n        {\n            \"id\": 1,\n            \"uuid\": \"100001\",\n            \"title\": \"RBAC管理\",\n            \"href\": \"\",\n            \"pid\": 0,\n            \"icon\": \"icon1\",\n            \"target\": \"_self\",\n            \"child_menu\": [\n                {\n                    \"id\": 5,\n                    \"uuid\": \"100023\",\n                    \"title\": \"管理员管理\",\n                    \"href\": \"user.index\",\n                    \"pid\": 1,\n                    \"icon\": \"icon1\",\n                    \"target\": \"_self\",\n                    \"child_menu\": []\n                },\n                {\n                    \"id\": 4,\n                    \"uuid\": \"100017\",\n                    \"title\": \"菜单管理\",\n                    \"href\": \"menu.index\",\n                    \"pid\": 1,\n                    \"icon\": \"icon1\",\n                    \"target\": \"_self\",\n                    \"child_menu\": []\n                },\n                {\n                    \"id\": 3,\n                    \"uuid\": \"100011\",\n                    \"title\": \"权限管理\",\n                    \"href\": \"permission.index\",\n                    \"pid\": 1,\n                    \"icon\": \"icon1\",\n                    \"target\": \"_self\",\n                    \"child_menu\": []\n                },\n                {\n                    \"id\": 2,\n                    \"uuid\": \"100002\",\n                    \"title\": \"角色管理\",\n                    \"href\": \"role.index\",\n                    \"pid\": 1,\n                    \"icon\": \"icon1\",\n                    \"target\": \"_self\",\n                    \"child_menu\": []\n                }\n            ]\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "添加 menu.add",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "uuid",
+                  "value": "10003",
+                  "description": "唯一标识",
+                  "type": "default"
+                },
+                {
+                  "key": "title",
+                  "value": "充值管理",
+                  "description": "菜单名称",
+                  "type": "default"
+                },
+                {
+                  "key": "href",
+                  "value": "deposits.indexs",
+                  "description": "链接地址",
+                  "type": "default"
+                },
+                {
+                  "key": "icon",
+                  "value": "icon1",
+                  "description": "图标",
+                  "type": "default"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "状态: 1显示, 0隐藏",
+                  "type": "default"
+                },
+                {
+                  "key": "pid",
+                  "value": "0",
+                  "description": "上级菜单id",
+                  "type": "default"
+                },
+                {
+                  "key": "sort",
+                  "value": "7",
+                  "description": "排序: 非必须",
+                  "type": "default"
+                },
+                {
+                  "key": "target",
+                  "value": "_self",
+                  "description": "跳转方式: _self, _blank, _parent, _top, framename  非必须",
+                  "type": "default"
+                },
+                {
+                  "key": "is_shortcut",
+                  "value": "0",
+                  "description": "是否快捷: 1是, 0否",
+                  "type": "default"
+                },
+                {
+                  "key": "describe",
+                  "value": "充值订单",
+                  "description": "描述",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/menu/add/",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                "add",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "添加 menu.add",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "uuid",
+                      "value": "10001",
+                      "description": "唯一标识",
+                      "type": "default"
+                    },
+                    {
+                      "key": "title",
+                      "value": "充值管理",
+                      "description": "菜单名称",
+                      "type": "default"
+                    },
+                    {
+                      "key": "href",
+                      "value": "deposits.index",
+                      "description": "链接地址",
+                      "type": "default"
+                    },
+                    {
+                      "key": "icon",
+                      "value": "icon1",
+                      "description": "图标",
+                      "type": "default"
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "状态: 1显示, 0隐藏",
+                      "type": "default"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "0",
+                      "description": "上级菜单id",
+                      "type": "default"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "",
+                      "description": "排序",
+                      "type": "default",
+                      "disabled": true
+                    },
+                    {
+                      "key": "target",
+                      "value": "_self",
+                      "description": "跳转方式: _self, _blank, _parent, _top, framename",
+                      "type": "default"
+                    },
+                    {
+                      "key": "is_shortcut",
+                      "value": "0",
+                      "description": "是否快捷: 1是, 0否",
+                      "type": "default"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "充值订单",
+                      "description": "描述",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/menu/add/",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "menu",
+                    "add",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 07:37:51 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 07:37:51 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "8bb08f25-21f0-4a08-8548-f5703a1ff32d"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1000,\n    \"message\": \"添加成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "编辑 menu.edit",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "订单管理",
+                  "description": "权限名称",
+                  "type": "text"
+                },
+                {
+                  "key": "href",
+                  "value": "",
+                  "description": "权限匹配模型",
+                  "type": "text"
+                },
+                {
+                  "key": "icon",
+                  "value": "icon1",
+                  "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                  "type": "text"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "描述",
+                  "type": "text"
+                },
+                {
+                  "key": "pid",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "target",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "is_shortcut",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "describe",
+                  "value": "充值订单",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/menu/edit/4",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                "edit",
+                "4"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "编辑 menu.edit",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "title",
+                      "value": "充值订单",
+                      "description": "权限名称",
+                      "type": "text"
+                    },
+                    {
+                      "key": "href",
+                      "value": "deposits.indexs",
+                      "description": "权限匹配模型",
+                      "type": "text"
+                    },
+                    {
+                      "key": "icon",
+                      "value": "icon1",
+                      "description": "类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它",
+                      "type": "text"
+                    },
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "描述",
+                      "type": "text"
+                    },
+                    {
+                      "key": "pid",
+                      "value": "4",
+                      "type": "text"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "7",
+                      "type": "text"
+                    },
+                    {
+                      "key": "target",
+                      "value": "_self",
+                      "type": "text"
+                    },
+                    {
+                      "key": "is_shortcut",
+                      "value": "0",
+                      "type": "text"
+                    },
+                    {
+                      "key": "describe",
+                      "value": "充值订单",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/menu/edit/4",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "menu",
+                    "edit",
+                    "4"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 08:10:18 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 08:10:18 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "322d138e-9aee-4e10-9e4b-85ec3b9d551e"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1001,\n    \"message\": \"更新成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "显示/隐藏 menu.editStatus",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "状态 0 隐藏, 1显示",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/menu/editStatus/5",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                "editStatus",
+                "5"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "显示/隐藏 menu.editStatus",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "status",
+                      "value": "1",
+                      "description": "状态 0 隐藏, 1显示",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/menu/editStatus/5",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "menu",
+                    "editStatus",
+                    "5"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 09:08:11 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 09:08:11 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "f1ad3f42-e476-4434-816c-d2b67e4879ea"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1006,\n    \"message\": \"显示成功\",\n    \"data\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "用户管理",
+      "item": [
+        {
+          "name": "用户权限权限控制 permission.uuid",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{HOST}}/api/user/permissions",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "permissions"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "用户权限权限控制 permission.uuid",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/user/permissions",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "user",
+                    "permissions"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 11:16:50 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 11:16:50 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "9f102121-2d75-4ad7-b1ae-c5b9ea222eaf"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": {\n        \"superUserRole\": 0,\n        \"roles\": [\n            \"2\",\n            \"3\",\n            \"9\"\n        ],\n        \"permissions\": [\n            \"100001\",\n            \"100002\",\n            \"100003\",\n            \"100004\",\n            \"100005\",\n            \"100006\",\n            \"100007\",\n            \"100008\",\n            \"100009\",\n            \"100010\",\n            \"100011\",\n            \"100012\",\n            \"100013\",\n            \"100014\",\n            \"100015\",\n            \"100016\",\n            \"100017\",\n            \"100018\",\n            \"100019\",\n            \"100020\",\n            \"100021\",\n            \"100022\",\n            \"110001\"\n        ]\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "用户角色 user.roleList",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{HOST}}/api/user/roleList/76",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "roleList",
+                "76"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "用户角色 user.roleList",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": []
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/user/roleList/76",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "user",
+                    "roleList",
+                    "76"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 12:26:50 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 12:26:50 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "4e144339-e575-48ca-8434-d0b030d0fb1d"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 0,\n    \"message\": \"成功\",\n    \"data\": [\n        {\n            \"id\": 42,\n            \"user_id\": 76,\n            \"role_id\": 1,\n            \"created_at\": \"2022-03-21 16:33:44\",\n            \"title\": \"超级管理员\",\n            \"isUpdate\": false\n        },\n        {\n            \"id\": 48,\n            \"user_id\": 76,\n            \"role_id\": 8,\n            \"created_at\": \"2022-04-04 23:23:08\",\n            \"title\": \"管理员A\",\n            \"isUpdate\": false\n        },\n        {\n            \"id\": 50,\n            \"user_id\": 76,\n            \"role_id\": 10,\n            \"created_at\": \"2022-04-08 20:18:00\",\n            \"title\": \"管理员B\",\n            \"isUpdate\": true\n        },\n        {\n            \"id\": 52,\n            \"user_id\": 76,\n            \"role_id\": 11,\n            \"created_at\": \"2022-04-08 20:18:15\",\n            \"title\": \"管理员E\",\n            \"isUpdate\": true\n        },\n        {\n            \"id\": 54,\n            \"user_id\": 76,\n            \"role_id\": 12,\n            \"created_at\": \"2022-04-08 20:18:56\",\n            \"title\": \"管理员E\",\n            \"isUpdate\": false\n        },\n        {\n            \"id\": 55,\n            \"user_id\": 76,\n            \"role_id\": 14,\n            \"created_at\": \"2022-04-08 20:19:09\",\n            \"title\": \"管理员F\",\n            \"isUpdate\": true\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "给用户分配角色 user.addRole",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "roleId",
+                  "value": "16",
+                  "description": "角色id",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/user/addRole/76",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "addRole",
+                "76"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "给用户分配角色 user.addRole",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "roleId",
+                      "value": "16",
+                      "description": "角色id",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/user/addRole/76",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "user",
+                    "addRole",
+                    "76"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 13:54:53 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 13:54:53 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "9bde099b-9261-4757-a6e8-19641bfd5eeb"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1000,\n    \"message\": \"添加成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "解除角色与用户的关系 user.delRole Copy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "roleId",
+                  "value": "56",
+                  "description": "角色id",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/user/delRole/76",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "delRole",
+                "76"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "解除角色与用户的关系 user.delRole",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "request-id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-lang",
+                    "value": "zh",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "roleId",
+                      "value": "56",
+                      "description": "角色id",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{HOST}}/api/user/delRole/76",
+                  "host": [
+                    "{{HOST}}"
+                  ],
+                  "path": [
+                    "api",
+                    "user",
+                    "delRole",
+                    "76"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "localhost:8089"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 13:57:16 GMT"
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 08 Apr 2022 13:57:16 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.1.3"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-lang",
+                  "value": "zh"
+                },
+                {
+                  "key": "Request-Id",
+                  "value": "b790273c-9749-4cf2-b044-5b55b55c9c02"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"code\": 1002,\n    \"message\": \"删除成功\",\n    \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "编辑角色与用户的关系 user.editRoles",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "request-id",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "X-lang",
+                "value": "zh",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "roleId",
+                  "value": "56",
+                  "description": "角色id",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{HOST}}/api/user/delRole/76",
+              "host": [
+                "{{HOST}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "delRole",
+                "76"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "初始化用户权限",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}/api/user/initUserRoles/2342342",
+          "host": [
+            "{{HOST}}"
+          ],
+          "path": [
+            "api",
+            "user",
+            "initUserRoles",
+            "2342342"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "登录",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "name",
+              "value": " super999",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": " Super@321",
+              "type": "text"
+            },
+            {
+              "key": "captcha",
+              "value": " 123456",
+              "type": "text"
+            },
+            {
+              "key": "key",
+              "value": " 123456",
+              "type": "text"
+            },
+            {
+              "key": "secureCode",
+              "value": " 123456",
+              "type": "text"
+            }
+          ],
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}/admin/api/user/login",
+          "host": [
+            "{{HOST}}"
+          ],
+          "path": [
+            "admin",
+            "api",
+            "user",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "信息 user.mine",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "request-id",
+            "value": "{{$guid}}",
+            "type": "text"
+          },
+          {
+            "key": "X-lang",
+            "value": "zh",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "confirm_password",
+              "value": " Bb132465",
+              "description": "角色id",
+              "type": "text"
+            },
+            {
+              "key": "new_password",
+              "value": " Bb132465",
+              "type": "text"
+            },
+            {
+              "key": "old_password",
+              "value": " iRqeFbT",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{HOST}}/api/user/new-password",
+          "host": [
+            "{{HOST}}"
+          ],
+          "path": [
+            "api",
+            "user",
+            "new-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "修改密码(当前登录用户自己的密码) user.updatePassword",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Request-Id",
+            "value": "{{$guid}}",
+            "type": "text"
+          },
+          {
+            "key": "X-lang",
+            "value": "zh",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "confirm_password",
+              "value": " Bb132465",
+              "description": "角色id",
+              "type": "text"
+            },
+            {
+              "key": "new_password",
+              "value": " Bb132465",
+              "type": "text"
+            },
+            {
+              "key": "old_password",
+              "value": " iRqeFbT",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{HOST}}/api/user/new-password",
+          "host": [
+            "{{HOST}}"
+          ],
+          "path": [
+            "api",
+            "user",
+            "new-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "绑定Google安全码",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{HOST}}/google/secret/super999/1",
+          "host": [
+            "{{HOST}}"
+          ],
+          "path": [
+            "google",
+            "secret",
+            "super999",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "获取验证码",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{HOST}}/captcha/api/default",
+          "host": [
+            "{{HOST}}"
+          ],
+          "path": [
+            "captcha",
+            "api",
+            "default"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
