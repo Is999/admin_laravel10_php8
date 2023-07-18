@@ -8,21 +8,21 @@
 </p>
 
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/menu.png)
+![image-menu.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/menu.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/role.png)
+![image-role.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/role.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/permission.png)
+![image-permission.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/permission.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/user.png)
+![image-user.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/user.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/config.png)
+![image-config.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/config.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/cahce.png)
+![image-cache.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/cache.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/userlog.png)
+![image-userlog.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/userlog.png)
 
-![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/setting.png)
+![image-setting.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/setting.png)
 
 
 
