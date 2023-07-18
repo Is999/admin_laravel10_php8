@@ -57,10 +57,10 @@ VALUES (1, 'super999', 'super999', '$2y$10$qOjSQkQ43o4RIy36ZP.FLef3nPtJDJWYZDKdC
         1, '', '', '2023-06-30 15:18:38', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-06-30 15:18:38');
 INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `secure_key`, `status`, `avatar`,
                      `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`)
-VALUES (2, 'admin999', 'admin999', '$2y$10$eOWZP39.YIM5p83sJTnq.O3MwtHDj6akYNANoCWRj6pMwoHTlB/Mi', 'admin999@gmail.com',
-        '18899990099',
-        'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0=',
-        1, '', '', '2023-06-29 13:02:32', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-06-29 13:02:32');
+VALUES  (2, 'admin999', 'admin999', '$2y$10$ltUtx9xHJLhuPsjNS2EmZ.5ccYAyYfFznyrYmS0cNrdWRQRR2lhhq', 'admin999@gmail.com',
+         '18899990099',
+         'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0=',
+         1, '', '', '2023-07-18 10:51:07', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-07-18 10:51:07');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

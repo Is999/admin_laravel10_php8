@@ -385,5 +385,7 @@
 14. 登录密码
 
     账号：super999 密码：Super@123
+    
+    账号：admin999 密码：Admin@123
 
-​		账号：admin999 密码：Admin@123
+​		
