@@ -6,6 +6,23 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/menu.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/role.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/permission.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/user.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/config.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/cahce.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/userlog.png)
+
+![image-20230718094705864](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/setting.png)
+
+
 
 ## 启动laravel [Laravel Sail](https://learnku.com/docs/laravel/8.5/sail/10428)
 
@@ -94,7 +111,7 @@
 
 ## logger 日志
 
-​ App\Logging\Logger 日志类
+ App\Logging\Logger 日志类
 
 1. 系统日志(默认通道)
 
@@ -369,3 +386,9 @@
     ```
 
     
+
+14. 登录密码
+
+    账号：super999 密码：Super@123
+
+​		账号：admin999 密码：Admin@123
