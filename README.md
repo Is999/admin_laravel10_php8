@@ -6,23 +6,16 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
-
-
-![image-menu.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/menu.png)
-
-![image-role.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/role.png)
-
-![image-permission.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/permission.png)
-
-![image-user.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/user.png)
-
-![image-config.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/config.png)
-
-![image-cache.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/cache.png)
-
-![image-userlog.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/userlog.png)
-
-![image-setting.png](https://github.com/Is999/admin_laravel10/blob/master/public/images/adminVbenVue/setting.png)
+<p align="center">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/menu.png" alt="菜单管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/role.png" alt="角色管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/permission.png" alt="权限管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/user.png" alt="账号管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/config.png" alt="参数配置">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/cache.png" alt="缓存管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/userlog.png" alt="操作日志">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/setting.png" alt="个人设置">
+</p>
 
 
 
