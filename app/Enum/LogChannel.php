@@ -12,7 +12,7 @@ enum LogChannel: string
     case SQL = 'sqlLog';
     case GATEWAY = 'gatewayLog';
     case SYSLOG = 'syslog';
-    case ERROR = 'errorLog';
+    case ERROR = 'errorlog';
     case CACHE = 'cacheLog';
 
     public static function checkChannel($channel)

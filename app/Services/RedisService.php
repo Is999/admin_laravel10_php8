@@ -407,7 +407,7 @@ class RedisService extends Service
      */
     public static function initTable(string $key = '*', array $secondIndex = []): bool|array
     {
-        Logger::info(LogChannel::DEV, 'initTable: ~~~准备初始化[{{key}}]缓存~~~', compact('key', 'secondIndex'));
+        Logger::info(LogChannel::CACHE, 'initTable: ~~~准备初始化[{{key}}]缓存~~~', compact('key', 'secondIndex'));
         // 加载配置
         $config = config(self::TABLE_CONFIG_FILE,);
         if (!$config) {
@@ -418,7 +418,7 @@ class RedisService extends Service
         if ($key !== '*') {
             $index = explode(':', $key)[0];
             if (!isset($config[$index])) {
-                Logger::notice(LogChannel::DEV, 'initTable: {{0}} config/{{1}}.php 配置不存在 ' . $index, [$key, self::TABLE_CONFIG_FILE]);
+                Logger::notice(LogChannel::CACHE, 'initTable: {{0}} config/{{1}}.php 配置不存在 ' . $index, [$key, self::TABLE_CONFIG_FILE]);
                 return false;
             }
             $config = [$index => $config[$index]];
@@ -427,7 +427,7 @@ class RedisService extends Service
         // 携带参数[params]属于key部分缓存内容更新,不适用删除key
         // 如: hash 需要要call方法支持传参 更新key中某一个或多个元素
         if (str_ends_with($key, RedisKeys::DELIMIT) || !$secondIndex) {
-            Logger::info(LogChannel::DEV, 'initTable: 准备删除[{{key}}]旧缓存~~~', compact('key', 'secondIndex'));
+            Logger::info(LogChannel::CACHE, 'initTable: 准备删除[{{key}}]旧缓存~~~', compact('key', 'secondIndex'));
 
             // 删除缓存
             if ($key === '*') {
@@ -440,7 +440,7 @@ class RedisService extends Service
                 self::flushTableAll($key);
             }
 
-            Logger::info(LogChannel::DEV, 'initTable: ~~~旧缓存[{{key}}]删除完毕', compact('key', 'secondIndex'));
+            Logger::info(LogChannel::CACHE, 'initTable: ~~~旧缓存[{{key}}]删除完毕', compact('key', 'secondIndex'));
         }
 
         // call_user_func 参数接收两个值 key, index
@@ -450,17 +450,17 @@ class RedisService extends Service
             }), 1),  // 去掉key前缀 其它数据作为参数传递到方法中
             'index' => $secondIndex
         ];
-        Logger::info(LogChannel::DEV, 'initTable: call 参数', compact('key', 'params'));
+        Logger::info(LogChannel::CACHE, 'initTable: call 参数', compact('key', 'params'));
 
         $list = [];
 
         // 获取数据并存储到缓存
         foreach ($config as $k => $v) {
             // 记录日志
-            Logger::info(LogChannel::DEV, 'initTable: {{0}} 开始缓存数据~~~', [$k, 'config' => $v]);
+            Logger::info(LogChannel::CACHE, 'initTable: {{0}} 开始缓存数据~~~', [$k, 'config' => $v]);
 
             if (!self::checkTableConfig($k, $v)) {
-                Logger::notice(LogChannel::DEV, 'initTable: {{0}} checkTableConfig 配置错误', [$k, 'config' => $v]);
+                Logger::notice(LogChannel::CACHE, 'initTable: {{0}} checkTableConfig 配置错误', [$k, 'config' => $v]);
                 continue;
             }
 
@@ -469,12 +469,12 @@ class RedisService extends Service
                 $data = App::call($v['class'], $params, $v['method']);
                 //$data = call_user_func(array($v['class'], $v['method']), ...$params);
             } catch (\Throwable $e) {
-                Logger::error(LogChannel::DEV, 'initTable: {{0}} call {{1}}::{{2}} 失败', [$k, $v['class'], $v['method'], 'config' => $v, 'params' => $params], $e);
+                Logger::error(LogChannel::CACHE, 'initTable: {{0}} call {{1}}::{{2}} 失败', [$k, $v['class'], $v['method'], 'config' => $v, 'params' => $params], $e);
                 break;
             }
 
             if ($data === false || !is_array($data)) {
-                Logger::warning(LogChannel::DEV, 'initTable: {{0}} 获取数据错误', [$k, 'config' => $v, 'data' => $data]);
+                Logger::warning(LogChannel::CACHE, 'initTable: {{0}} 获取数据错误', [$k, 'config' => $v, 'data' => $data]);
                 continue;
             }
             $expire = $v['expire'] ?? 0; // 过期时间
@@ -486,14 +486,14 @@ class RedisService extends Service
                     case RedisType::String:
                         if (str_ends_with($v['key'], RedisKeys::DELIMIT)) {
                             foreach ($data as $sk => $sv) {
-                                Logger::info(LogChannel::DEV, 'initTable: STRING {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
+                                Logger::info(LogChannel::CACHE, 'initTable: STRING {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
 
                                 $res = self::loadString($v['key'] . $sk, $sv, $expire);
 
                                 $temp[$v['key'] . $sk] = $res;
                             }
                         } else {
-                            Logger::info(LogChannel::DEV, 'initTable: STRING {{0}} 开始--', [$v['key'], 'data' => $data]);
+                            Logger::info(LogChannel::CACHE, 'initTable: STRING {{0}} 开始--', [$v['key'], 'data' => $data]);
 
                             $res = self::loadString($v['key'], json_encode($data), $expire);
 
@@ -503,14 +503,14 @@ class RedisService extends Service
                     case RedisType::Hash:
                         if (str_ends_with($v['key'], RedisKeys::DELIMIT)) {
                             foreach ($data as $sk => $sv) {
-                                Logger::info(LogChannel::DEV, 'initTable: HASH {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
+                                Logger::info(LogChannel::CACHE, 'initTable: HASH {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
 
                                 $res = self::loadHash($v['key'] . $sk, $sv, $expire);
 
                                 $temp[$v['key'] . $sk] = $res;
                             }
                         } else {
-                            Logger::info(LogChannel::DEV, 'initTable: HASH {{0}} 开始--', [$v['key'], 'data' => $data]);
+                            Logger::info(LogChannel::CACHE, 'initTable: HASH {{0}} 开始--', [$v['key'], 'data' => $data]);
 
                             $res = self::loadHash($v['key'], $data, $expire);
 
@@ -520,14 +520,14 @@ class RedisService extends Service
                     case RedisType::List:
                         if (str_ends_with($v['key'], RedisKeys::DELIMIT)) {
                             foreach ($data as $sk => $sv) {
-                                Logger::info(LogChannel::DEV, 'initTable: LIST {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
+                                Logger::info(LogChannel::CACHE, 'initTable: LIST {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
 
                                 $res = self::loadList($v['key'] . $sk, $sv, $expire);
 
                                 $temp[$v['key'] . $sk] = $res;
                             }
                         } else {
-                            Logger::info(LogChannel::DEV, 'initTable: LIST {{0}} 开始--', [$v['key'], 'data' => $data]);
+                            Logger::info(LogChannel::CACHE, 'initTable: LIST {{0}} 开始--', [$v['key'], 'data' => $data]);
 
                             $res = self::loadList($v['key'], $data, $expire);
 
@@ -537,14 +537,14 @@ class RedisService extends Service
                     case RedisType::Set:
                         if (str_ends_with($v['key'], RedisKeys::DELIMIT)) {
                             foreach ($data as $sk => $sv) {
-                                Logger::info(LogChannel::DEV, 'initTable: SET {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
+                                Logger::info(LogChannel::CACHE, 'initTable: SET {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
 
                                 $res = self::loadSet($v['key'] . $sk, $sv, $expire);
 
                                 $temp[$v['key'] . $sk] = $res;
                             }
                         } else {
-                            Logger::info(LogChannel::DEV, 'initTable: SET {{0}} 开始--', [$v['key'], 'data' => $data]);
+                            Logger::info(LogChannel::CACHE, 'initTable: SET {{0}} 开始--', [$v['key'], 'data' => $data]);
 
                             $res = self::loadSet($v['key'], $data, $expire);
 
@@ -554,14 +554,14 @@ class RedisService extends Service
                     case RedisType::ZSet:
                         if (str_ends_with($v['key'], RedisKeys::DELIMIT)) {
                             foreach ($data as $sk => $sv) {
-                                Logger::info(LogChannel::DEV, 'initTable: ZSET {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
+                                Logger::info(LogChannel::CACHE, 'initTable: ZSET {{0}} 开始--', [$v['key'] . $sk, 'data' => $sv]);
 
                                 $res = self::loadSortedSet($v['key'] . $sk, $sv, $expire);
 
                                 $temp[$v['key'] . $sk] = $res;
                             }
                         } else {
-                            Logger::info(LogChannel::DEV, 'initTable: ZSET {{0}} 开始--', [$v['key'], 'data' => $data]);
+                            Logger::info(LogChannel::CACHE, 'initTable: ZSET {{0}} 开始--', [$v['key'], 'data' => $data]);
 
                             $res = self::loadSortedSet($v['key'], $data, $expire);
 
@@ -569,7 +569,7 @@ class RedisService extends Service
                         }
                 }
             } catch (\Throwable $e) {
-                Logger::error(LogChannel::DEV, 'initTable: {{0}} 数据缓存失败', [$k, 'config' => $v], $e);
+                Logger::error(LogChannel::CACHE, 'initTable: {{0}} 数据缓存失败', [$k, 'config' => $v], $e);
                 break;
             }
 
@@ -579,10 +579,10 @@ class RedisService extends Service
                 'type' => $v['type'],
                 'cache' => $temp
             ];
-            Logger::info(LogChannel::DEV, 'initTable: {{0}} ~~~数据缓存完毕', [$k]);
+            Logger::info(LogChannel::CACHE, 'initTable: {{0}} ~~~数据缓存完毕', [$k]);
         }
 
-        Logger::info(LogChannel::DEV, 'initTable: ~~~本次[{{key}}]缓存初始完毕~~~', compact('key', 'params'));
+        Logger::info(LogChannel::CACHE, 'initTable: ~~~本次[{{key}}]缓存初始完毕~~~', compact('key', 'params'));
         return $list;
     }
 
@@ -879,7 +879,7 @@ class RedisService extends Service
                 if (!empty($keys[1])) {
                     self::redis()->del($keys[1]);
 
-                    Logger::info(LogChannel::DEV, "删除key[{{pattern}}]", compact('pattern', 'keys'));
+                    Logger::info(LogChannel::CACHE, "删除key[{{pattern}}]", compact('pattern', 'keys'));
                 }
             }
         } while ($keys && $iterator !== 0);

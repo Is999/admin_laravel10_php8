@@ -160,6 +160,18 @@ return [
             ],
             'days' => 30,
         ],
+
+        // 缓存日志
+        'cacheLog' => [
+            'driver' => 'daily',
+            'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+            'path' => storage_path('logs/cache.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'formatter_with' => [
+                'dateFormat' => 'Y-m-d H:i:s.u',
+            ],
+            'days' => 30,
+        ],
     ],
 
 ];
