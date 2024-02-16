@@ -762,9 +762,6 @@ class AuthorizeService extends Service
             if ($model->status !== RoleStatus::ENABLED->value) {
                 // 禁用所有下级角色
                 self::subRoleStatusDisabled($model->id);
-
-                // 删除该角色状态缓存
-                RedisService::delRolesStatus([$model->id]);
             } else {
                 // 判断上级状态
                 if (!Roles::where([
@@ -775,6 +772,9 @@ class AuthorizeService extends Service
                     throw new CustomizeException(Code::E100028);
                 }
             }
+
+            // 删除该角色状态缓存
+            RedisService::delRolesStatus([$model->id]);
         }
 
         // 描述
