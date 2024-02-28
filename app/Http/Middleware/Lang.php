@@ -20,23 +20,19 @@ class Lang
         // 获取请求头中的语言
         $lang = $request->header('X-Language');
 
-        // 获取请求地址参数中的语言
-        if (empty($lang)) {
-            $lang = $request->query('lang');
-        }
-
         // 获取请求主体中的语言
         if (empty($lang)) {
-            $lang = $request->input('lang', 'zh');
+            $lang = $request->input('language', 'zh');
         }
 
         // 匹配语言，进行语言设置
         App::setLocale($lang);
 
         $response = $next($request);
-        // 进行其他操作
-        // 例如：设置请求的语言到响应
+
+        // 设置请求的语言到响应
         $response->header('X-Language', $lang);
+
         return $response;
     }
 }

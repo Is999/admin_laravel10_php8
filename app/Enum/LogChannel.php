@@ -8,12 +8,12 @@ namespace App\Enum;
 enum LogChannel: string
 {
     case DEFAULT = ''; // 默认通道
-    case DEV = 'devLog';
-    case SQL = 'sqlLog';
-    case GATEWAY = 'gatewayLog';
+    case DEV = 'dev';
+    case SQL = 'sql';
+    case GATEWAY = 'gateway';
     case SYSLOG = 'syslog';
     case ERROR = 'errorlog';
-    case CACHE = 'cacheLog';
+    case CACHE = 'cache';
 
     public static function checkChannel($channel)
     {

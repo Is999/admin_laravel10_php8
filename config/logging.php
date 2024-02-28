@@ -129,7 +129,7 @@ return [
         ],
 
         // sql日志
-        'sqlLog' => [
+        'sql' => [
             'driver' => 'daily',
             'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
             'path' => storage_path('logs/sql.log'),
@@ -138,7 +138,7 @@ return [
         ],
 
         // 开发调试日志
-        'devLog' => [
+        'dev' => [
             'driver' => 'daily',
             'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
             'path' => storage_path('logs/dev.log'),
@@ -150,7 +150,7 @@ return [
         ],
 
         // 网关日志
-        'gatewayLog' => [
+        'gateway' => [
             'driver' => 'daily',
             'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
             'path' => storage_path('logs/gateway.log'),
@@ -162,7 +162,7 @@ return [
         ],
 
         // 缓存日志
-        'cacheLog' => [
+        'cache' => [
             'driver' => 'daily',
             'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
             'path' => storage_path('logs/cache.log'),
