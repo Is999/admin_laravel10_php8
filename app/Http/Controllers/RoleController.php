@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class RoleController extends Controller
 {
@@ -26,9 +27,9 @@ class RoleController extends Controller
     public function treeList(Request $request): JsonResponse
     {
         try {
-            $result = AuthorizeService::roleTreeList($request);
+            $result = (new AuthorizeService)->roleTreeList($request);
             return Response::success($result);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail();
@@ -59,11 +60,11 @@ class RoleController extends Controller
             }
 
             // 查询数据
-            $result = AuthorizeService::roleIndex($request, $validator->validated());
+            $result = (new AuthorizeService)->roleIndex($request, $validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -96,7 +97,7 @@ class RoleController extends Controller
             $input = $validator->validated();
 
             // 新增角色
-            $result = AuthorizeService::roleAdd($request, $input);
+            $result = (new AuthorizeService)->roleAdd($request, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -105,7 +106,7 @@ class RoleController extends Controller
             return Response::success([], Code::S1000);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -142,7 +143,7 @@ class RoleController extends Controller
             $input = $validator->validated();
 
             // 编辑角色信息
-            $result = AuthorizeService::roleEdit($request, $id, $input);
+            $result = (new AuthorizeService)->roleEdit($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -152,7 +153,7 @@ class RoleController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -169,7 +170,7 @@ class RoleController extends Controller
     {
         try {
             // 删除角色信息
-            $result = AuthorizeService::roleEdit($request, $id, ['is_delete' => Delete::YES]);
+            $result = (new AuthorizeService)->roleEdit($request, $id, ['is_delete' => Delete::YES]);
             if (!$result) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -179,7 +180,7 @@ class RoleController extends Controller
             return Response::success([], Code::S1002);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -210,7 +211,7 @@ class RoleController extends Controller
             $input = $validator->validated();
 
             // 编辑角色状态
-            $result = AuthorizeService::roleEdit($request, $id, $input);
+            $result = (new AuthorizeService)->roleEdit($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -220,7 +221,7 @@ class RoleController extends Controller
             return Response::success([], $request->input('status') ? Code::S1004 : Code::S1005);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -254,7 +255,7 @@ class RoleController extends Controller
 
             $input = $validator->validated();
             // 编辑角色权限
-            $result = AuthorizeService::roleEdit($request, $id, $input);
+            $result = (new AuthorizeService)->roleEdit($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -264,7 +265,7 @@ class RoleController extends Controller
             return Response::success([], Code::S1003);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -280,9 +281,9 @@ class RoleController extends Controller
     public function permission(Request $request, int $id): JsonResponse
     {
         try {
-            $result = AuthorizeService::permission($request, $id);
+            $result = (new AuthorizeService)->permission($request, $id);
             return Response::success($result);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail();

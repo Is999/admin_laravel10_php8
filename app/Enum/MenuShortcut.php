@@ -2,6 +2,8 @@
 
 namespace App\Enum;
 
+use ReflectionClass;
+
 /**
  *  menus.is_shortcut 字段状态
  */
@@ -17,9 +19,9 @@ enum MenuShortcut: int
      *  通过反射获取所有定义的const和case参数
      * @return array
      */
-    public static function toArray()
+    public static function toArray(): array
     {
-        $reflection = new \ReflectionClass(self::class);
+        $reflection = new ReflectionClass(self::class);
         return $reflection->getConstants();
     }
 

@@ -3,7 +3,7 @@
 use App\Enum\Code;
 
 return [
-    //系统消息
+    // 系统消息
     Code::SUCCESS => 'Success',
     Code::FAIL => 'Fail',
     Code::SYSTEM_ERR => 'System Exception',
@@ -11,7 +11,7 @@ return [
     Code::UNAUTHORIZED => 'Unauthorized',
     Code::INVALID_AUTHORIZATION => 'Invalid Authorization',
 
-    //常用成功消息
+    // 常用成功消息
     Code::S1000 => 'Added Successfully',
     Code::S1001 => 'Update Completed',
     Code::S1002 => 'Successfully Deleted',
@@ -21,7 +21,7 @@ return [
     Code::S1006 => '显示成功',
     Code::S1007 => '隐藏成功',
 
-    //常用失败消息
+    // 常用失败消息
     Code::F2000 => '添加失败',
     Code::F2001 => '更新失败',
     Code::F2002 => '删除失败',
@@ -31,7 +31,13 @@ return [
     Code::F2006 => '显示失败',
     Code::F2007 => '隐藏失败',
 
-    //登录|注册消息
+    // 系统错误
+    Code::F5000 => 'System Exception',
+    Code::F5001 => 'System Exception',
+    Code::F5002 => 'System Exception',
+    Code::F5003 => 'System Exception',
+
+    // 登录|注册消息
     Code::E100000 => '密码不能为空',
     Code::E100001 => '密码必须大于8个字符',
     Code::E100002 => '密码不能全是数字，请包含数字，大小写字母或特殊字符',
@@ -94,4 +100,7 @@ return [
     Code::E100059 => '不能修改自己的数据！',
     Code::E100060 => '无权限修改数据！',
     Code::E100061 => '您的账号状态当前已被禁用，请联系管理员！',
+    Code::E100062 => '缺少参数:{param}！',
+    Code::E100063 => '非有效参数:{param}！',
+    Code::E100064 => '签名错误！',
 ];

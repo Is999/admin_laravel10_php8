@@ -26,6 +26,7 @@ enum RedisKeys: string
     const TOKEN = 'token' . self::DELIMIT; // 用户token String token:{user.id}
     const USERINFO = 'userinfo' . self::DELIMIT; // 用户信息 Hash userinfo:{user.id}
     const USER_ROLES = 'user_roles' . self::DELIMIT; // 用户权限 Set user_roles:{user.id}
-
+    const SECRET_KEY_AES = 'secret_key_aes' . self::DELIMIT; // AES key Hash secret_key_aes:{secret_key.uuid}
+    const SECRET_KEY_RSA = 'secret_key_rsa' . self::DELIMIT; // AES key Hash secret_key_rsa:{secret_key.uuid}
 
 }

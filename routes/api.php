@@ -30,7 +30,7 @@ Route::prefix('api')->group(function () {
 Route::prefix('api')->middleware(['adminAuth'])->group(function () {
 
     // 不验证权限的接口(只验证token)
-    Route::name('unrestricted.')->group(function () {
+    Route::name('free.')->group(function () {
         // 角色
         Route::controller(RoleController::class)->prefix('role')->name('role.')->group(function () {
             Route::get('treeList', 'treeList')->name('treeList'); // 新增角色|编辑角色 上级角色(下拉框);
@@ -120,9 +120,11 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     // 缓存管理
     Route::controller(CacheController::class)->prefix('cache')->name('cache.')->group(function () {
         Route::match(['GET', 'POST'], 'index', 'index')->name('index'); // 缓存列表
+        Route::get('serverInfo', 'serverInfo')->name('serverInfo'); // 服务器信息
+        Route::get('keyInfo', 'keyInfo')->name('keyInfo'); // 查看缓存key信息
+        Route::post('searchKey', 'searchKey')->name('searchKey'); // 搜索key
+        Route::post('searchKeyInfo', 'keyInfo')->name('searchKeyInfo'); // 查看缓存key信息
         Route::post('renew', 'renew')->name('renew'); // 刷新
-        Route::get('info', 'info')->name('info'); // 服务器信息
-        Route::get('getValue', 'getValue')->name('getValue'); // 查看缓存
         Route::post('renewAll', 'renewAll')->name('renewAll'); // 刷新全部
     });
 

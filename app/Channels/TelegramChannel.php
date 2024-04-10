@@ -5,6 +5,7 @@ namespace App\Channels;
 use App\Enum\LogChannel;
 use App\Logging\Logger;
 use Illuminate\Notifications\Notification;
+use Throwable;
 
 class TelegramChannel
 {
@@ -15,11 +16,11 @@ class TelegramChannel
      * @param Notification $notification
      * @return void
      */
-    public function send($notifiable, Notification $notification)
+    public function send(mixed $notifiable, Notification $notification): void
     {
         try {
-            $message = $notification->toTelegram($notifiable);
-        } catch (\Throwable $e) {
+            $notification->toTelegram($notifiable);
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, __METHOD__, [], $e);
         }
     }

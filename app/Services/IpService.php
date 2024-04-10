@@ -87,7 +87,7 @@ class IpService extends Service
                 $method = array_shift($list);
                 Logger::info(LogChannel::DEV, 'get ip method: {{method}}', $method);
                 $result = self::{$method['method']}($client, $ip, $respList);
-                $result->resolve("广东省深圳市");
+//                $result->resolve("广东省深圳市");
                 $ipaddr = $result->wait();
                 if ($ipaddr) {
                     return $ipaddr;

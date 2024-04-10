@@ -52,7 +52,7 @@ class Roles extends Model
      * @param array $index
      * @return array
      */
-    public static function rolesPermissionsSetTable(array $key = [], array $index = []): array
+    public static function rolesPermissionsSet(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
 
@@ -60,7 +60,7 @@ class Roles extends Model
         $list = self::where([
             ['is_delete', Delete::NO]
             , ['status', RoleStatus::ENABLED]
-            , ['id', '>', AuthorizeService::getSuperRole()] // 超级管理员角色
+            , ['id', '>', (new AuthorizeService)->getSuperRole()] // 超级管理员角色
         ])->when($key, function ($query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
         })->get([
@@ -82,13 +82,13 @@ class Roles extends Model
      * @param array $index
      * @return array
      */
-    public function rolesStatusHashTable(array $key = [], array $index = []): array
+    public function rolesStatusHash(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
         // 查询数据
         $list = self::where([
             ['is_delete', Delete::NO]
-            , ['id', '>', AuthorizeService::getSuperRole()] // 超级管理员角色
+            , ['id', '>', (new AuthorizeService)->getSuperRole()] // 超级管理员角色
         ])->when($key, function ($query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
         })->get([
@@ -110,9 +110,10 @@ class Roles extends Model
      * @param array $index
      * @return array
      */
-    public static function roleTreeStringTable(array $key = [], array $index = []): array
+    public static function roleTreeString(array $key = [], array $index = []): array
     {
         //$key = array_merge($key, $index);
+
         // 查询数据
         $roles = self::with(['childRecursion'])
             ->where('pid', 0)
@@ -122,7 +123,9 @@ class Roles extends Model
                 'id', 'title', 'pid', 'pids', 'status', 'permissions_id', 'describe', 'is_delete', 'created_at', 'updated_at'
             ])->toArray();
 
-        AuthorizeService::rolesToTree($roles);
+        // 转换数据
+        (new AuthorizeService)->rolesToTree($roles);
+
         return $roles;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -44,7 +45,7 @@ class User extends Model
     /**
      * 获取角色
      */
-    public function roles()
+    public function roles(): HasMany
     {
         return $this->hasMany(UserRolesAccess::class, 'user_id', 'id');
     }

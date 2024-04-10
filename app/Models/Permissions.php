@@ -48,7 +48,7 @@ class Permissions extends Model
      * @param array $index
      * @return array
      */
-    public function permissionsModuleHashTable(array $key = [], array $index = []): array
+    public function permissionsModuleHash(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
         // 查询数据
@@ -73,7 +73,7 @@ class Permissions extends Model
      * @param array $index
      * @return array
      */
-    public function permissionsUuidHashTable(array $key = [], array $index = []): array
+    public function permissionsUuidHash(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
         // 查询数据
@@ -98,8 +98,10 @@ class Permissions extends Model
      * @param array $index
      * @return array
      */
-    public static function permissionsTreeStringTable(array $key = [], array $index = []): array
+    public function permissionsTreeString(array $key = [], array $index = []): array
     {
+        // $key = array_merge($key, $index);
+
         // 查询数据
         $permissions = self::with(['childRecursion'])
             ->where('pid', 0)
@@ -108,7 +110,7 @@ class Permissions extends Model
                 'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type', 'describe', 'created_at', 'updated_at'
             ])->toArray();
 
-        AuthorizeService::permissionsToTree($permissions);
+        (new AuthorizeService)->permissionsToTree($permissions);
         return $permissions;
     }
 }

@@ -30,10 +30,11 @@ class AdminAuth
             $ip = $request->getClientIp();
 
             // 验证token 获取用户id
-            $uid = UserService::CheckToken($token, $ip);
+            $userService = new UserService;
+            $uid = $userService->CheckToken($token, $ip);
 
             // 获取用户信息
-            $user = UserService::getUserInfo($uid);
+            $user = $userService->getUserInfo($uid);
 
             // 获取用户失败抛出自定义异常
             if (empty($user)) {
@@ -46,16 +47,16 @@ class AdminAuth
             }
 
             // 不受限制的接口(只验证token不验证权限)
-            if (!$request->routeIs('unrestricted.*')) {
+            if (!$request->routeIs('free.*')) {
                 // 受限的接口必须验证权限, 根据路由名称验证权限
                 $routeName = $request->route()->getName();
-                if (!AuthorizeService::check($uid, $routeName)) {
+                if (!(new AuthorizeService)->check($uid, $routeName)) {
                     return Response::fail(Code::UNAUTHORIZED, null, HttpStatus::FORBIDDEN);
                 }
             }
 
             // user信息
-            $request->user = $user;
+            $request->offsetSet('user', $user);
 
             // 将email添加到上下文信息
             Logger::withContext(LogChannel::DEV, ['name' => $user['name']]);

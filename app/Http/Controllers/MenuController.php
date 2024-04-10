@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class MenuController extends Controller
 {
@@ -35,7 +36,7 @@ class MenuController extends Controller
                     'title' => 'string|max:100', // 菜单名称
                     'pid' => 'integer|min:0', // 上级id
                     'is_genealogy' => 'integer|min:0', // 0 直属, 1 族谱
-                    'status' => [ // 状态：1显示, 0隐藏
+                    'status' => [ // 状态：1 显示, 0 隐藏
                         new Enum(MenuStatus::class),
                     ],
                     'is_shortcut' => [ // 是否快捷
@@ -52,11 +53,11 @@ class MenuController extends Controller
             }
 
             // 查询数据
-            $result = AuthorizeService::menuIndex($request, $validator->validated());
+            $result = (new AuthorizeService)->menuIndex($request, $validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -80,15 +81,15 @@ class MenuController extends Controller
                     'icon' => 'required|string|max:255', // 图标
                     'path' => 'string|max:255', // 路由地址
                     'component' => 'string|max:255', // 组件路径
-                    'status' => [ // 状态: 1显示, 0隐藏
+                    'status' => [ // 状态: 1 显示, 0 隐藏
                         'required',
                         new Enum(MenuStatus::class),
                     ],
-                    'is_shortcut' => [ // 是否快捷: 1是, 0否
+                    'is_shortcut' => [ // 是否快捷: 1 是, 0 否
                         'required',
                         new Enum(MenuShortcut::class),
                     ],
-                    'type' => [ // 类型: 1菜单, 0目录
+                    'type' => [ // 类型: 1 菜单, 0 目录
                         'required',
                         new Enum(MenuType::class),
                     ],
@@ -103,7 +104,7 @@ class MenuController extends Controller
             $input = $validator->validated();
 
             // 新增权限
-            $result = AuthorizeService::menuAdd($request, $input);
+            $result = (new AuthorizeService)->menuAdd($request, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -114,7 +115,7 @@ class MenuController extends Controller
             return Response::success([], Code::S1000);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -138,15 +139,15 @@ class MenuController extends Controller
                     'title_lang' => 'required|string|max:200', // 菜单名称
                     'icon' => 'required|string|max:255', // 图标
                     'path' => 'string|max:255', // 路由地址
-                    'status' => [ // 状态: 1显示, 0隐藏
+                    'status' => [ // 状态: 1 显示, 0 隐藏
                         'required',
                         new Enum(MenuStatus::class),
                     ],
-                    'is_shortcut' => [ // 是否快捷: 1是, 0否
+                    'is_shortcut' => [ // 是否快捷: 1 是, 0 否
                         'required',
                         new Enum(MenuShortcut::class),
                     ],
-                    'type' => [ // 类型: 1菜单, 0目录
+                    'type' => [ // 类型: 1 菜单, 0 目录
                         'required',
                         new Enum(MenuType::class),
                     ],
@@ -162,7 +163,7 @@ class MenuController extends Controller
             $input = $validator->validated();
 
             // 编辑权限
-            $result = AuthorizeService::menuEdit($request, $id, $input);
+            $result = (new AuthorizeService)->menuEdit($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -172,7 +173,7 @@ class MenuController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -203,7 +204,7 @@ class MenuController extends Controller
             $input = $validator->validated();
 
             // 编辑角色状态
-            $result = AuthorizeService::menuEdit($request, $id, $input);
+            $result = (new AuthorizeService)->menuEdit($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2006 : Code::F2007);
             }
@@ -214,7 +215,7 @@ class MenuController extends Controller
             return Response::success([], $request->input('status') ? Code::S1006 : Code::S1007);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -231,11 +232,9 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = AuthorizeService::getMenuNav($request, $request->user['id']);
+            $result = (new AuthorizeService)->getMenuNav($request, $request->user['id']);
             return Response::success($result);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -251,11 +250,9 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = AuthorizeService::menuTreeList($request);
+            $result = (new AuthorizeService)->menuTreeList($request);
             return Response::success($result);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -271,11 +268,9 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = AuthorizeService::menuPermissionUuid($request);
+            $result = (new AuthorizeService)->menuPermissionUuid($request);
             return Response::success($result);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);

@@ -15,7 +15,7 @@ enum LogChannel: string
     case ERROR = 'errorlog';
     case CACHE = 'cache';
 
-    public static function checkChannel($channel)
+    public static function checkChannel($channel): bool
     {
         if ($channel instanceof self) {
             return true;

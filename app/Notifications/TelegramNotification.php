@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Channels\TelegramChannel;
+use App\Enum\LogChannel;
+use App\Logging\Logger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -22,7 +24,7 @@ class TelegramNotification extends Notification
     public function __construct($chatId = '')
     {
         if (!$chatId) {
-            $chatId = env("TELEGRAM_CHAT_ID", null);
+            $chatId = env("TELEGRAM_CHAT_ID");
         }
         $this->chatId = $chatId;
     }

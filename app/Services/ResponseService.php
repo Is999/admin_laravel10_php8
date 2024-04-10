@@ -13,9 +13,9 @@ class ResponseService extends Service
 {
 
     /**
-     * 请求响应失败 406 json
+     * 请求响应失败
      * @param int $code 识别码
-     * @param string|array|null $message
+     * @param string|array|null $message 消息
      * @param HttpStatus $status http 响应状态码
      * @return JsonResponse
      */
@@ -25,9 +25,9 @@ class ResponseService extends Service
     }
 
     /**
-     * 请求响应成功 200
+     * 请求响应成功
      * @param array $data 数据
-     * @param int $code code 码
+     * @param int $code 识别码
      * @param string|array|null $message 消息
      * @return JsonResponse
      */

@@ -20,7 +20,7 @@ return [
         'title' => '角色状态',
         'key' => RedisKeys::ROLES_STATUS,
         'class' => Roles::class,
-        'method' => 'rolesStatusHashTable',
+        'method' => 'rolesStatusHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],
@@ -30,7 +30,7 @@ return [
         'combine' => ['id'],
         'key' => RedisKeys::ROLES_PERMISSIONS,
         'class' => Roles::class,
-        'method' => 'rolesPermissionsSetTable',
+        'method' => 'rolesPermissionsSet',
         'type' => RedisType::Set,
         'expires' => 0
     ],
@@ -39,7 +39,7 @@ return [
         'title' => '权限module',
         'key' => RedisKeys::PERMISSIONS_MODULE,
         'class' => Permissions::class,
-        'method' => 'permissionsModuleHashTable',
+        'method' => 'permissionsModuleHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],
@@ -48,7 +48,7 @@ return [
         'title' => '权限uuid',
         'key' => RedisKeys::PERMISSIONS_UUID,
         'class' => Permissions::class,
-        'method' => 'permissionsUuidHashTable',
+        'method' => 'permissionsUuidHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],
@@ -57,7 +57,7 @@ return [
         'title' => '菜单树',
         'key' => RedisKeys::MENUS_TREE,
         'class' => Menus::class,
-        'method' => 'menusTreeStringTable',
+        'method' => 'menusTreeString',
         'type' => RedisType::String,
         'expires' => 0
     ],
@@ -66,7 +66,7 @@ return [
         'title' => '权限树',
         'key' => RedisKeys::PERMISSIONS_TREE,
         'class' => Permissions::class,
-        'method' => 'permissionsTreeStringTable',
+        'method' => 'permissionsTreeString',
         'type' => RedisType::String,
         'expires' => 0
     ],
@@ -75,7 +75,7 @@ return [
         'title' => '角色树',
         'key' => RedisKeys::ROLE_TREE,
         'class' => Roles::class,
-        'method' => 'roleTreeStringTable',
+        'method' => 'roleTreeString',
         'type' => RedisType::String,
         'expires' => 0
     ],
@@ -85,7 +85,7 @@ return [
         'combine' => ['uuid'],
         'key' => RedisKeys::CONFIG_UUID,
         'class' => Config::class,
-        'method' => 'configsUuidHashTable',
+        'method' => 'configsUuidHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],

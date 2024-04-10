@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class AuthorizeService extends Service
 {
@@ -34,7 +35,7 @@ class AuthorizeService extends Service
      * .env 配置 SUPER_ROLE
      * @return int
      */
-    public static function getSuperRole(): int
+    public function getSuperRole(): int
     {
         return env('SUPER_ROLE', self::$SUPER_ROLE);
     }
@@ -45,7 +46,7 @@ class AuthorizeService extends Service
      * .env 配置 ROLE_MANAGER
      * @return int
      */
-    public static function getRoleManager(): int
+    public function getRoleManager(): int
     {
         return env('ROLE_MANAGER', self::$ROLE_MANAGER);
     }
@@ -55,28 +56,28 @@ class AuthorizeService extends Service
      * @param string $module 匹配模型
      * @return false
      */
-    public static function check(int $uid, string $module): bool
+    public function check(int $uid, string $module): bool
     {
         // 获取用户的角色
-        $roles = self::getUserRoles($uid);
+        $roles = $this->getUserRoles($uid);
 
         // 判断用户是否拥有超级管理员权限
-        if (in_array(self::getSuperRole(), $roles)) {
+        if (in_array($this->getSuperRole(), $roles)) {
             return true;
         }
 
         // 非超级管理员权限验证
         foreach ($roles as $roleId) {
             // 获取角色状态
-            if (self::getRoleStatus($roleId) != RoleStatus::ENABLED->value) {
+            if ($this->getRoleStatus($roleId) != RoleStatus::ENABLED->value) {
                 continue;
             }
 
             // 获取角色权限id
-            $permissions = self::getRolePermissions($roleId);
+            $permissions = $this->getRolePermissions($roleId);
 
             // 获取权限module
-            if ($permissions && in_array($module, self::getPermissionsModule($permissions))) {
+            if ($permissions && in_array($module, $this->getPermissionsModule($permissions))) {
                 // 匹配到权限
                 return true;
             }
@@ -92,7 +93,7 @@ class AuthorizeService extends Service
      * @param bool $renew
      * @return array
      */
-    public static function getUserRoles(int $uid, bool $renew = false): array
+    public function getUserRoles(int $uid, bool $renew = false): array
     {
         // 从缓存中获取用户角色
         $roles = $renew ? [] : RedisService::getUserRoles($uid);
@@ -123,7 +124,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @return mixed
      */
-    public static function getRoleStatus(int $id): mixed
+    public function getRoleStatus(int $id): mixed
     {
         // 获取角色当前状态
         $status = RedisService::getRoleStatus($id);
@@ -145,7 +146,7 @@ class AuthorizeService extends Service
      * @param int $id 角色 传
      * @return array
      */
-    public static function getRolePermissions(int $id): array
+    public function getRolePermissions(int $id): array
     {
         // 获取缓存角色权限
         return RedisService::getRolePermissions($id);
@@ -156,7 +157,7 @@ class AuthorizeService extends Service
      * @param array $permissionIds
      * @return array
      */
-    public static function getPermissionsModule(array $permissionIds): array
+    public function getPermissionsModule(array $permissionIds): array
     {
         $modules = []; // 找到的module
         $list = []; // 缓存中未找到的权限
@@ -201,7 +202,7 @@ class AuthorizeService extends Service
      * @param array $permissionIds
      * @return array
      */
-    public static function getPermissionsUuid(array $permissionIds): array
+    public function getPermissionsUuid(array $permissionIds): array
     {
         return RedisService::getPermissionsUuid($permissionIds);
     }
@@ -214,25 +215,25 @@ class AuthorizeService extends Service
      * @param bool $checkRoleManager
      * @return bool
      */
-    public static function checkUserRoleManager(int $uid, int $roleId, bool $isProleId = false, $checkRoleManager = true): bool
+    public function checkUserRoleManager(int $uid, int $roleId, bool $isProleId = false, bool $checkRoleManager = true): bool
     {
         // 获取用户的角色
-        $roles = self::getUserRoles($uid);
+        $roles = $this->getUserRoles($uid);
 
         // 判断用户是否拥有超级管理员权限
-        if (in_array(self::getSuperRole(), $roles)) {
+        if (in_array($this->getSuperRole(), $roles)) {
             return true;
         }
 
         // 判断用户是否拥有角色管理者权限
-        if ($checkRoleManager && in_array(self::getRoleManager(), $roles)) {
+        if ($checkRoleManager && in_array($this->getRoleManager(), $roles)) {
             return true;
         }
 
         // 判断父级id
         if ($isProleId) {
             // 该用户拥有的角色内是否拥有该pid
-            if (in_array($roleId, $roles) && self::getRoleStatus($roleId) == RoleStatus::ENABLED->value) {
+            if (in_array($roleId, $roles) && $this->getRoleStatus($roleId) == RoleStatus::ENABLED->value) {
                 return true;
             }
         }
@@ -258,10 +259,10 @@ class AuthorizeService extends Service
      * @param int $roleId
      * @return bool
      */
-    public static function checkUserHasChildRole(int $uid, int $roleId): bool
+    public function checkUserHasChildRole(int $uid, int $roleId): bool
     {
         // 获取用户的角色
-        $roles = self::getUserRoles($uid);
+        $roles = $this->getUserRoles($uid);
 
         // 查角色族谱是否拥有该用户拥有的角色id
         $pids = Roles::where('id', $roleId)->value('pids');
@@ -283,7 +284,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @return array
      */
-    public static function getUserPermissionUuid(int $uid): array
+    public function getUserPermissionUuid(int $uid): array
     {
         $data = [
             'superUserRole' => 0, // 是否是超级管理员
@@ -292,12 +293,12 @@ class AuthorizeService extends Service
         ];
 
         // 获取用户的角色
-        $roles = self::getUserRoles($uid);
+        $roles = $this->getUserRoles($uid);
 
         $data['roles'] = $roles;
 
         // 判断用户是否拥有超级管理员权限
-        if (in_array(self::getSuperRole(), $roles)) {
+        if (in_array($this->getSuperRole(), $roles)) {
             $data['superUserRole'] = 1;
             return $data;
         }
@@ -306,17 +307,17 @@ class AuthorizeService extends Service
         // 非超级管理员权限
         foreach ($roles as $roleId) {
             // 获取角色状态
-            if (self::getRoleStatus($roleId) != RoleStatus::ENABLED->value) {
+            if ($this->getRoleStatus($roleId) != RoleStatus::ENABLED->value) {
                 continue;
             }
 
             // 获取角色权限id
-            $permissions = array_merge($permissions, self::getRolePermissions($roleId));
+            $permissions = array_merge($permissions, $this->getRolePermissions($roleId));
         }
 
         // 去重, 并获取uuid
         if ($permissions) {
-            $data['permissions'] = self::getPermissionsUuid(array_unique($permissions));
+            $data['permissions'] = $this->getPermissionsUuid(array_unique($permissions));
         }
 
         return $data;
@@ -328,7 +329,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @return array
      */
-    public static function getMenuNav(Request $request, int $uid): array
+    public function getMenuNav(Request $request, int $uid): array
     {
         $nav = [];
 
@@ -337,10 +338,10 @@ class AuthorizeService extends Service
 
         if ($menu) {
             $nav = json_decode($menu, true);
-            $permission = self::getUserPermissionUuid($uid);
+            $permission = $this->getUserPermissionUuid($uid);
 
             $permissions = $permission['permissions']; // 权限
-            self::arrayWalkRecursive($nav, function (&$arr, $key, $item) use ($permission, $permissions) {
+            $this->arrayWalkRecursive($nav, function (&$arr, $key, $item) use ($permission, $permissions) {
                 // 过滤菜单: 1.隐藏的， 2 非超级管理员并且没权限的
                 if ($item['status'] != MenuStatus::SHOW->value || (!$permission['superUserRole'] && !in_array($item['permissions_uuid'], $permissions))) {
                     unset($arr[$key]);
@@ -380,7 +381,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @return array
      */
-    public static function menuTreeList(Request $request): array
+    public function menuTreeList(Request $request): array
     {
         $nav = [];
 
@@ -390,7 +391,7 @@ class AuthorizeService extends Service
         if ($menu) {
             $nav = json_decode($menu, true);
 
-            self::arrayWalkRecursive($nav, function (&$arr, $key, $item) {
+            $this->arrayWalkRecursive($nav, function (&$arr, $key, $item) {
                 $value = [
                     'id' => $item['id'],
                     'title' => $item['title'],
@@ -409,9 +410,9 @@ class AuthorizeService extends Service
      * 菜单数据转Vue菜单接口数据
      * @param array $arr
      */
-    public static function menusToTree(array &$arr): void
+    public function menusToTree(array &$arr): void
     {
-        $arr = self::arrayWalkRecursive($arr, function (&$arr, $key, $item) {
+        $arr = $this->arrayWalkRecursive($arr, function (&$arr, $key, $item) {
             // 子路由
             if ($item['child_recursion']) {
                 $arr[$key]['children'] = $item['child_recursion'];
@@ -428,9 +429,9 @@ class AuthorizeService extends Service
      * 权限数据转下拉框树数据
      * @param array $arr
      */
-    public static function permissionsToTree(array &$arr): void
+    public function permissionsToTree(array &$arr): void
     {
-        $arr = self::arrayWalkRecursive($arr, function (&$arr, $key, $item) {
+        $arr = $this->arrayWalkRecursive($arr, function (&$arr, $key, $item) {
             if ($item['child_recursion']) {
                 $arr[$key]['children'] = $item['child_recursion'];
             }
@@ -446,9 +447,9 @@ class AuthorizeService extends Service
      * 角色数据转下拉框树数据
      * @param array $arr
      */
-    public static function rolesToTree(array &$arr): void
+    public function rolesToTree(array &$arr): void
     {
-        $arr = self::arrayWalkRecursive($arr, function (&$arr, $key, $item) {
+        $arr = $this->arrayWalkRecursive($arr, function (&$arr, $key, $item) {
             if ($item['child_recursion']) {
                 $arr[$key]['children'] = $item['child_recursion'];
             }
@@ -464,7 +465,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @return array
      */
-    public static function userRoleTreeList(Request $request): array
+    public function userRoleTreeList(Request $request): array
     {
         // 从缓存中获取角色
         $data = RedisService::getTable(RedisKeys::ROLE_TREE, true);
@@ -472,9 +473,9 @@ class AuthorizeService extends Service
             $data = json_decode($data, true);
 
             // 获取用户角色
-            $roles = self::getUserRoles($request->user['id']);
+            $roles = $this->getUserRoles($request->user['id']);
             $isSuperRole = false;
-            if (in_array(self::getSuperRole(), $roles)) {
+            if (in_array($this->getSuperRole(), $roles)) {
                 $isSuperRole = true;
             }
 
@@ -490,7 +491,7 @@ class AuthorizeService extends Service
 
                     $disabled = $isSuperRole || in_array($item['pid'], $roles);
 
-                    $arr[$key]['disabled'] = !$disabled;; // 禁止编辑
+                    $arr[$key]['disabled'] = !$disabled; // 禁止编辑
                     $arr[$key]['disableCheckbox'] = !$disabled; // 上级有得角色才可以编辑
                     $arr[$key]['selectable'] = $disabled; // 上级有得权限才可以编辑
                 }
@@ -507,7 +508,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @return array
      */
-    public static function userRoles(Request $request, int $id): array
+    public function userRoles(Request $request, int $id): array
     {
         // 获取账号角色
         return UserRolesAccess::where('user_id', $id)->pluck('role_id')->toArray();
@@ -516,9 +517,9 @@ class AuthorizeService extends Service
     /**
      * 角色管理 上级角色下拉列表
      * @param Request $request
-     * @return mixed[]
+     * @return array
      */
-    public static function roleTreeList(Request $request): array
+    public function roleTreeList(Request $request): array
     {
         // 从缓存中获取角色
         $roles = RedisService::getTable(RedisKeys::ROLE_TREE, true);
@@ -531,7 +532,7 @@ class AuthorizeService extends Service
      * @param array $input 查询字段
      * @return array
      */
-    public static function roleIndex(Request $request, array $input = []): array
+    public function roleIndex(Request $request, array $input = []): array
     {
         $status = Arr::get($input, 'status'); // 状态
         $title = Arr::get($input, 'title'); // 角色名称
@@ -585,12 +586,12 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function roleAdd(Request $request, array $input): bool
+    public function roleAdd(Request $request, array $input): bool
     {
         $pid = Arr::get($input, 'pid', 0);
 
         // 检查该用户是否有新增角色的权限
-        if (!self::checkUserRoleManager($request->user['id'], $pid, true)) {
+        if (!$this->checkUserRoleManager($request->user['id'], $pid, true)) {
             throw new CustomizeException(Code::E100030);
         }
 
@@ -625,7 +626,7 @@ class AuthorizeService extends Service
 
         // 权限
         $parentPermissions = $prole->permissions_id ? explode(',', $prole->permissions_id) : [];
-        if ($pid == self::getSuperRole()) { // 继承超级管理员权限
+        if ($pid == $this->getSuperRole()) { // 继承超级管理员权限
             $parentPermissions = Permissions::orderBy('id')->pluck('id')->toArray();
         }
 
@@ -648,7 +649,7 @@ class AuthorizeService extends Service
         $model->pids = $pids; // 父级ID(族谱)
         $model->status = RoleStatus::ENABLED; //状态：1正常
         $model->permissions_id = $permissions; // 拥有的权限id
-        $model->describe = Arr::get($input, 'describe', $prole->title . ' / ' . $title);; // 描述
+        $model->describe = Arr::get($input, 'describe', $prole->title . ' / ' . $title); // 描述
         $model->is_delete = Delete::NO; // 是否删除
         $model->created_at = date('Y-m-d H:i:s'); // 创建时间
 
@@ -669,15 +670,15 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function roleEdit(Request $request, int $id, array $input): bool
+    public function roleEdit(Request $request, int $id, array $input): bool
     {
         // 超级管理员角色不能编辑
-        if ($id == self::getSuperRole()) {
+        if ($id == $this->getSuperRole()) {
             throw new CustomizeException(Code::E100025);
         }
 
         // 检查该用户是否有编辑角色的权限
-        if (!self::checkUserRoleManager($request->user['id'], $id, false, false)) {
+        if (!$this->checkUserRoleManager($request->user['id'], $id, false, false)) {
             throw new CustomizeException(Code::E100031);
         }
 
@@ -728,7 +729,7 @@ class AuthorizeService extends Service
                     $addPermissions = array_diff($permissions, $oldPermissions);
                     if ($addPermissions) {
                         // 所有下级角色新增本次新增权限
-                        self::subRoleAddPermissions($model->id, $addPermissions);
+                        $this->subRoleAddPermissions($model->id, $addPermissions);
                     }
                 }
 
@@ -736,7 +737,7 @@ class AuthorizeService extends Service
                 $delPermissions = array_diff($oldPermissions, $permissions);
                 if ($delPermissions) {
                     // 所有下级角色删除本次取消权限
-                    self::subRoleDelPermissions($model->id, $delPermissions);
+                    $this->subRoleDelPermissions($model->id, $delPermissions);
                 }
 
                 // 重新赋值
@@ -751,7 +752,7 @@ class AuthorizeService extends Service
         $status = Arr::get($input, 'status');
         if ($status !== null && $model->status != $status) {
             // 管理者角色不能更改状态
-            if ($id == self::getRoleManager() && !in_array(self::getSuperRole(), self::getUserRoles($request->user['id']))) {
+            if ($id == $this->getRoleManager() && !in_array($this->getSuperRole(), $this->getUserRoles($request->user['id']))) {
                 throw new CustomizeException(Code::E100033);
             }
 
@@ -761,7 +762,7 @@ class AuthorizeService extends Service
             // 禁用处理
             if ($model->status !== RoleStatus::ENABLED->value) {
                 // 禁用所有下级角色
-                self::subRoleStatusDisabled($model->id);
+                $this->subRoleStatusDisabled($model->id);
             } else {
                 // 判断上级状态
                 if (!Roles::where([
@@ -788,7 +789,7 @@ class AuthorizeService extends Service
         $isDelete = Arr::get($input, 'is_delete');
         if ($isDelete && $model->is_delete != $isDelete) {
             // 管理者角色不能删除
-            if ($id == self::getRoleManager()) {
+            if ($id == $this->getRoleManager()) {
                 throw new CustomizeException(Code::E100033);
             }
 
@@ -802,7 +803,7 @@ class AuthorizeService extends Service
             }
 
             // 解除该角色与用户的关系
-            self::delUserRolesAccess($model->id);
+            $this->delUserRolesAccess($model->id);
 
             // 删除角色状态缓存
             RedisService::delRolesStatus([$model->id]);
@@ -831,20 +832,20 @@ class AuthorizeService extends Service
      * @param int $roleId
      * @param array $permissions
      */
-    private static function subRoleAddPermissions(int $roleId, array $permissions)
+    private function subRoleAddPermissions(int $roleId, array $permissions): void
     {
         Roles::where([
             ['is_delete', Delete::NO]
             , ['status', RoleStatus::ENABLED]
         ])->where(function (Builder $query) use ($roleId) {
             // 族谱
-            return self::getPids($query, $roleId, true);
+            return $this->getPids($query, $roleId, true);
         })->select([
             'id', 'permissions_id'
         ])->orderBy('id')->lazyById()->each(function ($role) use ($permissions) {
             // 计算新值
             $permissionIds = $role->permissions_id ? explode(',', $role->permissions_id) : [];
-            $permissionIds = array_unique(array_merge($permissionIds, $permissions), SORT_STRING); // 合并去重
+            $permissionIds = array_unique(array_merge($permissionIds, $permissions)); // 合并去重
             sort($permissionIds, SORT_NUMERIC); // 重新排序
 
             // 更新操作
@@ -862,13 +863,13 @@ class AuthorizeService extends Service
      * @param int $roleId
      * @param array $permissions
      */
-    private static function subRoleDelPermissions(int $roleId, array $permissions)
+    private function subRoleDelPermissions(int $roleId, array $permissions): void
     {
         Roles::where([
             ['is_delete', Delete::NO]
         ])->where(function (Builder $query) use ($roleId) {
             // 族谱
-            return self::getPids($query, $roleId, true);
+            return $this->getPids($query, $roleId, true);
         })->select([
             'id', 'permissions_id'
         ])->orderBy('id')->lazyById()->each(function ($role) use ($permissions) {
@@ -892,13 +893,13 @@ class AuthorizeService extends Service
      * @param int $roleId
      * @throws CustomizeException
      */
-    private static function subRoleStatusDisabled(int $roleId)
+    private function subRoleStatusDisabled(int $roleId): void
     {
         // 禁用所有下级角色
         $ids = Roles::where([
             ['status', RoleStatus::ENABLED]
         ])->where(function (Builder $query) use ($roleId) {
-            return self::getPids($query, $roleId, true);
+            return $this->getPids($query, $roleId, true);
         })->orderBy('id')->pluck('id')->toArray();
 
         // 更新操作
@@ -920,7 +921,7 @@ class AuthorizeService extends Service
      * @param int $roleId
      * @throws CustomizeException
      */
-    private static function delUserRolesAccess(int $roleId)
+    private function delUserRolesAccess(int $roleId): void
     {
         // 删除用户和角色关系
         $uids = UserRolesAccess::where('role_id', $roleId)->pluck('user_id')->toArray();
@@ -944,7 +945,7 @@ class AuthorizeService extends Service
      * @param mixed $permissions
      * @throws CustomizeException
      */
-    private static function checkParentPermission(int $pid, array $permissions)
+    private function checkParentPermission(int $pid, array $permissions): void
     {
         // 获取上级权限
         $permissionsIds = Roles::where([
@@ -972,7 +973,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @return array
      */
-    public static function permission(Request $request, int $id): array
+    public function permission(Request $request, int $id): array
     {
         // 获取角色权限
         $rolePermissions = RedisService::getRolePermissions($id);
@@ -985,12 +986,12 @@ class AuthorizeService extends Service
 
         // 获取角色是否超级管理员
         $isSuperRole = false;
-        if (!$isPid && self::getSuperRole() == $id) {
+        if (!$isPid && $this->getSuperRole() == $id) {
             $isSuperRole = true;
         }
 
         // 验证是否超级管理员或管理员
-        if (!$isPid && (self::getSuperRole() == $id || self::getRoleManager() == $id)) {
+        if (!$isPid && ($this->getSuperRole() == $id || $this->getRoleManager() == $id)) {
             $isChecked = true;
         }
 
@@ -998,7 +999,7 @@ class AuthorizeService extends Service
         $parentRolePermissions = $isPid ? $rolePermissions : [];
         if (!$isPid && !$isChecked) {
             $pid = Roles::where('id', $id)->value('pid');
-            if ($pid == self::getSuperRole()) {
+            if ($pid == $this->getSuperRole()) {
                 $isChecked = true;
             } else {
                 $parentRolePermissions = RedisService::getRolePermissions($pid);
@@ -1013,7 +1014,7 @@ class AuthorizeService extends Service
         $typeMap = PermissionType::titleMap();
 
         // 根据前端处理返回数据
-        self::arrayWalkRecursive($list, function (&$arr, $key, $item) use ($rolePermissions, $parentRolePermissions, $isChecked, $icons, $typeMap, $isSuperRole) {
+        $this->arrayWalkRecursive($list, function (&$arr, $key, $item) use ($rolePermissions, $parentRolePermissions, $isChecked, $icons, $typeMap, $isSuperRole) {
             $typeTitle = $typeMap[$item['type']] ?? '其它';
             $isParentHas = in_array($item['id'], $parentRolePermissions); // 上级拥的权限
             $value = [
@@ -1042,12 +1043,12 @@ class AuthorizeService extends Service
      * @param Request $request
      * @return array
      */
-    public static function menuPermissionUuid(Request $request): array
+    public function menuPermissionUuid(Request $request): array
     {
         $permissions = Menus::pluck('permissions_uuid')->toArray();
         $data = RedisService::getTable(RedisKeys::PERMISSIONS_TREE, true);
         $list = json_decode($data, true);
-        self::arrayWalkRecursive($list, function (&$arr, $key, $item) use ($permissions) {
+        $this->arrayWalkRecursive($list, function (&$arr, $key, $item) use ($permissions) {
             if (!in_array($item['type'], [4, 5])) {
                 unset($arr[$key]);
                 return;
@@ -1072,7 +1073,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @return array
      */
-    public static function permissionTreeList(Request $request): array
+    public function permissionTreeList(Request $request): array
     {
         $data = RedisService::getTable(RedisKeys::PERMISSIONS_TREE, true);
         return json_decode($data, true);
@@ -1084,7 +1085,7 @@ class AuthorizeService extends Service
      * @param array $input
      * @return array
      */
-    public static function permissionIndex(Request $request, array $input): array
+    public function permissionList(Request $request, array $input): array
     {
         $uuid = Arr::get($input, 'uuid'); // 唯一标识
         $title = Arr::get($input, 'title'); // 权限名称
@@ -1129,7 +1130,7 @@ class AuthorizeService extends Service
             }
             return $query->where('type', $type);
         })->when($pid !== null, function (Builder $query) use ($isGenealogy, $pid) {
-            return self::getPids($query, $pid, $isGenealogy);
+            return $this->getPids($query, $pid, $isGenealogy);
         })->orderBy($orderByField, $orderByType)->orderBy('id') // 排序
         ->select([
             'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type'
@@ -1154,13 +1155,10 @@ class AuthorizeService extends Service
      * @param bool $isGenealogy true 查整个家谱包含 pid 的记录，false 查pid等于pid 的记录
      * @return mixed
      */
-    private static function getPids(Builder $query, int $pid, bool $isGenealogy = false)
+    private function getPids(Builder $query, int $pid, bool $isGenealogy = false): Builder
     {
         // 族谱
         if ($pid && $isGenealogy) {
-            if (strtolower(config('database.default')) == 'pgsql') {
-                return $query->whereRaw(' ? = ANY(string_to_array(pids, \',\'))', [$pid]);
-            }
             return $query->whereRaw('FIND_IN_SET(?, pids)', [$pid]);
         } elseif (!$pid && $isGenealogy) {
             return $query;
@@ -1177,7 +1175,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function permissionAdd(Request $request, array $input): bool
+    public function permissionAdd(Request $request, array $input): bool
     {
         // uuid 唯一
         $uuid = Arr::get($input, 'uuid');
@@ -1254,7 +1252,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function permissionEdit(Request $request, int $id, array $input): bool
+    public function permissionEdit(Request $request, int $id, array $input): bool
     {
         // 获取要编辑的权限
         $model = Permissions::find($id);
@@ -1309,7 +1307,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function permissionDel(Request $request, int $id): bool
+    public function permissionDel(Request $request, int $id): bool
     {
         $model = Permissions::find($id);
         if (!$model) {
@@ -1324,11 +1322,7 @@ class AuthorizeService extends Service
 
         // 绑定到角色的权限不能删除
         $title = Roles::when($id, function ($query, $id) {
-            if (strtolower(config('database.default')) == 'mysql') {
-                return $query->whereRaw('FIND_IN_SET(?, permissions_id)', [$id]);
-            } elseif (strtolower(config('database.default')) == 'pgsql') {
-                return $query->whereRaw('? = ANY (string_to_array(permissions_id,\',\'))', [$id]);
-            }
+            return $query->whereRaw('FIND_IN_SET(?, permissions_id)', [$id]);
         })->value('title');
         if ($title !== null) {
             throw new CustomizeException(Code::E100038, compact('title'));
@@ -1353,7 +1347,7 @@ class AuthorizeService extends Service
      * @param array $input
      * @return array
      */
-    public static function menuIndex(Request $request, array $input): array
+    public function menuIndex(Request $request, array $input): array
     {
         // 查缓存
         if (Arr::get($input, 'cache', true)) {
@@ -1390,7 +1384,7 @@ class AuthorizeService extends Service
         })->when($isShortcut !== null, function ($query) use ($isShortcut) { // 快捷
             return $query->where('is_shortcut', $isShortcut);
         })->when($pid !== null, function (Builder $query) use ($isGenealogy, $pid) { // pid
-            return self::getPids($query, $pid, $isGenealogy);
+            return $this->getPids($query, $pid, $isGenealogy);
         })->orderBy($orderByField, $orderByType)->orderBy('id') // 排序
         ->select([ // 查询字段
             'id', 'permissions_uuid', 'title', 'status', 'pid', 'pids', 'path', 'component'
@@ -1413,7 +1407,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function menuAdd(Request $request, array $input): bool
+    public function menuAdd(Request $request, array $input): bool
     {
         // 获取权限uuid
         $uuid = Arr::get($input, 'permissions_uuid');
@@ -1456,15 +1450,15 @@ class AuthorizeService extends Service
         $model->permissions_uuid = $uuid; // 唯一标识
         $model->title = Arr::get($input, 'title', '未知'); // 菜单名称
         $model->title_lang = Arr::get($input, 'title_lang', $model->title); // 菜单名称
-        $model->status = Arr::get($input, 'status', MenuStatus::HIDE); // 状态: 1显示, 0隐藏
-        $model->type = Arr::get($input, 'type', MenuType::DIRS); // 类型: 1菜单, 0目录
+        $model->status = Arr::get($input, 'status', MenuStatus::HIDE); // 状态: 1 显示, 0 隐藏
+        $model->type = Arr::get($input, 'type', MenuType::DIRS); // 类型: 1 菜单, 0 目录
         $model->pid = $pid; // 父级ID
         $model->pids = $pids; // 父级ID(族谱)
         $model->path = Arr::get($input, 'path', ''); // 路由地址
         $model->component = Arr::get($input, 'component', $model->type == MenuType::DIRS->value ? 'LAYOUT' : ''); // 组件地址
         $model->icon = Arr::get($input, 'icon', ''); // 图标
         $model->sort = $input['sort'] ?: (int)Menus::max('sort') + 1; // 排序
-        $model->is_shortcut = Arr::get($input, 'is_shortcut', MenuShortcut::NO); // 是否快捷: 1是, 0否
+        $model->is_shortcut = Arr::get($input, 'is_shortcut', MenuShortcut::NO); // 是否快捷: 1 是, 0 否
         $model->describe = Arr::get($input, 'describe', $model->title); // 描述
         $model->created_at = date('Y-m-d H:i:s'); // 创建时间
 
@@ -1484,7 +1478,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function menuEdit(Request $request, int $id, array $input): bool
+    public function menuEdit(Request $request, int $id, array $input): bool
     {
         // 获取要编辑的菜单
         $model = Menus::find($id);
@@ -1561,7 +1555,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @return array
      */
-    public static function userRoleList(Request $request, int $uid): array
+    public function userRoleList(Request $request, int $uid): array
     {
         $admin = $request->user['id'];
         $list = [];
@@ -1571,7 +1565,7 @@ class AuthorizeService extends Service
             ->select(['a.*', 'r.title'])
             ->orderBy('role_id')
             ->lazy()->each(function ($role) use ($admin, &$list) {
-                $role->isUpdate = self::checkUserRoleManager($admin, $role->role_id);
+                $role->isUpdate = $this->checkUserRoleManager($admin, $role->role_id);
                 $list[] = $role;
             });
         return $list;
@@ -1585,7 +1579,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function userEditRoles(Request $request, int $uid, array $input): bool
+    public function userEditRoles(Request $request, int $uid, array $input): bool
     {
         $roleIds = Arr::get($input, 'roles');
         if (!$roleIds || !is_array($roleIds)) {
@@ -1604,7 +1598,7 @@ class AuthorizeService extends Service
         // 验证是否有权限删除该记录
         if ($delArr) {
             foreach ($delArr as $id) {
-                if (!self::checkUserRoleManager($request->user['id'], $id)) {
+                if (!$this->checkUserRoleManager($request->user['id'], $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100050, compact('title'));
                 }
@@ -1617,7 +1611,7 @@ class AuthorizeService extends Service
         // 验证是否有权限添加该记录
         if ($insertArr) {
             foreach ($insertArr as $id) {
-                if (!self::checkUserRoleManager($request->user['id'], $id)) {
+                if (!$this->checkUserRoleManager($request->user['id'], $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100045, compact('title'));
                 }
@@ -1652,7 +1646,7 @@ class AuthorizeService extends Service
 
             // 提交事务
             DB::commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             Logger::error(LogChannel::DEV, __METHOD__, compact('uid', 'delArr', 'insertArr', $e));
             throw new CustomizeException($e->getCode(), $e->getMessage());
@@ -1669,7 +1663,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function userAddRole(Request $request, int $uid, array $input): bool
+    public function userAddRole(Request $request, int $uid, array $input): bool
     {
         $roleId = Arr::get($input, 'roleId', 0);
         $title = Roles::where([['id', $roleId], ['status', RoleStatus::ENABLED], ['is_delete', Delete::NO]])->value('title');
@@ -1681,7 +1675,7 @@ class AuthorizeService extends Service
             return true;
         }
 
-        if (!self::checkUserRoleManager($request->user['id'], $roleId)) {
+        if (!$this->checkUserRoleManager($request->user['id'], $roleId)) {
             throw new CustomizeException(Code::E100045, compact('title'));
         }
 
@@ -1706,7 +1700,7 @@ class AuthorizeService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function userDelRole(Request $request, int $uid, array $input): bool
+    public function userDelRole(Request $request, int $uid, array $input): bool
     {
         $roleId = Arr::get($input, 'user_roles_id', 0);
 
@@ -1717,7 +1711,7 @@ class AuthorizeService extends Service
         }
 
         // 验证是否有权限删除该记录
-        if (!self::checkUserRoleManager($request->user['id'], $model->role_id)) {
+        if (!$this->checkUserRoleManager($request->user['id'], $model->role_id)) {
             throw new CustomizeException(Code::E100046);
         }
 
@@ -1737,14 +1731,15 @@ class AuthorizeService extends Service
      * @param $child string 子集名称
      * @return array
      */
-    private static function arrayWalkRecursive(array &$arr, callable $callback, string $child = ''): array
+    private function arrayWalkRecursive(array &$arr, callable $callback, string $child = ''): array
     {
         array_walk($arr, function (&$item, $key) use (&$arr, $callback, $child) {
             $done = $callback($arr, $key, $item);
             if (!$done && $child && isset($arr[$key][$child]) && is_array($arr[$key][$child])) {
-                self::arrayWalkRecursive($arr[$key][$child], $callback, $child);
+                $this->arrayWalkRecursive($arr[$key][$child], $callback, $child);
             }
         });
+
         // 重新排序
         $arr = array_values($arr);
         return $arr;

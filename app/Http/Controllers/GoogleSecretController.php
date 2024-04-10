@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class GoogleSecretController extends Controller
 {
@@ -31,7 +32,8 @@ class GoogleSecretController extends Controller
     public function secret(Request $request, string $sign): View|JsonResponse|RedirectResponse|Route
     {
         try {
-            $sign = UserService::checkSign($sign);
+            $userService = new UserService;
+            $sign = $userService->checkSign($sign);
             if (!$sign->id || !$sign->name) {
                 return back()->with('msg', '参数有误，请返回登录页面重新进入！')->withInput();
             }
@@ -70,7 +72,7 @@ class GoogleSecretController extends Controller
                 if (GoogleAuthenticator::CheckCode($input['google'], $input['onecode'])) {
                     $input['google'] = Crypt::encryptString($input['google']); // 加密存储
                     // 更新秘钥
-                    UserService::buildSecureKey($request, $user->id, $input['google']);
+                    $userService->buildSecureKey($request, $user->id, $input['google']);
 
                     // 记录操作日志
                     $this->addUserLog(__FUNCTION__, UserAction::BUILD_SECURE_KEY, "name={$input['name']}", $input);
@@ -89,7 +91,7 @@ class GoogleSecretController extends Controller
             return view('login.google.google', ['createSecret' => $createSecret, "parameter" => $parameter]);
         } catch (CustomizeException $e) {
             return back()->with('msg', '【' . $e->getCode() . '】' . $e->getMessage())->withInput();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -130,7 +132,7 @@ class GoogleSecretController extends Controller
             if (GoogleAuthenticator::CheckCode($input['google'], $input['onecode'])) {
                 $input['google'] = Crypt::encryptString($input['google']); // 加密存储
                 // 更新秘钥
-                UserService::buildSecureKey($request, $user->id, $input['google']);
+                (new UserService)->buildSecureKey($request, $user->id, $input['google']);
 
                 // 记录操作日志
                 $this->setUserLogByUid($user->id); // 设置日志用户id
@@ -146,7 +148,7 @@ class GoogleSecretController extends Controller
             }
         } catch (CustomizeException $e) {
             return back()->with('msg', '【' . $e->getCode() . '】' . $e->getMessage())->withInput();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return back()->with('msg', '【' . Code::SYSTEM_ERR . '】系统异常')->withInput();

@@ -9,6 +9,7 @@ use App\Logging\Logger;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Redis;
+use Throwable;
 
 class RedisService extends Service
 {
@@ -17,7 +18,7 @@ class RedisService extends Service
     /**
      * 获取一个Redis对象
      * @param string|null $name
-     * @return Connection/redis
+     * @return Connection
      */
     public static function redis(string $name = null): Connection
     {
@@ -330,7 +331,7 @@ class RedisService extends Service
      * @param int $expire
      * @return bool|int
      */
-    private static function loadSet(string $key, array $data, int $expire = 0)
+    private static function loadSet(string $key, array $data, int $expire = 0): bool|int
     {
         // 将对应的键存入队列中 分隔符
         $res = self::redis()->sAddArray($key, $data);
@@ -350,7 +351,7 @@ class RedisService extends Service
      * @param int $expire
      * @return bool|int
      */
-    private static function loadSortedSet(string $key, array $data, int $expire = 0)
+    private static function loadSortedSet(string $key, array $data, int $expire = 0): bool|int
     {
         // 将对应的键存入队列中 分隔符
         $res = self::redis()->zAdd($key, ...$data);
@@ -383,7 +384,7 @@ class RedisService extends Service
      * 删除所有的缓存
      * @param string $key
      */
-    public static function flushTableAll(string $key = '*')
+    public static function flushTableAll(string $key = '*'): void
     {
         if (str_ends_with($key, RedisKeys::DELIMIT)) {
             $key .= '*';
@@ -409,7 +410,7 @@ class RedisService extends Service
     {
         Logger::info(LogChannel::CACHE, 'initTable: ~~~准备初始化[{{key}}]缓存~~~', compact('key', 'secondIndex'));
         // 加载配置
-        $config = config(self::TABLE_CONFIG_FILE,);
+        $config = config(self::TABLE_CONFIG_FILE);
         if (!$config) {
             return false;
         }
@@ -468,7 +469,7 @@ class RedisService extends Service
                 // 调取方法获取数据
                 $data = App::call($v['class'], $params, $v['method']);
                 //$data = call_user_func(array($v['class'], $v['method']), ...$params);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Logger::error(LogChannel::CACHE, 'initTable: {{0}} call {{1}}::{{2}} 失败', [$k, $v['class'], $v['method'], 'config' => $v, 'params' => $params], $e);
                 break;
             }
@@ -568,7 +569,7 @@ class RedisService extends Service
                             $temp[$v['key']] = $res;
                         }
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Logger::error(LogChannel::CACHE, 'initTable: {{0}} 数据缓存失败', [$k, 'config' => $v], $e);
                 break;
             }
@@ -623,7 +624,7 @@ class RedisService extends Service
      * @param bool $notExistsRefresh
      * @return false|mixed
      */
-    public static function getTable(string $key, bool $notExistsRefresh = false)
+    public static function getTable(string $key, bool $notExistsRefresh = false): mixed
     {
         // 判断key是否存在, 不存在刷新缓存
         if ($notExistsRefresh && !self::redis()->exists($key)) {
@@ -710,7 +711,7 @@ class RedisService extends Service
      * @param bool $notExistsRefresh
      * @return mixed
      */
-    public static function hGetTable(string $key, string $hashKey, bool $notExistsRefresh = false)
+    public static function hGetTable(string $key, string $hashKey, bool $notExistsRefresh = false): mixed
     {
         // 判断key是否存在, 不存在刷新缓存
         if ($notExistsRefresh && !self::redis()->exists($key)) {

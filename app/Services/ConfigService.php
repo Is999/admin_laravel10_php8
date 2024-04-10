@@ -11,6 +11,7 @@ use App\Models\Config;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Throwable;
 
 class ConfigService extends Service
 {
@@ -21,7 +22,7 @@ class ConfigService extends Service
      * @param array $input
      * @return array
      */
-    public static function list(Request $request, array $input): array
+    public function list(Request $request, array $input): array
     {
         // 分页, 排序
         $orderByField = Arr::get($input, 'field', 'id'); // 排序字段
@@ -56,14 +57,14 @@ class ConfigService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function add(Request $request, array $input): bool
+    public function add(Request $request, array $input): bool
     {
+        $model = new Config;
         // 验证uuid 是否已经存在
-        if (Config::where('uuid', Arr::get($input, 'uuid'))->exists()) {
+        if ($model->where('uuid', Arr::get($input, 'uuid'))->exists()) {
             throw new CustomizeException(Code::E100054, $input);
         }
 
-        $model = new Config();
         $model->title = Arr::get($input, 'title', '');
         $model->uuid = Arr::get($input, 'uuid', '');
         $model->title = Arr::get($input, 'title', '');
@@ -89,7 +90,7 @@ class ConfigService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function edit(Request $request, int $id, array $input): bool
+    public function edit(Request $request, int $id, array $input): bool
     {
         // 查找配置
         $model = Config::find($id);
@@ -156,7 +157,7 @@ class ConfigService extends Service
      * @return bool|float|int|string
      * @throws CustomizeException
      */
-    public static function checkValue($type, $value): float|bool|int|string
+    public function checkAndReformValue($type, $value): float|bool|int|string
     {
         switch ($type) {
             case ConfigType::INT_TYPE->value:
@@ -184,7 +185,7 @@ class ConfigService extends Service
                         throw new CustomizeException(Code::FAIL);
                     }
                     return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                } catch (\Throwable $e) {
+                } catch (Throwable) {
                     throw new CustomizeException(Code::FAIL, '数据格式错误：不是JsonArr类型');
                 }
             default:

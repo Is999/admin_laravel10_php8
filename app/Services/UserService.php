@@ -4,18 +4,13 @@ namespace App\Services;
 
 use App\Enum\Code;
 use App\Enum\ConfigUuid;
-use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
-use App\Enum\ResponseType;
 use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\User;
 use App\Models\UserRolesAccess;
-use App\Services\ResponseService as Response;
-use Carbon\Carbon;
-use Earnp\GoogleAuthenticator\Facades\GoogleAuthenticator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
@@ -23,6 +18,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use stdClass;
 use Throwable;
 
 class UserService extends Service
@@ -32,7 +28,7 @@ class UserService extends Service
      * @param User $user
      * @return string
      */
-    public static function generateToken(User $user): string
+    public function generateToken(User $user): string
     {
         try {
             $now = time();
@@ -65,7 +61,7 @@ class UserService extends Service
      * @return int
      * @throws CustomizeException
      */
-    public static function checkToken(string $token, $ip): int
+    public function checkToken(string $token, $ip): int
     {
         try {
             $jwt = JWT::decode($token, new Key(env('APP_KEY'), 'HS256'));
@@ -123,7 +119,7 @@ class UserService extends Service
      * @param int $exp
      * @return string
      */
-    public static function generateSign(array $arr, int $exp = 60 * 20): string
+    public function generateSign(array $arr, int $exp = 60 * 20): string
     {
         try {
             $now = time();
@@ -147,10 +143,10 @@ class UserService extends Service
     /**
      * 验证签名
      * @param string $sign
-     * @return \stdClass
+     * @return stdClass
      * @throws CustomizeException
      */
-    public static function checkSign(string $sign): \stdClass
+    public function checkSign(string $sign): stdClass
     {
         try {
             $jwt = JWT::decode($sign, new Key(env('APP_KEY'), 'HS256'));
@@ -180,7 +176,7 @@ class UserService extends Service
      * @param array $fields
      * @return array
      */
-    public static function getUserInfo(int $uid, array $fields = []): array
+    public function getUserInfo(int $uid, array $fields = []): array
     {
         $user = RedisService::getUserInfo($uid, $fields);
         if (empty($user)) {
@@ -198,7 +194,7 @@ class UserService extends Service
      * @return User
      * @throws CustomizeException
      */
-    public static function userCheck(Request $request, string $name, string $password): User
+    public function userCheck(Request $request, string $name, string $password): User
     {
         $user = User::where('name', $name)->first();
         if (!$user) {
@@ -224,13 +220,13 @@ class UserService extends Service
      * @param User $user
      * @return void
      */
-    public static function cacheUserInfo(User $user): void
+    public function cacheUserInfo(User $user): void
     {
         // 缓存用户信息
         RedisService::setUserInfo($user->id, $user->toArray());
 
         // 更新用户角色缓存
-        AuthorizeService::getUserRoles($user->id, true);
+        (new AuthorizeService)->getUserRoles($user->id, true);
     }
 
     /**
@@ -240,7 +236,7 @@ class UserService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function CheckPassword(int $id, string $password): bool
+    public function CheckPassword(int $id, string $password): bool
     {
         $user = User::where('id', $id)->first();
         if (!$user) {
@@ -262,7 +258,7 @@ class UserService extends Service
      * @return array
      * @throws CustomizeException
      */
-    public static function addAccount(Request $request, array $input): array
+    public function addAccount(Request $request, array $input): array
     {
         $name = Arr::get($input, 'name'); // 账号
         $real_name = Arr::get($input, 'real_name', ''); // 真实姓名
@@ -289,7 +285,7 @@ class UserService extends Service
         $model->status = $status;
         $model->avatar = $avatar;
         $model->remark = $remark;
-        $model->last_login_time = date('Y-m-d H:i:s', 0);
+        $model->last_login_time = date('Y-m-d H:i:s', 1);
         $model->last_login_ip = '';
         $model->last_login_ipaddr = '';
         $model->created_at = date('Y-m-d H:i:s');
@@ -311,7 +307,7 @@ class UserService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function editAccount(Request $request, int $id, array $input): bool
+    public function editAccount(Request $request, int $id, array $input): bool
     {
         $password = Arr::get($input, 'password'); // 密码
         $secure_key = Arr::get($input, 'secure_key'); // 密码
@@ -353,7 +349,7 @@ class UserService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public static function updatePassword(Request $request, $id, $oldPassword, $newPassword): bool
+    public function updatePassword(Request $request, $id, $oldPassword, $newPassword): bool
     {
         $user = User::find($id);
         if (!$user) {
@@ -374,7 +370,7 @@ class UserService extends Service
      * @param int $uid 用户id
      * @return bool
      */
-    public static function clearUserInfo(int $uid): bool
+    public function clearUserInfo(int $uid): bool
     {
         // 清楚用户token
         RedisService::delToken($uid);
@@ -393,7 +389,7 @@ class UserService extends Service
      * @param array $input
      * @return array
      */
-    public static function index(Request $request, array $input): array
+    public function list(Request $request, array $input): array
     {
         // 查询条件
         $email = Arr::get($input, 'email'); // email
@@ -442,7 +438,7 @@ class UserService extends Service
      * @param $secureKey
      * @return bool
      */
-    public static function buildSecureKey(Request $request, $id, $secureKey): bool
+    public function buildSecureKey(Request $request, $id, $secureKey): bool
     {
         $user = User::find($id);
         if (!$user) {

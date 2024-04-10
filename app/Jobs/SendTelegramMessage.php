@@ -6,6 +6,7 @@ use App\Enum\LogChannel;
 use App\Logging\Logger;
 use App\Notifications\TelegramNotification;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 class SendTelegramMessage extends Job
 {
@@ -39,7 +40,7 @@ class SendTelegramMessage extends Job
     {
         try {
             Notification::sendNow($this->message, new TelegramNotification($this->chatId));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, __METHOD__, [$this->chatId], $e);
         }
     }

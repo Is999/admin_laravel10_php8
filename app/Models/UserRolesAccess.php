@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
 class UserRolesAccess extends Model
 {
     /**
@@ -21,7 +23,7 @@ class UserRolesAccess extends Model
     /**
      * 用户
      */
-    public function user()
+    public function user(): HasOne
     {
         return $this->hasOne(User::class, 'id', 'user_id');
     }
@@ -29,7 +31,7 @@ class UserRolesAccess extends Model
     /**
      * 角色
      */
-    public function role()
+    public function role(): HasOne
     {
         return $this->hasOne(Roles::class, 'id', 'role_id');
     }

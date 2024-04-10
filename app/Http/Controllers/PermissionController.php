@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class PermissionController extends Controller
 {
@@ -51,11 +52,11 @@ class PermissionController extends Controller
             }
 
             // 查询数据
-            $result = AuthorizeService::permissionIndex($request, $validator->validated());
+            $result = (new AuthorizeService)->permissionList($request, $validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -90,7 +91,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 新增权限
-            $result = AuthorizeService::permissionAdd($request, $input);
+            $result = (new AuthorizeService)->permissionAdd($request, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -100,7 +101,7 @@ class PermissionController extends Controller
             return Response::success([], Code::S1000);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -134,7 +135,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 编辑权限
-            $result = AuthorizeService::permissionEdit($request, $id, $input);
+            $result = (new AuthorizeService)->permissionEdit($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -144,7 +145,7 @@ class PermissionController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -161,7 +162,7 @@ class PermissionController extends Controller
     {
         try {
             // 删除权限信息
-            $result = AuthorizeService::permissionDel($request, $id);
+            $result = (new AuthorizeService)->permissionDel($request, $id);
             if (!$result) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -170,7 +171,7 @@ class PermissionController extends Controller
             return Response::success([], Code::S1002);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -186,11 +187,9 @@ class PermissionController extends Controller
     {
         try {
             // 查询数据
-            $result = AuthorizeService::permissionTreeList($request);
+            $result = (new AuthorizeService)->permissionTreeList($request);
             return Response::success($result);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -210,7 +209,7 @@ class PermissionController extends Controller
             return Response::success(['uuid' => $uuid + 100001]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);

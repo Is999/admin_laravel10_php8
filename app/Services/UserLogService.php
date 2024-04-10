@@ -16,7 +16,7 @@ class UserLogService extends Service
      * @param array $input
      * @return array
      */
-    public static function index(Request $request, array $input): array
+    public function list(Request $request, array $input): array
     {
         // 分页, 排序
         $orderByField = Arr::get($input, 'field', 'id'); // 排序字段

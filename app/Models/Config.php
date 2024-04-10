@@ -2,10 +2,6 @@
 
 namespace App\Models;
 
-use App\Enum\Delete;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
 class Config extends Model
 {
     /**
@@ -21,7 +17,7 @@ class Config extends Model
      * @param array $index
      * @return array
      */
-    public function configsUuidHashTable(array $key = [], array $index = []): array
+    public function configsUuidHash(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
 

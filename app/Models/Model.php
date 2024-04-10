@@ -4,12 +4,9 @@ namespace App\Models;
 
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model as BaseModel;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Model extends BaseModel
 {
-
     // 时间转换
     protected $casts = [
         'password' => 'hashed',

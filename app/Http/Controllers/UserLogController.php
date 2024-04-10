@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class UserLogController extends Controller
 {
@@ -46,11 +47,11 @@ class UserLogController extends Controller
             $input = $validator->validated();
 
             // 查询数据
-            $result = UserLogService::index($request, $input);
+            $result = (new UserLogService())->list($request, $input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -61,7 +62,7 @@ class UserLogController extends Controller
     {
         try {
             return Response::success(UserAction::forSelect());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);

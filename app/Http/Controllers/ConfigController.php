@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class ConfigController extends Controller
 {
@@ -44,11 +45,11 @@ class ConfigController extends Controller
             }
 
             // 查询数据
-            $result = ConfigService::list($request, $validator->validated());
+            $result = (new ConfigService)->list($request, $validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -81,13 +82,14 @@ class ConfigController extends Controller
             }
 
             $input = $validator->validated();
+            $config = new ConfigService();
 
             // 校验值
-            $input['example'] = ConfigService::checkValue($input['type'], $input['example']);
-            $input['value'] = ConfigService::checkValue($input['type'], $input['value']);
+            $input['example'] = $config->checkAndReformValue($input['type'], $input['example']);
+            $input['value'] = $config->checkAndReformValue($input['type'], $input['value']);
 
             // 添加
-            $result = ConfigService::add($request, $input);
+            $result = $config->add($request, $input);
 
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
@@ -98,7 +100,7 @@ class ConfigController extends Controller
             return Response::success([], Code::S1000);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -133,12 +135,12 @@ class ConfigController extends Controller
             }
 
             $input = $validator->validated();
-
+            $config = new ConfigService();
             // 校验值
-            $input['value'] = ConfigService::checkValue($input['type'], $input['value']);
-//dd($input);
+            $input['value'] = $config->checkAndReformValue($input['type'], $input['value']);
+
             // 编辑
-            $result = ConfigService::edit($request, $id, $input);
+            $result = $config->edit($request, $id, $input);
 
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
@@ -149,7 +151,7 @@ class ConfigController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -168,9 +170,7 @@ class ConfigController extends Controller
             // 获取缓存中的数据
             $result = ConfigService::getCache($uuid);
             return Response::success(['value' => $result]);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -193,9 +193,7 @@ class ConfigController extends Controller
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::RENEW_CONFIG, 'uuid=' . $uuid);
             return Response::success([], Code::S1001);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);

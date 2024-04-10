@@ -2,6 +2,8 @@
 
 namespace App\Enum;
 
+use ReflectionClass;
+
 /**
  *  user.is_enabled 字段状态
  */
@@ -41,9 +43,9 @@ enum UserAction: string
      *  通过反射获取所有定义的const和case参数
      * @return array
      */
-    public static function toArray()
+    public static function toArray(): array
     {
-        $reflection = new \ReflectionClass(self::class);
+        $reflection = new ReflectionClass(self::class);
         return $reflection->getConstants();
     }
 

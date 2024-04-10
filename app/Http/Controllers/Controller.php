@@ -9,18 +9,21 @@ use App\Logging\Logger;
 use App\Services\RedisService;
 use App\Services\UserLogService;
 use App\Services\UserService;
+use DateTime;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Redis\Connections\Connection;
 use Illuminate\Routing\Controller as BaseController;
+use Throwable;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    private $uid = 0;
+    private int $uid = 0;
 
-    public function setUserLogByUid(int $id)
+    public function setUserLogByUid(int $id): void
     {
         $this->uid = $id;
     }
@@ -28,13 +31,12 @@ class Controller extends BaseController
     /**
      * 系统级异常处理
      * @param string $method
-     * @param \Throwable $e
+     * @param Throwable $e
      */
-    public function systemException(string $method, \Throwable $e): void
+    public function systemException(string $method, Throwable $e): void
     {
         // 发送小飞机消息通知
-        $trace = json_encode(array_slice($e->getTrace(), 0, 10), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $d = new \DateTime();
+        $d = new DateTime();
         $message = <<<message
 系统错误信息 {$d->format('Y-m-d H:i:s.u')}
 
@@ -44,24 +46,45 @@ File: {$e->getFile()}:{$e->getLine()}
 Code: {$e->getCode()} 
 Message: {$e->getMessage()}
 ``
-
-```json
-{$trace}
-```
 message;
         try {
-            SendTelegramMessage::dispatchAfterResponse($message)->onQueue('systemException');
-        } catch (\Throwable $e) {
+            // 由于消息太长会发送失败，大于最大长度的消息这里进行消息拆分发送
+            $trace = array_slice($e->getTrace(), 0, 10); // 获取前10条记录
+            foreach ($trace as $k => $v) {
+                $item = json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+                $traceMessage = <<<message
+
+Trace-{$k}
+```json
+{$item}
+```
+message;
+
+                // 超过长度发送消息，未超过长度合并消息
+                if (strlen($traceMessage) + strlen($message) > 4096) {
+                    SendTelegramMessage::dispatchAfterResponse($message)->onQueue('systemException');
+                    $message = $traceMessage; // 发送后重置消息内容
+                } else {
+                    $message .= $traceMessage; // 合并消息内容
+                }
+
+                // 最后一次直接发送消息
+                if ($k == count($trace) - 1) {
+                    SendTelegramMessage::dispatchAfterResponse($message)->onQueue('systemException');
+                    break;
+                }
+            }
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
         }
     }
 
-
     /**
-     * redis
-     * @return mixed|\Redis
+     * redis 连接
+     * @return Connection
      */
-    protected function redis()
+    protected function redis(): Connection
     {
         return RedisService::redis();
     }
@@ -83,6 +106,6 @@ message;
             'method' => $method,
             'describe' => $describe ? $action->value . ' ' . $describe : $action->value,
             'data' => is_string($data) ? $data : json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-        ], request()->user ?? ($this->uid ? UserService::getUserInfo($this->uid) : []));
+        ], request()->user ?? ($this->uid ? (new UserService)->getUserInfo($this->uid) : []));
     }
 }

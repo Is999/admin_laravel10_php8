@@ -25,6 +25,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -34,7 +35,7 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         try {
             // 验证参数
@@ -54,7 +55,7 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 校验验证码
-            if (true !== ConfigService::getCache(ConfigUuid::CAPTCHA_DISABLE) && !captcha_api_check($input["captcha"], $input["key"], 'default')) {
+            if (true !== ConfigService::getCache(ConfigUuid::CAPTCHA_DISABLE) && !captcha_api_check($input["captcha"], $input["key"])) {
                 throw new CustomizeException(Code::E100014, "验证码错误");
             }
 
@@ -71,7 +72,8 @@ class UserController extends Controller
             $password = $input['password'];
 
             // 校验登录
-            $user = UserService::userCheck($request, $name, $password);
+            $userService = new UserService;
+            $user = $userService->userCheck($request, $name, $password);
 
             // 校验安全验证码
             if (true !== ConfigService::getCache(ConfigUuid::SECURE_DISABLE)) {
@@ -85,8 +87,8 @@ class UserController extends Controller
                     $userInfo['is_build_secure_key'] = false;
                 }
             }
-            $sign = UserService::generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_secure_key_url'] = "/google/secret/{$sign}";
+            $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
+            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
 
             // 更新登录信息
             $update = [
@@ -100,7 +102,7 @@ class UserController extends Controller
             }
 
             // 更新缓存
-            UserService::cacheUserInfo($user);
+            $userService->cacheUserInfo($user);
 
             // 记录操作日志
             $this->setUserLogByUid($user->id); // 设置日志用户id
@@ -108,10 +110,10 @@ class UserController extends Controller
 
             // 过滤敏感字段
             $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'secure_key']));
-            return Response::success(['user' => $userInfo, 'token' => UserService::generateToken($user)]);
+            return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -142,7 +144,7 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 校验验证码
-            if (true !== ConfigService::getCache(ConfigUuid::CAPTCHA_DISABLE) && !captcha_api_check($input["captcha"], $input["key"], 'default')) {
+            if (true !== ConfigService::getCache(ConfigUuid::CAPTCHA_DISABLE) && !captcha_api_check($input["captcha"], $input["key"])) {
                 throw new CustomizeException(Code::E100014, "验证码错误");
             }
 
@@ -159,15 +161,16 @@ class UserController extends Controller
             $password = $input['password'];
 
             // 校验登录
-            $user = UserService::userCheck($request, $name, $password);
+            $userService = new UserService;
+            $user = $userService->userCheck($request, $name, $password);
 
             if ($user->secure_key) {
                 $userInfo['is_build_secure_key'] = true;
             } else {
                 $userInfo['is_build_secure_key'] = false;
             }
-            $sign = UserService::generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_secure_key_url'] = "/google/secret/{$sign}";
+            $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
+            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
 
             // 更新登录信息
             /*$ip = $request->getClientIp();
@@ -193,7 +196,7 @@ class UserController extends Controller
             return Response::success(['user' => $userInfo]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -209,11 +212,9 @@ class UserController extends Controller
     {
         try {
             // 获取该管理员权限uuid
-            $list = AuthorizeService::getUserPermissionUuid($request->user['id']);
+            $list = (new AuthorizeService)->getUserPermissionUuid($request->user['id']);
             return Response::success($list);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -230,11 +231,9 @@ class UserController extends Controller
     {
         try {
             // 获取用户角色信息列表
-            $list = AuthorizeService::userRoleList($request, $id);
+            $list = (new AuthorizeService)->userRoleList($request, $id);
             return Response::success($list);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -260,7 +259,7 @@ class UserController extends Controller
             }
 
             $input = $validator->validated();
-            $res = AuthorizeService::userEditRoles($request, $id, $input);
+            $res = (new AuthorizeService)->userEditRoles($request, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -271,7 +270,7 @@ class UserController extends Controller
             return Response::success([], Code::S1003);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -298,7 +297,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
 
-            $res = AuthorizeService::userAddRole($request, $id, $input);
+            $res = (new AuthorizeService)->userAddRole($request, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -308,7 +307,7 @@ class UserController extends Controller
             return Response::success([], Code::S1000);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -334,7 +333,7 @@ class UserController extends Controller
             }
 
             $input = $validator->validated();
-            $res = AuthorizeService::userDelRole($request, $id, $input);
+            $res = (new AuthorizeService)->userDelRole($request, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -344,7 +343,7 @@ class UserController extends Controller
             return Response::success([], Code::S1002);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -359,9 +358,9 @@ class UserController extends Controller
     public function roleTreeList(Request $request): JsonResponse
     {
         try {
-            $result = AuthorizeService::userRoleTreeList($request);
+            $result = (new AuthorizeService)->userRoleTreeList($request);
             return Response::success($result);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail();
@@ -377,9 +376,9 @@ class UserController extends Controller
     public function roles(Request $request, $id): JsonResponse
     {
         try {
-            $result = AuthorizeService::userRoles($request, $id);
+            $result = (new AuthorizeService)->userRoles($request, $id);
             return Response::success($result);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail();
@@ -398,12 +397,10 @@ class UserController extends Controller
             $this->addUserLog(__FUNCTION__, UserAction::LOGOUT);
 
             // 清除缓存
-            UserService::clearUserInfo($request->user['id']);
+            (new UserService)->clearUserInfo($request->user['id']);
 
             return Response::success([]);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -428,11 +425,11 @@ class UserController extends Controller
             }
 
             // 校验密码
-            $isOk = UserService::CheckPassword($request->user['id'], $validator->validated()['password']);
+            $isOk = (new UserService)->CheckPassword($request->user['id'], $validator->validated()['password']);
             return Response::success(['isOk' => $isOk]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -468,11 +465,11 @@ class UserController extends Controller
             }
 
             // 查询数据
-            $result = UserService::index($request, $validator->validated());
+            $result = (new UserService)->list($request, $validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -489,17 +486,16 @@ class UserController extends Controller
     {
         try {
             // 过滤敏感字段
-            $user = UserService::getUserInfo($request->user['id']);
+            $userService = new UserService;
+            $user = $userService->getUserInfo($request->user['id']);
             $userInfo = Arr::except($user, ['password', 'secure_key']);
 
-            $sign = UserService::generateSign(['id' => $user['id'], 'name' => $user['name']]);
-            $userInfo['is_build_secure_key'] = $user['secure_key'] ? true : false;
-            $userInfo['build_secure_key_url'] = "/google/secret/{$sign}";
+            $sign = $userService->generateSign(['id' => $user['id'], 'name' => $user['name']]);
+            $userInfo['is_build_secure_key'] = (bool)$user['secure_key'];
+            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
 
             return Response::success($userInfo);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -511,7 +507,7 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): JsonResponse
     {
         try {
             $validator = Validator::make($request->all()
@@ -520,7 +516,7 @@ class UserController extends Controller
                         'required', // 接收前端MD5后的密码
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
                     ],
@@ -528,7 +524,7 @@ class UserController extends Controller
                         'required', // 接收前端MD5后的密码
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
 //                        Password::min(6) // 至少需要 6 个字符
@@ -542,7 +538,7 @@ class UserController extends Controller
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
-            $res = UserService::updatePassword(
+            $res = (new UserService)->updatePassword(
                 $request,
                 $request->user['id'],
                 $request->input('passwordOld'),
@@ -557,7 +553,7 @@ class UserController extends Controller
             return Response::success([], Code::E100006);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -582,7 +578,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
 
-            $result = UserService::editAccount($request, $request->user['id'], $input);
+            $result = (new UserService)->editAccount($request, $request->user['id'], $input);
             if (!$result) {
                 return Response::fail(Code::F2001);
             }
@@ -594,7 +590,7 @@ class UserController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -616,11 +612,11 @@ class UserController extends Controller
                         'required',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[a-zA-Z0-9]{6,20}$/", $value)) {
-                                $fail("{$attribute} 长度必须为6-20位的字母+数字组合");
+                                $fail("$attribute 长度必须为6-20位的字母+数字组合");
                             }
                             $user = User::where(['name' => $value])->first();
                             if ($user) {
-                                $fail("{$attribute} 已存在，请更换一个{$attribute}");
+                                $fail("$attribute 已存在，请更换一个$attribute");
                             }
                         },
                     ],
@@ -629,7 +625,7 @@ class UserController extends Controller
                         'required', // 接收前端MD5后的密码
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
 //                        Password::min(6) // 至少需要 6 个字符
@@ -644,7 +640,7 @@ class UserController extends Controller
                         'required',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^1[3-9]\d{9}$/", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
                     ],
@@ -656,7 +652,7 @@ class UserController extends Controller
                         'string',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{16,32}$/", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
                     ],
@@ -669,7 +665,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
             // 新增账号
-            $result = UserService::addAccount($request, $input);
+            $result = (new UserService)->addAccount($request, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -682,7 +678,7 @@ class UserController extends Controller
             return Response::success($result, Code::S1000);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -709,7 +705,7 @@ class UserController extends Controller
                     'password' => [
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
 //                        Password::min(6) // 至少需要 6 个字符
@@ -724,7 +720,7 @@ class UserController extends Controller
                         'required',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^1[3-9]\d{9}$/", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
                     ],
@@ -735,7 +731,7 @@ class UserController extends Controller
                         'string',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{16,32}$/", $value)) {
-                                $fail("{$attribute} 格式不正确");
+                                $fail("$attribute 格式不正确");
                             }
                         },
                     ],
@@ -749,12 +745,12 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 校验是否可以编辑状态
-            if (Arr::get($input, 'status', null) !== null) {
+            if (Arr::get($input, 'status') !== null) {
                 $this->checkEditStatus($request, $id);
             }
 
             // 编辑账号
-            $result = UserService::editAccount($request, $id, $input);
+            $result = (new UserService)->editAccount($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -768,7 +764,7 @@ class UserController extends Controller
             return Response::success([], Code::S1003);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -800,7 +796,7 @@ class UserController extends Controller
             $this->checkEditStatus($request, $id);
 
             $input = $validator->validated();
-            $result = UserService::editAccount($request, $id, $input);
+            $result = (new UserService)->editAccount($request, $id, $input);
             if (!$result) {
                 throw new CustomizeException($isEnabled ? Code::F2004 : Code::F2005);
             }
@@ -811,7 +807,7 @@ class UserController extends Controller
             return Response::success([], $isEnabled ? Code::S1004 : Code::S1005);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -831,16 +827,17 @@ class UserController extends Controller
         }
 
         // 获取当前用户的角色
-        $roles = AuthorizeService::getUserRoles($request->user['id']);
+        $authorizeService = new AuthorizeService;
+        $roles = $authorizeService->getUserRoles($request->user['id']);
 
         // 判断用户是否拥有超级管理员权限
-        if (!in_array(AuthorizeService::getSuperRole(), $roles)) {
+        if (!in_array($authorizeService->getSuperRole(), $roles)) {
             // 不能修改非下线角色
-            $roles = AuthorizeService::getUserRoles($id);
+            $roles = $authorizeService->getUserRoles($id);
             if ($roles) {
                 $isEdit = false;
                 foreach ($roles as $role) {
-                    $isEdit = AuthorizeService::checkUserHasChildRole($request->user['id'], $role);
+                    $isEdit = $authorizeService->checkUserHasChildRole($request->user['id'], $role);
                     if ($isEdit) {
                         break;
                     }
@@ -867,12 +864,12 @@ class UserController extends Controller
                 throw new CustomizeException(Code::E100021);
             }
 
-            $sign = UserService::generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_secure_key_url'] = "/google/secret/{$sign}";
+            $sign = (new UserService)->generateSign(['id' => $user->id, 'name' => $user->name]);
+            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
             return Response::success($userInfo);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);

@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Throwable;
 
 class CacheController extends Controller
 {
@@ -42,9 +43,7 @@ class CacheController extends Controller
                 $items[] = $v;
             }
             return Response::success(['items' => $items, 'total' => count($items)]);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -63,7 +62,7 @@ class CacheController extends Controller
             $validator = Validator::make($request->all()
                 , [
                     'key' => 'required|string',
-                    'type' => [ // 类型: 1菜单, 0目录
+                    'type' => [ // 类型: 1 菜单, 0 目录
                         'required',
                         new Enum(RedisType::class),
                     ],
@@ -85,7 +84,7 @@ class CacheController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -111,7 +110,7 @@ class CacheController extends Controller
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -123,16 +122,14 @@ class CacheController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function info(Request $request): JsonResponse
+    public function serverInfo(Request $request): JsonResponse
     {
         try {
             $redis = $this->redis();
             $result = $redis->info();
 
             return Response::success((array)$result);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
@@ -140,10 +137,11 @@ class CacheController extends Controller
     }
 
     /**
+     * 查看缓存key信息
      * @param Request $request
      * @return JsonResponse
      */
-    public function getValue(Request $request): JsonResponse
+    public function keyInfo(Request $request): JsonResponse
     {
         try {
             // 验证参数
@@ -159,14 +157,15 @@ class CacheController extends Controller
             $key = $input['key'];
             $redis = $this->redis();
             $type = $redis->type($input['key']);
-            $total = 0;
+            $total = 1;
+            $value = null;
             switch ($type) {
                 case RedisType::String->value:
                     $value = $redis->get($key);
                     break;
                 case RedisType::Set->value:
                     $total = $redis->sCard($key);
-                    $value = $redis->sScan($key);
+                    $value = $redis->sMembers($key);
                     break;
             }
             $ttl = $redis->ttl($input['key']);
@@ -174,14 +173,47 @@ class CacheController extends Controller
             return Response::success(compact('key', 'type', 'ttl', 'total', 'value'));
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
         }
     }
 
-    public function Scan($pattern = '*', int $count = 100): array
+    /**
+     * 搜索key
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function searchKey(Request $request): JsonResponse
+    {
+        try {
+            // 验证参数
+            $validator = Validator::make($request->all()
+                , [
+                    'key' => 'required|string',
+                ]);
+            if ($validator->fails()) {
+                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
+            }
+
+            $input = $validator->validated();
+            $result = $this->Scan($input['key']);
+            return Response::success($result);
+        } catch (Throwable $e) {
+            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+            $this->systemException(__METHOD__, $e);
+            return Response::fail(Code::SYSTEM_ERR);
+        }
+    }
+
+    /**
+     * 匹配key
+     * @param string $pattern
+     * @param int $count
+     * @return array
+     */
+    public function Scan(string $pattern = '*', int $count = 100): array
     {
         $keyArr = array();
         $iterator = null;

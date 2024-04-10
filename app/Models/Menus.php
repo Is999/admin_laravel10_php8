@@ -13,7 +13,6 @@
 
 namespace App\Models;
 
-use App\Enum\MenuStatus;
 use App\Services\AuthorizeService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -66,9 +65,10 @@ class Menus extends Model
      * @param array $index
      * @return array
      */
-    public static function menusTreeStringTable(array $key = [], array $index = []): array
+    public function menusTreeString(array $key = [], array $index = []): array
     {
-        $key = array_merge($key, $index);
+        // $key = array_merge($key, $index);
+
         // 查询数据
         $menus = self::with(['childRecursion'])
             ->where([
@@ -79,7 +79,7 @@ class Menus extends Model
                 'id', 'permissions_uuid', 'title', 'title_lang', 'status', 'pid', 'pids', 'component', 'path', 'type', 'icon', 'sort', 'is_shortcut', 'describe', 'created_at', 'updated_at'
             ])->toArray();
 
-        AuthorizeService::menusToTree($menus);
+        (new AuthorizeService)->menusToTree($menus);
         return $menus;
     }
 }
