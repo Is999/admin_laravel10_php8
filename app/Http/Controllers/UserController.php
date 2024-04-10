@@ -212,7 +212,7 @@ class UserController extends Controller
     {
         try {
             // 获取该管理员权限uuid
-            $list = (new AuthorizeService)->getUserPermissionUuid($request->user['id']);
+            $list = (new AuthorizeService)->getUserPermissionUuid($request->offsetGet('user.id'));
             return Response::success($list);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -397,7 +397,7 @@ class UserController extends Controller
             $this->addUserLog(__FUNCTION__, UserAction::LOGOUT);
 
             // 清除缓存
-            (new UserService)->clearUserInfo($request->user['id']);
+            (new UserService)->clearUserInfo($request->offsetGet('user.id'));
 
             return Response::success([]);
         } catch (Throwable $e) {
@@ -425,7 +425,7 @@ class UserController extends Controller
             }
 
             // 校验密码
-            $isOk = (new UserService)->CheckPassword($request->user['id'], $validator->validated()['password']);
+            $isOk = (new UserService)->CheckPassword($request->offsetGet('user.id'), $validator->validated()['password']);
             return Response::success(['isOk' => $isOk]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -487,7 +487,7 @@ class UserController extends Controller
         try {
             // 过滤敏感字段
             $userService = new UserService;
-            $user = $userService->getUserInfo($request->user['id']);
+            $user = $userService->getUserInfo($request->offsetGet('user.id'));
             $userInfo = Arr::except($user, ['password', 'secure_key']);
 
             $sign = $userService->generateSign(['id' => $user['id'], 'name' => $user['name']]);
@@ -540,7 +540,7 @@ class UserController extends Controller
             }
             $res = (new UserService)->updatePassword(
                 $request,
-                $request->user['id'],
+                $request->offsetGet('user.id'),
                 $request->input('passwordOld'),
                 $request->input('passwordNew')
             );
@@ -578,7 +578,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
 
-            $result = (new UserService)->editAccount($request, $request->user['id'], $input);
+            $result = (new UserService)->editAccount($request, $request->offsetGet('user.id'), $input);
             if (!$result) {
                 return Response::fail(Code::F2001);
             }
@@ -822,13 +822,13 @@ class UserController extends Controller
      */
     private function checkEditStatus(Request $request, $id): void
     {
-        if ($id == $request->user['id']) {
+        if ($id == $request->offsetGet('user.id')) {
             throw new CustomizeException(Code::E100059);
         }
 
         // 获取当前用户的角色
         $authorizeService = new AuthorizeService;
-        $roles = $authorizeService->getUserRoles($request->user['id']);
+        $roles = $authorizeService->getUserRoles($request->offsetGet('user.id'));
 
         // 判断用户是否拥有超级管理员权限
         if (!in_array($authorizeService->getSuperRole(), $roles)) {
@@ -837,7 +837,7 @@ class UserController extends Controller
             if ($roles) {
                 $isEdit = false;
                 foreach ($roles as $role) {
-                    $isEdit = $authorizeService->checkUserHasChildRole($request->user['id'], $role);
+                    $isEdit = $authorizeService->checkUserHasChildRole($request->offsetGet('user.id'), $role);
                     if ($isEdit) {
                         break;
                     }

@@ -232,7 +232,7 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = (new AuthorizeService)->getMenuNav($request, $request->user['id']);
+            $result = (new AuthorizeService)->getMenuNav($request, $request->offsetGet('user.id'));
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);

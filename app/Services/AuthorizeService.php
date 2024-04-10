@@ -473,7 +473,7 @@ class AuthorizeService extends Service
             $data = json_decode($data, true);
 
             // 获取用户角色
-            $roles = $this->getUserRoles($request->user['id']);
+            $roles = $this->getUserRoles($request->offsetGet('user.id'));
             $isSuperRole = false;
             if (in_array($this->getSuperRole(), $roles)) {
                 $isSuperRole = true;
@@ -591,7 +591,7 @@ class AuthorizeService extends Service
         $pid = Arr::get($input, 'pid', 0);
 
         // 检查该用户是否有新增角色的权限
-        if (!$this->checkUserRoleManager($request->user['id'], $pid, true)) {
+        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $pid, true)) {
             throw new CustomizeException(Code::E100030);
         }
 
@@ -678,7 +678,7 @@ class AuthorizeService extends Service
         }
 
         // 检查该用户是否有编辑角色的权限
-        if (!$this->checkUserRoleManager($request->user['id'], $id, false, false)) {
+        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id, false, false)) {
             throw new CustomizeException(Code::E100031);
         }
 
@@ -752,7 +752,7 @@ class AuthorizeService extends Service
         $status = Arr::get($input, 'status');
         if ($status !== null && $model->status != $status) {
             // 管理者角色不能更改状态
-            if ($id == $this->getRoleManager() && !in_array($this->getSuperRole(), $this->getUserRoles($request->user['id']))) {
+            if ($id == $this->getRoleManager() && !in_array($this->getSuperRole(), $this->getUserRoles($request->offsetGet('user.id')))) {
                 throw new CustomizeException(Code::E100033);
             }
 
@@ -1557,7 +1557,7 @@ class AuthorizeService extends Service
      */
     public function userRoleList(Request $request, int $uid): array
     {
-        $admin = $request->user['id'];
+        $admin = $request->offsetGet('user.id');
         $list = [];
         DB::table((new UserRolesAccess)->getTable(), 'a')
             ->join((new Roles)->tableName('r'), 'a.role_id', 'r.id')
@@ -1598,7 +1598,7 @@ class AuthorizeService extends Service
         // 验证是否有权限删除该记录
         if ($delArr) {
             foreach ($delArr as $id) {
-                if (!$this->checkUserRoleManager($request->user['id'], $id)) {
+                if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100050, compact('title'));
                 }
@@ -1611,7 +1611,7 @@ class AuthorizeService extends Service
         // 验证是否有权限添加该记录
         if ($insertArr) {
             foreach ($insertArr as $id) {
-                if (!$this->checkUserRoleManager($request->user['id'], $id)) {
+                if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100045, compact('title'));
                 }
@@ -1675,7 +1675,7 @@ class AuthorizeService extends Service
             return true;
         }
 
-        if (!$this->checkUserRoleManager($request->user['id'], $roleId)) {
+        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $roleId)) {
             throw new CustomizeException(Code::E100045, compact('title'));
         }
 
@@ -1711,7 +1711,7 @@ class AuthorizeService extends Service
         }
 
         // 验证是否有权限删除该记录
-        if (!$this->checkUserRoleManager($request->user['id'], $model->role_id)) {
+        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $model->role_id)) {
             throw new CustomizeException(Code::E100046);
         }
 
