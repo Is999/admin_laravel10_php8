@@ -36,14 +36,17 @@ class Controller extends BaseController
     public function systemException(string $method, Throwable $e): void
     {
         // 发送小飞机消息通知
-        $d = new DateTime();
+        $uuid = (new DateTime)->format('Y-m-d H:i:s.u-') . rand(100000, 999999);
         $message = <<<message
-系统错误信息 {$d->format('Y-m-d H:i:s.u')}
+异常信息 {$uuid}
 
 ``
 Method: {$method}
+
 File: {$e->getFile()}:{$e->getLine()}
+
 Code: {$e->getCode()} 
+
 Message: {$e->getMessage()}
 ``
 message;
@@ -64,7 +67,7 @@ message;
                 // 超过长度发送消息，未超过长度合并消息
                 if (strlen($traceMessage) + strlen($message) > 4096) {
                     SendTelegramMessage::dispatchAfterResponse($message)->onQueue('systemException');
-                    $message = $traceMessage; // 发送后重置消息内容
+                    $message = $uuid . PHP_EOL . $traceMessage; // 发送后重置消息内容
                 } else {
                     $message .= $traceMessage; // 合并消息内容
                 }

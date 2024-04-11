@@ -1169,6 +1169,24 @@ class AuthorizeService extends Service
     }
 
     /**
+     * 从数据库获取最大id,生成uuid标识（8位）
+     * @return string
+     */
+    public function getMaxUuid(): string
+    {
+        $prefix = base_convert(rand(10, 35), 10, 36); // a-z
+        $suffix = base_convert(rand(0, 35), 10, 36); // 0-z
+        $middle = base_convert(Permissions::max('id'), 10, 36);
+        // 不够 6位填充0
+        $length = strlen($middle);
+        if ($length < 6) {
+            $middle .= str_repeat('0', 6 - $length);
+        }
+
+        return $prefix . $middle . $suffix;
+    }
+
+    /**
      * 添加权限
      * @param Request $request
      * @param array $input

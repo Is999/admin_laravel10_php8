@@ -52,7 +52,7 @@ COMMIT;
 DROP TABLE IF EXISTS `menus`;
 CREATE TABLE `menus` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `permissions_uuid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '权限uuid(permissions.uuid)',
+  `permissions_uuid` char(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '权限uuid(permissions.uuid)',
   `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '菜单名称',
   `title_lang` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '多语言key',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态: 1显示, 0隐藏',
@@ -84,11 +84,11 @@ INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, 
 INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (6, '100036', '字典管理', 'routes.admin.system.config', 1, 1, '1', '/admin/system/config/index', 'config', 1, 'ant-design:profile-outlined', 6, 0, '字典管理', '2022-07-04 12:33:17', '2022-07-13 11:15:30');
 INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (7, '100043', '缓存管理', 'routes.admin.system.cache', 1, 1, '1', '/admin/system/cache/index', 'cache', 1, 'ant-design:database-outlined', 7, 0, '缓存管理', '2022-07-06 16:30:47', '2023-06-26 05:32:11');
 INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (8, '100055', '控制台', 'routes.dashboard.dashboard', 1, 0, '', 'LAYOUT', '/dashboard', 0, 'ant-design:dashboard-outlined', 8, 0, '控制台', '2022-05-17 11:55:00', '2022-07-13 11:15:30');
-INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (9, '100056', '分析页', 'routes.dashboard.analysis', 1, 8, '8', '/dashboard/analysis/index', 'analysis', 1, 'ant-design:dashboard-outlined', 9, 0, '控制台/分析页', '2022-05-20 17:41:14', '2022-07-13 11:16:22');
-INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (10, '100057', '工作台', 'routes.dashboard.workbench', 1, 8, '8', '/dashboard/workbench/index', '/workbench', 1, 'ant-design:experiment-twotone', 10, 0, '控制台/工作台', '2022-05-20 17:47:58', '2022-07-13 11:16:33');
+INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (9, '100056', '分析页', 'routes.dashboard.analysis', 1, 8, '8', '/dashboard/analysis/index', 'analysis', 1, 'ant-design:dashboard-outlined', 9, 0, '分析页', '2022-05-20 17:41:14', '2022-07-13 11:16:22');
+INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (10, '100057', '工作台', 'routes.dashboard.workbench', 1, 8, '8', '/dashboard/workbench/index', '/workbench', 1, 'ant-design:experiment-twotone', 10, 0, '工作台', '2022-05-20 17:47:58', '2022-07-13 11:16:33');
 INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (11, '100053', '个人管理', 'routes.admin.personal.moduleName', 1, 0, '', 'LAYOUT', '/account', 0, 'ant-design:audit-outlined', 11, 0, '个人管理', '2022-06-15 16:37:48', '2023-06-26 13:26:55');
-INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (12, '100054', '个人信息', 'routes.admin.personal.info', 1, 11, '11', '/admin/account/setting/index', 'setting', 1, 'ant-design:idcard-twotone', 12, 0, '个人管理/个人信息', '2022-06-15 16:43:27', '2022-07-13 11:16:43');
-INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (13, '100052', '操作日志', 'routes.admin.system.userlog', 1, 1, '1', '/admin/system/userlog/index', 'userlog', 1, 'ant-design:code-twotone', 13, 0, '操作日志', '2023-06-26 14:02:02', '2023-06-27 10:27:56');
+INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (12, '100054', '个人信息', 'routes.admin.personal.info', 1, 11, '11', '/admin/account/setting/index', 'setting', 1, 'ant-design:idcard-twotone', 12, 0, '个人信息', '2022-06-15 16:43:27', '2022-07-13 11:16:43');
+INSERT INTO `menus` (`id`, `permissions_uuid`, `title`, `title_lang`, `status`, `pid`, `pids`, `component`, `path`, `type`, `icon`, `sort`, `is_shortcut`, `describe`, `created_at`, `updated_at`) VALUES (13, '100052', '后台日志', 'routes.admin.system.userlog', 1, 1, '1', '/admin/system/userlog/index', 'userlog', 1, 'ant-design:code-twotone', 13, 0, '后台日志', '2023-06-26 14:02:02', '2023-06-27 10:27:56');
 COMMIT;
 
 -- ----------------------------
@@ -97,7 +97,7 @@ COMMIT;
 DROP TABLE IF EXISTS `permissions`;
 CREATE TABLE `permissions` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `uuid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '唯一标识',
+  `uuid` char(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '唯一标识',
   `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '权限名称',
   `module` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '权限匹配模型(路由名称 | 控制器/方法)',
   `pid` int unsigned NOT NULL DEFAULT '0' COMMENT '父级ID',
@@ -166,12 +166,12 @@ INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (49, '100049', '搜索', 'cache.searchKey', 48, '1,43,48', 7, '搜索(按钮, 查看)', '2023-06-26 12:28:06', '2023-06-26 04:56:45');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (50, '100050', '查看缓存key信息', 'cache.searchKeyInfo', 48, '1,43,48', 7, '查看缓存key信息(按钮, 查看)', '2023-06-26 12:56:24', '2023-06-26 04:56:51');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (51, '100051', '生成绑定安全秘钥地址', 'user.buildSecretKeyUrl', 26, '1,23,26', 7, '生成绑定安全秘钥地址(按钮，查看)', '2023-06-26 23:01:59', '2023-06-26 16:00:12');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (52, '100052', '操作日志', 'userlog.index', 1, '1', 5, '操作日志(菜单，页面)', '2023-06-26 13:30:06', '2023-06-26 15:01:53');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (52, '100052', '后台日志', 'userlog.index', 1, '1', 5, '后台日志(菜单，页面)', '2023-06-26 13:30:06', '2023-06-26 15:01:53');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (53, '100053', '个人管理', '8', 0, '', 4, '个人信息管理(目录)', '2022-06-15 15:32:57', '2023-06-30 10:52:14');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (54, '100054', '个人信息', 'user.mine', 53, '53', 5, '个人管理/个人信息 (菜单, 页面, 按钮)', '2022-06-15 15:37:25', '2023-06-30 10:52:32');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (54, '100054', '个人信息', 'user.mine', 53, '53', 5, '个人信息 (菜单, 页面, 按钮)', '2022-06-15 15:37:25', '2023-06-30 10:52:32');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (55, '100055', '控制台', '4', 0, '', 4, '控制台(目录)', '2022-03-21 21:06:17', '2023-06-30 10:54:25');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (56, '100056', '分析页', '', 55, '55', 5, '分析页(菜单, 页面)', '2022-05-20 17:32:49', '2023-06-30 10:54:31');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (57, '100057', '操作台', '', 55, '55', 5, '操作台(菜单,页面)', '2022-05-20 17:36:35', '2023-06-30 10:54:39');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `created_at`, `updated_at`) VALUES (57, '100057', '工作台', '', 55, '55', 5, '工作台(菜单,页面)', '2022-05-20 17:36:35', '2023-06-30 10:54:39');
 COMMIT;
 
 -- ----------------------------

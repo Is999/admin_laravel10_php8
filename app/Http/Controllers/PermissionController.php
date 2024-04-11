@@ -205,10 +205,7 @@ class PermissionController extends Controller
     {
         try {
             // 查询数据
-            $uuid = Permissions::max('id');
-            return Response::success(['uuid' => $uuid + 100001]);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
+            return Response::success(['uuid' => (new AuthorizeService)->getMaxUuid()]);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
