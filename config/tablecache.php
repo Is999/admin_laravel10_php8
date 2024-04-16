@@ -6,6 +6,7 @@ use App\Models\Config;
 use App\Models\Menus;
 use App\Models\Permissions;
 use App\Models\Roles;
+use App\Models\SecretKey;
 
 return [
     // index 命名为 key值第一个分割符之前的值,如: key=roles_permissions:{角色id}, index=roles_permissions
@@ -79,9 +80,9 @@ return [
         'type' => RedisType::String,
         'expires' => 0
     ],
-    // 参数配置
+    // 字典配置
     'config_uuid' => [
-        'title' => '参数配置',
+        'title' => '字典配置',
         'combine' => ['uuid'],
         'key' => RedisKeys::CONFIG_UUID,
         'class' => Config::class,
@@ -89,4 +90,25 @@ return [
         'type' => RedisType::Hash,
         'expires' => 0
     ],
+    // AES
+    'secret_key_aes' => [
+        'title' => 'AES',
+        'combine' => ['uuid'],
+        'key' => RedisKeys::SECRET_KEY_AES,
+        'class' => SecretKey::class,
+        'method' => 'secretKeyAESHash',
+        'type' => RedisType::Hash,
+        'expires' => 0
+    ],
+    // RSA
+    'secret_key_rsa' => [
+        'title' => 'RSA',
+        'combine' => ['uuid'],
+        'key' => RedisKeys::SECRET_KEY_RSA,
+        'class' => SecretKey::class,
+        'method' => 'secretKeyRSAHash',
+        'type' => RedisType::Hash,
+        'expires' => 0
+    ],
+
 ];

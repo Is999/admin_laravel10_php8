@@ -393,7 +393,7 @@ class AuthorizeService extends Service
 
             $this->arrayWalkRecursive($nav, function (&$arr, $key, $item) {
                 $value = [
-                    'id' => $item['id'],
+                    'value' => $item['id'],
                     'title' => $item['title'],
                 ];
                 if (isset($item['children']) && $item['children']) {
@@ -971,15 +971,13 @@ class AuthorizeService extends Service
      * role.permission
      * @param Request $request
      * @param int $id
+     * @param bool $isPid 验证上级是否有权限
      * @return array
      */
-    public function permission(Request $request, int $id): array
+    public function permission(Request $request, int $id, bool $isPid): array
     {
         // 获取角色权限
         $rolePermissions = RedisService::getRolePermissions($id);
-
-        // $id 是否是 pid, pid 验证上级是否有权限
-        $isPid = $request->input('isPid') === 'true';
 
         // 是否可以编辑check box
         $isChecked = false;
@@ -1027,6 +1025,7 @@ class AuthorizeService extends Service
 //                'selectable' => ($isChecked || $isParentHas), // 上级有得权限才可以选择
                 'uuid' => $item['uuid'],
                 'describe' => $item['describe'],
+                'module' => $item['module'],
             ];
             if (isset($item['children']) && $item['children']) {
                 $value['children'] = $item['children'];
@@ -1054,7 +1053,7 @@ class AuthorizeService extends Service
                 return;
             }
             $value = [
-                'id' => $item['uuid'],
+                'value' => $item['uuid'],
                 'title' => $item['title'] . ' (' . $item['uuid'] . ')',
                 'disabled' => in_array($item['uuid'], $permissions),
             ];

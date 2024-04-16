@@ -34,7 +34,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         // 角色
         Route::controller(RoleController::class)->prefix('role')->name('role.')->group(function () {
             Route::get('treeList', 'treeList')->name('treeList'); // 新增角色|编辑角色 上级角色(下拉框);
-            Route::get('permission/{id}', 'permission')->name('permission'); // 角色权限
+            Route::get('permission/{id}/{isPid}', 'permission')->name('permission')->whereIn('isPid',['y','n']); // 角色权限
         });
 
         // 菜单

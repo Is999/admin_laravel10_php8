@@ -278,10 +278,10 @@ class RoleController extends Controller
      * @param int $id
      * @return JsonResponse
      */
-    public function permission(Request $request, int $id): JsonResponse
+    public function permission(Request $request, int $id, string $isPid): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->permission($request, $id);
+            $result = (new AuthorizeService)->permission($request, $id, $isPid == 'y');
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);

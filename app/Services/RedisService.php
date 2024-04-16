@@ -15,15 +15,6 @@ class RedisService extends Service
 {
     const TABLE_CONFIG_FILE = 'tablecache'; // config目录下的配置文件
 
-    /**
-     * 获取一个Redis对象
-     * @param string|null $name
-     * @return Connection
-     */
-    public static function redis(string $name = null): Connection
-    {
-        return Redis::connection($name);
-    }
 
     /**
      * 存储token

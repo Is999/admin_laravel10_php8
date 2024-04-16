@@ -6,7 +6,7 @@ use App\Enum\LogChannel;
 use App\Enum\UserAction;
 use App\Jobs\SendTelegramMessage;
 use App\Logging\Logger;
-use App\Services\RedisService;
+use App\Services\Service;
 use App\Services\UserLogService;
 use App\Services\UserService;
 use DateTime;
@@ -87,9 +87,9 @@ message;
      * redis 连接
      * @return Connection
      */
-    protected function redis(): Connection
+    protected function redis(string $name = null): Connection
     {
-        return RedisService::redis();
+        return Service::redis($name);
     }
 
 
