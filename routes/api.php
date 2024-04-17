@@ -26,10 +26,10 @@ Route::prefix('api')->group(function () {
     Route::post('user/buildSecretVerifyAccount', [UserController::class, 'buildSecretVerifyAccount'])->name('captcha.buildSecretVerifyAccount'); // 绑定安全码验证账号密码
 });
 
-// 须验证token和权限
+// 须验证权限或登录Token
 Route::prefix('api')->middleware(['adminAuth'])->group(function () {
 
-    // 不验证权限的接口(只验证token)
+    // 不验证权限的接口(只验证token, 该路由无须加入权限表)
     Route::name('free.')->group(function () {
         // 角色
         Route::controller(RoleController::class)->prefix('role')->name('role.')->group(function () {
@@ -53,7 +53,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         // 用户
         Route::controller(UserController::class)->prefix('user')->name('user.')->group(function () {
             Route::post('logout', 'logout')->name('logout'); // 登出
-            Route::post('checkPassword', 'checkPassword')->name('checkPassword'); // 校验密码
+            Route::post('checkSecure', 'checkSecure')->name('checkSecure'); // 校验安全码或密码（没有开启安全码校验则校验密码）
             Route::post('updatePassword', 'updatePassword')->name('updatePassword'); // 修改密码
             Route::post('updateSecureKey', 'updateSecureKey')->name('updateSecureKey'); // 修改安全秘钥
             Route::get('mine', 'mine')->name('mine'); // 个人信息

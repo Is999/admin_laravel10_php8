@@ -408,24 +408,24 @@ class UserController extends Controller
     }
 
     /**
-     * 验证密码
+     * 校验安全码
      * @param Request $request
      * @return JsonResponse
      */
-    public function checkPassword(Request $request): JsonResponse
+    public function checkSecure(Request $request): JsonResponse
     {
         try {
             // 验证参数
             $validator = Validator::make($request->all()
                 , [
-                    'password' => 'required',
+                    'secure' => 'required',
                 ]);
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
-            // 校验密码
-            $isOk = (new UserService)->CheckPassword($request->offsetGet('user.id'), $validator->validated()['password']);
+            // 校验安全码
+            $isOk = (new UserService)->CheckSecure($request->offsetGet('user.id'), $validator->validated()['secure']);
             return Response::success(['isOk' => $isOk]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());

@@ -11,6 +11,7 @@ use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\User;
 use App\Models\UserRolesAccess;
+use Earnp\GoogleAuthenticator\Facades\GoogleAuthenticator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
@@ -230,21 +231,31 @@ class UserService extends Service
     }
 
     /**
-     * 验证密码
+     * 校验安全码或密码（没有开启安全码校验则校验密码）
      * @param int $id
-     * @param string $password
+     * @param string $secure
      * @return bool
      * @throws CustomizeException
      */
-    public function CheckPassword(int $id, string $password): bool
+    public function CheckSecure(int $id, string $secure): bool
     {
         $user = User::where('id', $id)->first();
         if (!$user) {
             throw new CustomizeException(Code::E100015);
         }
 
+        // 校验安全验证码
+        if (true !== ConfigService::getCache(ConfigUuid::SECURE_DISABLE)) {
+            if ($user->secure_key) {
+                if (GoogleAuthenticator::CheckCode(Crypt::decryptString($user->secure_key), $secure)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // 验证密码
-        if (Hash::check($password . substr(md5($user->name), 10, 10), $user->password)) {
+        if (Hash::check(md5($secure) . substr(md5($user->name), 10, 10), $user->password)) {
             return true;
         }
 
