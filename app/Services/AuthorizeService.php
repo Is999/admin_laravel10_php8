@@ -27,8 +27,6 @@ use Throwable;
 class AuthorizeService extends Service
 {
     private static int $SUPER_ROLE = 1; // 超级管理员角色id
-    private static int $ROLE_MANAGER = 2; // 管理者角色id
-
 
     /**
      * 超级管理员角色id
@@ -38,17 +36,6 @@ class AuthorizeService extends Service
     public function getSuperRole(): int
     {
         return env('SUPER_ROLE', self::$SUPER_ROLE);
-    }
-
-
-    /**
-     * 管理者角色id
-     * .env 配置 ROLE_MANAGER
-     * @return int
-     */
-    public function getRoleManager(): int
-    {
-        return env('ROLE_MANAGER', self::$ROLE_MANAGER);
     }
 
     /**
@@ -208,14 +195,12 @@ class AuthorizeService extends Service
     }
 
     /**
-     * 角色管理权限
+     * 角色管理权限:用户是超级管理员或者管理下级角色
      * @param int $uid
      * @param int $roleId
-     * @param bool $isProleId $roleId 是否是父级id
-     * @param bool $checkRoleManager
      * @return bool
      */
-    public function checkUserRoleManager(int $uid, int $roleId, bool $isProleId = false, bool $checkRoleManager = true): bool
+    public function checkUserRoleManager(int $uid, int $roleId): bool
     {
         // 获取用户的角色
         $roles = $this->getUserRoles($uid);
@@ -223,19 +208,6 @@ class AuthorizeService extends Service
         // 判断用户是否拥有超级管理员权限
         if (in_array($this->getSuperRole(), $roles)) {
             return true;
-        }
-
-        // 判断用户是否拥有角色管理者权限
-        if ($checkRoleManager && in_array($this->getRoleManager(), $roles)) {
-            return true;
-        }
-
-        // 判断父级id
-        if ($isProleId) {
-            // 该用户拥有的角色内是否拥有该pid
-            if (in_array($roleId, $roles) && $this->getRoleStatus($roleId) == RoleStatus::ENABLED->value) {
-                return true;
-            }
         }
 
         // 查角色族谱是否拥有该用户拥有的角色id
@@ -591,7 +563,7 @@ class AuthorizeService extends Service
         $pid = Arr::get($input, 'pid', 0);
 
         // 检查该用户是否有新增角色的权限
-        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $pid, true)) {
+        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $pid)) {
             throw new CustomizeException(Code::E100030);
         }
 
@@ -678,7 +650,7 @@ class AuthorizeService extends Service
         }
 
         // 检查该用户是否有编辑角色的权限
-        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id, false, false)) {
+        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id)) {
             throw new CustomizeException(Code::E100031);
         }
 
@@ -751,10 +723,6 @@ class AuthorizeService extends Service
         // 状态
         $status = Arr::get($input, 'status');
         if ($status !== null && $model->status != $status) {
-            // 管理者角色不能更改状态
-            if ($id == $this->getRoleManager() && !in_array($this->getSuperRole(), $this->getUserRoles($request->offsetGet('user.id')))) {
-                throw new CustomizeException(Code::E100033);
-            }
 
             // 重新赋值
             $model->status = $status;
@@ -788,11 +756,6 @@ class AuthorizeService extends Service
         // 删除
         $isDelete = Arr::get($input, 'is_delete');
         if ($isDelete && $model->is_delete != $isDelete) {
-            // 管理者角色不能删除
-            if ($id == $this->getRoleManager()) {
-                throw new CustomizeException(Code::E100033);
-            }
-
             // 如果该角色拥有下级角色则不能删除
             $ids = Roles::where([
                 ['is_delete', Delete::NO]
