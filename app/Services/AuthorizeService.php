@@ -39,6 +39,7 @@ class AuthorizeService extends Service
     }
 
     /**
+     * 验证路由
      * @param int $uid 用户id
      * @param string $module 匹配模型
      * @return false
@@ -192,6 +193,24 @@ class AuthorizeService extends Service
     public function getPermissionsUuid(array $permissionIds): array
     {
         return RedisService::getPermissionsUuid($permissionIds);
+    }
+
+    /**
+     * 验证用户是否是超级管理员
+     * @param int $uid
+     * @return bool
+     */
+    public function checkUserIsSuperRole(int $uid): bool
+    {
+        // 获取用户的角色
+        $roles = $this->getUserRoles($uid);
+
+        // 判断用户是否拥有超级管理员权限
+        if (in_array($this->getSuperRole(), $roles)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -953,9 +972,10 @@ class AuthorizeService extends Service
         if (!$isPid && $superRoleId == $id) {
             $isSuperRole = true;
         }
-
+        // 当前用户是否是超级管理员
+        $userIsSuperRole =$this->checkUserIsSuperRole($request->offsetGet('user.id'));
         // 超级管理员添加下级
-        if ($isPid && $superRoleId == $id && $superRoleId == $request->offsetGet('user.id')) {
+        if ($isPid && $superRoleId == $id && $userIsSuperRole) {
             $isChecked = true;
         }
 
@@ -963,7 +983,12 @@ class AuthorizeService extends Service
         $parentRolePermissions = $isPid ? $rolePermissions : [];
         if (!$isPid && !$isChecked) {
             $pid = Roles::where('id', $id)->value('pid');
-            $parentRolePermissions = RedisService::getRolePermissions($pid);
+            $pid = Roles::where('id', $id)->value('pid');
+            if ($pid == $this->getSuperRole()) {
+                $isChecked = true;
+            } else {
+                $parentRolePermissions = RedisService::getRolePermissions($pid);
+            }
         }
 
         // 菜单图标
@@ -981,10 +1006,10 @@ class AuthorizeService extends Service
                 'id' => $item['id'],
                 'title' => $item['title'] . ' (' . $typeTitle . ')',
                 'icon' => $icons[$item['uuid']] ?? '',
-                // 'checked' => $isSuperRole || in_array($item['id'], $rolePermissions), // 当前角色拥的权限
+                //'checked' => $isSuperRole || in_array($item['id'], $rolePermissions), // 当前角色拥的权限
                 'disabled' => $isSuperRole, // 超级管理员权限禁止编辑
                 'disableCheckbox' => !($isChecked || $isParentHas), // 上级没有得权限禁止选择
-                // 'selectable' => ($isChecked || $isParentHas), // 上级有得权限才可以选择
+                'selectable' => ($isChecked || $isParentHas), // 上级有得权限才可以选择
                 'uuid' => $item['uuid'],
                 'describe' => $item['describe'],
                 'module' => $item['module'],
