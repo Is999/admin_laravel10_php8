@@ -983,7 +983,6 @@ class AuthorizeService extends Service
         $parentRolePermissions = $isPid ? $rolePermissions : [];
         if (!$isPid && !$isChecked) {
             $pid = Roles::where('id', $id)->value('pid');
-            $pid = Roles::where('id', $id)->value('pid');
             if ($pid == $this->getSuperRole()) {
                 $isChecked = true;
             } else {
@@ -1006,10 +1005,10 @@ class AuthorizeService extends Service
                 'id' => $item['id'],
                 'title' => $item['title'] . ' (' . $typeTitle . ')',
                 'icon' => $icons[$item['uuid']] ?? '',
-                //'checked' => $isSuperRole || in_array($item['id'], $rolePermissions), // 当前角色拥的权限
-                'disabled' => $isSuperRole, // 超级管理员权限禁止编辑
+                'checked' => in_array($item['id'], $rolePermissions), // 当前角色拥的权限
+                'disabled' => $isSuperRole || !($isChecked || $isParentHas), // 超级管理员权限禁止编辑
                 'disableCheckbox' => !($isChecked || $isParentHas), // 上级没有得权限禁止选择
-                'selectable' => ($isChecked || $isParentHas), // 上级有得权限才可以选择
+                'selectable' => $isChecked || $isParentHas, // 上级有得权限才可以选择
                 'uuid' => $item['uuid'],
                 'describe' => $item['describe'],
                 'module' => $item['module'],
