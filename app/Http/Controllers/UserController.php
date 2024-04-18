@@ -815,6 +815,7 @@ class UserController extends Controller
     }
 
     /**
+     * 校验当前管理是否可以更改用户状态
      * @param Request $request
      * @param $id
      * @return void
@@ -822,22 +823,24 @@ class UserController extends Controller
      */
     private function checkEditStatus(Request $request, $id): void
     {
-        if ($id == $request->offsetGet('user.id')) {
+        $uid = $request->offsetGet('user.id');
+
+        // 自己的数据不能修改
+        if ($id == $uid) {
             throw new CustomizeException(Code::E100059);
         }
 
-        // 获取当前用户的角色
         $authorizeService = new AuthorizeService;
-        $roles = $authorizeService->getUserRoles($request->offsetGet('user.id'));
 
         // 判断用户是否拥有超级管理员权限
-        if (!in_array($authorizeService->getSuperRole(), $roles)) {
+        if (!$authorizeService->checkUserIsSuperRole($uid)) {
+
             // 不能修改非下线角色
             $roles = $authorizeService->getUserRoles($id);
             if ($roles) {
                 $isEdit = false;
                 foreach ($roles as $role) {
-                    $isEdit = $authorizeService->checkUserHasChildRole($request->offsetGet('user.id'), $role);
+                    $isEdit = $authorizeService->checkUserHasChildRole($uid, $role);
                     if ($isEdit) {
                         break;
                     }

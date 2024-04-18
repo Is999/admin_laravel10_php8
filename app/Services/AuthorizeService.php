@@ -214,30 +214,19 @@ class AuthorizeService extends Service
     }
 
     /**
-     * 角色管理权限:用户是超级管理员或者管理下级角色
+     * 验证用户【uid】是否有该角色
      * @param int $uid
      * @param int $roleId
      * @return bool
      */
-    public function checkUserRoleManager(int $uid, int $roleId): bool
+    public function checkUserHasRole(int $uid, int $roleId): bool
     {
         // 获取用户的角色
         $roles = $this->getUserRoles($uid);
 
-        // 判断用户是否拥有超级管理员权限
-        if (in_array($this->getSuperRole(), $roles)) {
+        // 判断用户是否拥有超级管理员权限或者roleId
+        if (in_array($this->getSuperRole(), $roles) || in_array($roleId, $roles)) {
             return true;
-        }
-
-        // 查角色族谱是否拥有该用户拥有的角色id
-        $pids = Roles::where('id', $roleId)->value('pids');
-        if ($pids) {
-            $pids = explode(',', $pids);
-            foreach ($roles as $role) {
-                if (in_array($role, $pids)) {
-                    return true;
-                }
-            }
         }
 
         // 未匹配到权限
@@ -245,7 +234,7 @@ class AuthorizeService extends Service
     }
 
     /**
-     * 角色管理权限
+     * 验证角色【roleid】是否是用户【uid】所拥有角色的子角色
      * @param int $uid
      * @param int $roleId
      * @return bool
@@ -254,6 +243,11 @@ class AuthorizeService extends Service
     {
         // 获取用户的角色
         $roles = $this->getUserRoles($uid);
+
+        // 判断用户是否拥有超级管理员权限
+        if (in_array($this->getSuperRole(), $roles)) {
+            return true;
+        }
 
         // 查角色族谱是否拥有该用户拥有的角色id
         $pids = Roles::where('id', $roleId)->value('pids');
@@ -582,7 +576,7 @@ class AuthorizeService extends Service
         $pid = Arr::get($input, 'pid', 0);
 
         // 检查该用户是否有新增角色的权限
-        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $pid)) {
+        if (!$this->checkUserHasRole($request->offsetGet('user.id'), $pid)) {
             throw new CustomizeException(Code::E100030);
         }
 
@@ -669,7 +663,7 @@ class AuthorizeService extends Service
         }
 
         // 检查该用户是否有编辑角色的权限
-        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id)) {
+        if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $id)) {
             throw new CustomizeException(Code::E100031);
         }
 
@@ -1568,7 +1562,7 @@ class AuthorizeService extends Service
             ->select(['a.*', 'r.title'])
             ->orderBy('role_id')
             ->lazy()->each(function ($role) use ($admin, &$list) {
-                $role->isUpdate = $this->checkUserRoleManager($admin, $role->role_id);
+                $role->isUpdate = $this->checkUserHasChildRole($admin, $role->role_id);
                 $list[] = $role;
             });
         return $list;
@@ -1601,7 +1595,7 @@ class AuthorizeService extends Service
         // 验证是否有权限删除该记录
         if ($delArr) {
             foreach ($delArr as $id) {
-                if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id)) {
+                if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100050, compact('title'));
                 }
@@ -1614,7 +1608,7 @@ class AuthorizeService extends Service
         // 验证是否有权限添加该记录
         if ($insertArr) {
             foreach ($insertArr as $id) {
-                if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $id)) {
+                if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100045, compact('title'));
                 }
@@ -1678,7 +1672,7 @@ class AuthorizeService extends Service
             return true;
         }
 
-        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $roleId)) {
+        if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $roleId)) {
             throw new CustomizeException(Code::E100045, compact('title'));
         }
 
@@ -1714,7 +1708,7 @@ class AuthorizeService extends Service
         }
 
         // 验证是否有权限删除该记录
-        if (!$this->checkUserRoleManager($request->offsetGet('user.id'), $model->role_id)) {
+        if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $model->role_id)) {
             throw new CustomizeException(Code::E100046);
         }
 
