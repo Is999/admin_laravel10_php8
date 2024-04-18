@@ -827,27 +827,31 @@ class UserController extends Controller
 
         // 自己的数据不能修改
         if ($id == $uid) {
-            throw new CustomizeException(Code::E100059);
+            if($request->input('status') != $request->offsetGet('user.status')) {
+                throw new CustomizeException(Code::E100059, ['param'=>'状态']);
+            }
+            return;
         }
 
         $authorizeService = new AuthorizeService;
 
         // 判断用户是否拥有超级管理员权限
         if (!$authorizeService->checkUserIsSuperRole($uid)) {
+            $isEdit = false;
 
             // 不能修改非下线角色
             $roles = $authorizeService->getUserRoles($id);
             if ($roles) {
-                $isEdit = false;
                 foreach ($roles as $role) {
                     $isEdit = $authorizeService->checkUserHasChildRole($uid, $role);
-                    if ($isEdit) {
+                    if (!$isEdit) {
                         break;
                     }
                 }
-                if (!$isEdit) {
-                    throw new CustomizeException(Code::E100060);
-                }
+            }
+
+            if (!$isEdit) {
+                throw new CustomizeException(Code::E100060);
             }
         }
     }

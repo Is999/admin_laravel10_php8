@@ -576,7 +576,7 @@ class AuthorizeService extends Service
         $pid = Arr::get($input, 'pid', 0);
 
         // 检查该用户是否有新增角色的权限
-        if (!$this->checkUserHasRole($request->offsetGet('user.id'), $pid)) {
+        if (!($this->checkUserHasRole($request->offsetGet('user.id'), $pid) || $this->checkUserHasChildRole($request->offsetGet('user.id'), $pid))) {
             throw new CustomizeException(Code::E100030);
         }
 
