@@ -234,6 +234,31 @@ class AuthorizeService extends Service
     }
 
     /**
+     * 校验当前管理是否可以更改用户状态
+     * @param int $adminId 管理员id
+     * @param int $uid 用户id
+     * @return void
+     * @throws CustomizeException
+     */
+    public function checkEditStatus(int $adminId, int $uid)
+    {
+        // 判断用户是否拥有超级管理员权限
+        if (!$this->checkUserIsSuperRole($adminId)) {
+            // 不能修改非下线角色
+            $roles = $this->getUserRoles($uid);
+            if ($roles) {
+                foreach ($roles as $role) {
+                    $isEdit = $this->checkUserHasChildRole($adminId, $role);
+                    if (!$isEdit) {
+                        $title = Roles::where('id', $role)->value('title');
+                        throw new CustomizeException(Code::E100060,['role'=>$title]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * 验证角色【roleid】是否是用户【uid】所拥有角色的子角色
      * @param int $uid
      * @param int $roleId

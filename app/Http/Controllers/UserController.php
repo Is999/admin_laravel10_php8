@@ -746,7 +746,15 @@ class UserController extends Controller
 
             // 校验是否可以编辑状态
             if (Arr::get($input, 'status') !== null) {
-                $this->checkEditStatus($request, $id);
+                $adminId = $request->offsetGet('user.id');
+                // 自己的数据不能修改
+                if ($id == $adminId && Arr::get($input, 'status') != $request->offsetGet('user.status')) {
+                    throw new CustomizeException(Code::E100059, ['param'=>'状态']);
+                }
+
+                if($id != $adminId ){
+                    (new AuthorizeService)->checkEditStatus($adminId, $id);
+                }
             }
 
             // 编辑账号
@@ -792,8 +800,15 @@ class UserController extends Controller
 
             $isEnabled = $request->input('status', true);
 
+            $adminId = $request->offsetGet('user.id');
+
+            // 自己的数据不能修改
+            if ($id == $adminId) {
+                throw new CustomizeException(Code::E100059, ['param'=>'状态']);
+            }
+
             // 不能修改自己的状态
-            $this->checkEditStatus($request, $id);
+            (new AuthorizeService)->checkEditStatus($adminId, $id);
 
             $input = $validator->validated();
             $result = (new UserService)->editAccount($request, $id, $input);
@@ -811,48 +826,6 @@ class UserController extends Controller
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
             return Response::fail(Code::SYSTEM_ERR);
-        }
-    }
-
-    /**
-     * 校验当前管理是否可以更改用户状态
-     * @param Request $request
-     * @param $id
-     * @return void
-     * @throws CustomizeException
-     */
-    private function checkEditStatus(Request $request, $id): void
-    {
-        $uid = $request->offsetGet('user.id');
-
-        // 自己的数据不能修改
-        if ($id == $uid) {
-            if($request->input('status') != $request->offsetGet('user.status')) {
-                throw new CustomizeException(Code::E100059, ['param'=>'状态']);
-            }
-            return;
-        }
-
-        $authorizeService = new AuthorizeService;
-
-        // 判断用户是否拥有超级管理员权限
-        if (!$authorizeService->checkUserIsSuperRole($uid)) {
-            $isEdit = false;
-
-            // 不能修改非下线角色
-            $roles = $authorizeService->getUserRoles($id);
-            if ($roles) {
-                foreach ($roles as $role) {
-                    $isEdit = $authorizeService->checkUserHasChildRole($uid, $role);
-                    if (!$isEdit) {
-                        break;
-                    }
-                }
-            }
-
-            if (!$isEdit) {
-                throw new CustomizeException(Code::E100060);
-            }
         }
     }
 
