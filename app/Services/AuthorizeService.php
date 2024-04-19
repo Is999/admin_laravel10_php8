@@ -501,6 +501,7 @@ class AuthorizeService extends Service
 
                     $disabled = $isSuperRole || in_array($item['pid'], $roles);
 
+                    $arr[$key]['name'] = $item['title']; // 前端框架title被包装了无法获取额外加个name字段
                     $arr[$key]['disabled'] = !$disabled; // 禁止编辑
                     $arr[$key]['disableCheckbox'] = !$disabled; // 上级有得角色才可以编辑
                     $arr[$key]['selectable'] = $disabled; // 上级有得权限才可以编辑
