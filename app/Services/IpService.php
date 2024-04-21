@@ -87,16 +87,16 @@ class IpService extends Service
                 $method = array_shift($list);
                 Logger::info(LogChannel::DEV, 'get ip method: {{method}}', $method);
                 $result = self::{$method['method']}($client, $ip, $respList);
-//                $result->resolve("广东省深圳市");
                 $ipaddr = $result->wait();
                 if ($ipaddr) {
                     return $ipaddr;
                 }
                 if (!$list) {
                     // 循环完毕，未获取到值
-                    Logger::error(LogChannel::DEV, '循环完毕，未获取到值', [
-                        'ip' => $ip,
-                    ]);
+//                    Logger::error(LogChannel::DEV, '循环完毕，未获取到值', [
+//                        'ip' => $ip,
+//                    ]);
+                    $result->resolve("IP归属地");
                 }
             } while ($list);
             return "";
