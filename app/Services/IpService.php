@@ -93,10 +93,10 @@ class IpService extends Service
                 }
                 if (!$list) {
                     // 循环完毕，未获取到值
-//                    Logger::error(LogChannel::DEV, '循环完毕，未获取到值', [
-//                        'ip' => $ip,
-//                    ]);
-                    $result->resolve("IP归属地");
+                    Logger::error(LogChannel::DEV, '循环完毕，未获取到值', [
+                        'ip' => $ip,
+                    ]);
+                    return '未知IP归属地[未获取到]';
                 }
             } while ($list);
             return "";
@@ -104,7 +104,7 @@ class IpService extends Service
             Logger::error(LogChannel::DEV, '获取IP归属地异常', [
                 'ip' => $ip,
             ], $e);
-            return '';
+            return '未知IP归属地[获取异常]';
         }
     }
 
