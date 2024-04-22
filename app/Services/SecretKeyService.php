@@ -28,7 +28,7 @@ class SecretKeyService extends Service
 //        // 写入缓存
 //        self::redis()->hMset($key, $data);
 
-        return RedisService::hMGetTable($key, ['aes_key', 'aes_iv'], $renew);
+        return RedisService::hGetAllTable($key, $renew);
     }
 
     public function rsaKey(string $uuid, bool $renew = false): array
@@ -36,6 +36,6 @@ class SecretKeyService extends Service
         // 获取缓存
         $key = RedisKeys::SECRET_KEY_RSA . $uuid;
 
-        return RedisService::hMGetTable($key, ['aes_key', 'aes_iv'], $renew);
+        return RedisService::hGetAllTable($key, $renew);
     }
 }

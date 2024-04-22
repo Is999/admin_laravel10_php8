@@ -78,7 +78,7 @@ class ConfigService extends Service
         $res = $model->save();
         if ($res) {
             // 刷新 参数配置 Hash
-            RedisService::initTable(RedisKeys::CONFIG_UUID, [$model->uuid]);
+            RedisService::initTable(RedisKeys::CONFIG_UUID. $model->uuid);
         }
         return $res;
     }
@@ -105,7 +105,7 @@ class ConfigService extends Service
         $res = $model->save();
         if ($res) {
             // 刷新 参数配置 Hash
-            RedisService::initTable(RedisKeys::CONFIG_UUID, [$model->uuid]);
+            RedisService::initTable(RedisKeys::CONFIG_UUID . $model->uuid);
         }
         return $res;
     }

@@ -19,7 +19,9 @@ class SecretKey extends Model
      */
     public function secretKeyAESHash(array $key = [], array $index = []): array
     {
-        $key = array_merge($key, $index);
+        if (empty($key)) {
+            return []; // 阻止缓存全部
+        }
 
         // 查询数据
         $list = self::when($key, function ($query, $uuid) {
@@ -46,7 +48,9 @@ class SecretKey extends Model
      */
     public function secretKeyRSAHash(array $key = [], array $index = []): array
     {
-        $key = array_merge($key, $index);
+        if (empty($key)) {
+            return []; // 阻止缓存全部
+        }
 
         // 查询数据
         $list = self::when($key, function ($query, $uuid) {

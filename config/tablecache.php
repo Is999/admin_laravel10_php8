@@ -96,9 +96,9 @@ return [
         'combine' => ['uuid'],
         'key' => RedisKeys::SECRET_KEY_AES,
         'class' => SecretKey::class,
-        'method' => 'secretKeyAESHash',
+        'method' => 'secretKeyAESHash', // 阻止一次缓存全部数据，使用的时候再缓存
         'type' => RedisType::Hash,
-        'expires' => 0
+        'expires' => 60 * 60 * 1, // 缓存1小时+随机时间(0-3600*24)
     ],
     // RSA
     'secret_key_rsa' => [
@@ -106,9 +106,9 @@ return [
         'combine' => ['uuid'],
         'key' => RedisKeys::SECRET_KEY_RSA,
         'class' => SecretKey::class,
-        'method' => 'secretKeyRSAHash',
+        'method' => 'secretKeyRSAHash', // 阻止一次缓存全部数据，使用的时候再缓存
         'type' => RedisType::Hash,
-        'expires' => 0
+        'expires' => 60 * 60 * 1, // 缓存1小时+随机时间(0-3600*24)
     ],
 
 ];

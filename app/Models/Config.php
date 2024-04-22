@@ -19,8 +19,6 @@ class Config extends Model
      */
     public function configsUuidHash(array $key = [], array $index = []): array
     {
-        $key = array_merge($key, $index);
-
         // 查询数据
         $list = self::when($key, function ($query, $uuid) {
             return count($uuid) == 1 ? $query->where('uuid', $uuid[0]) : $query->whereIn('uuid', $uuid);
