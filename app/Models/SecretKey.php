@@ -27,14 +27,14 @@ class SecretKey extends Model
         $list = self::when($key, function ($query, $uuid) {
             return count($uuid) == 1 ? $query->where('uuid', $uuid[0]) : $query->whereIn('uuid', $uuid);
         })->orderBy('id')->get([
-            'uuid', 'aes_key', 'aes_iv'
+            'uuid', 'aes_key', 'aes_iv', 'status'
         ])->toArray();
 
 
         $data = []; // key => value
         // 格式处理数据 key => value
         foreach ($list as $v) {
-            $data[$v['uuid']] = ['key' => $v['aes_key'], 'iv' => $v['aes_iv']];
+            $data[$v['uuid']] = ['key' => $v['aes_key'], 'iv' => $v['aes_iv'], 'status' => $v['status']];
         }
 
         return $data;
@@ -56,14 +56,19 @@ class SecretKey extends Model
         $list = self::when($key, function ($query, $uuid) {
             return count($uuid) == 1 ? $query->where('uuid', $uuid[0]) : $query->whereIn('uuid', $uuid);
         })->orderBy('id')->get([
-            'uuid', 'rsa_public_key_user', 'rsa_public_key_server', 'rsa_private_key_server'
+            'uuid', 'rsa_public_key_user', 'rsa_public_key_server', 'rsa_private_key_server', 'status'
         ])->toArray();
 
 
         $data = []; // key => value
         // 格式处理数据 key => value
         foreach ($list as $v) {
-            $data[$v['uuid']] = ['user_public_key' => $v['rsa_public_key_user'], 'server_public_key' => $v['rsa_public_key_server'], 'server_private_key' => $v['rsa_private_key_server']];
+            $data[$v['uuid']] = [
+                'user_public_key' => $v['rsa_public_key_user'],
+                'server_public_key' => $v['rsa_public_key_server'],
+                'server_private_key' => $v['rsa_private_key_server'],
+                'status' => $v['status']
+            ];
         }
 
         return $data;

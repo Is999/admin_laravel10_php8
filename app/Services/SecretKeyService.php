@@ -3,11 +3,10 @@
 namespace App\Services;
 
 use App\Enum\RedisKeys;
-use App\Models\SecretKey;
 
 class SecretKeyService extends Service
 {
-    public function aesKey(string $uuid, bool $renew = false): array
+    public function aesKey(string $uuid, bool $renew = true): array
     {
         // 获取缓存
         $key = RedisKeys::SECRET_KEY_AES . $uuid;
@@ -31,7 +30,7 @@ class SecretKeyService extends Service
         return RedisService::hGetAllTable($key, $renew);
     }
 
-    public function rsaKey(string $uuid, bool $renew = false): array
+    public function rsaKey(string $uuid, bool $renew = true): array
     {
         // 获取缓存
         $key = RedisKeys::SECRET_KEY_RSA . $uuid;

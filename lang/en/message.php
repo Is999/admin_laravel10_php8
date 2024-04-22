@@ -32,10 +32,10 @@ return [
     Code::F2007 => '隐藏失败',
 
     // 系统错误
-    Code::F5000 => 'System Exception',
-    Code::F5001 => 'System Exception',
-    Code::F5002 => 'System Exception',
-    Code::F5003 => 'System Exception',
+    Code::F5000 => 'System Exception {flag}',
+    Code::F5001 => 'System Exception {flag}',
+    Code::F5002 => 'System Exception {flag}',
+    Code::F5003 => 'System Exception {flag}',
 
     // 登录|注册消息
     Code::E100000 => '密码不能为空',
@@ -102,5 +102,8 @@ return [
     Code::E100061 => '您的账号状态当前已被禁用，请联系管理员！',
     Code::E100062 => '缺少参数:{param}！',
     Code::E100063 => '非有效参数:{param}！',
-    Code::E100064 => '签名错误！',
+    Code::E100064 => '不存在的ApiKey！',
+    Code::E100065 => 'ApiKey未被启用！',
+    Code::E100066 => '签名错误！',
+    Code::E100067 => '数据无法解密！',
 ];
