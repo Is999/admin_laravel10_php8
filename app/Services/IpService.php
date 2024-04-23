@@ -27,12 +27,13 @@ class IpService extends Service
      */
     public static function getIpAddr(string $ip): string
     {
+        return '未知IP归属地[未获取到]';
         try {
             if ($ip == '' || $ip == '0.0.0.0' || $ip == '127.0.0.1') {
                 return "";
             }
             $client = new  Client ([
-                'timeout' => 5.0,
+                'timeout' => 1.0,
             ]);
             $respList = [];
 

@@ -9,7 +9,7 @@ function getSignStr(array $data): string
 {
     //剔除sign
     unset($data['sign']);
-    unset($data['appKey']);
+    unset($data['appId']);
 
     //排序
     ksort($data);

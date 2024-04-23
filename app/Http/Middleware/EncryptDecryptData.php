@@ -22,29 +22,29 @@ class EncryptDecryptData
         try {
             if (!empty($request->header('X-Cipher')) && (!empty($request->input('ciphertext', '')) || !empty($request->getContent()))) {
                 // 请求头中获取
-                $appKey = $request->header('X-App-Key', '');
+                $appId = $request->header('X-App-Id', '');
 
                 // 请求主体中获取
-                if (empty($appKey)) {
-                    $appKey = $request->input('appKey', '');
+                if (empty($appId)) {
+                    $appId = $request->input('appId', '');
                 }
 
-                if (empty($appKey)) {
-                    throw new CustomizeException(Code::E100062, ['param' => 'appKey']);
+                if (empty($appId)) {
+                    throw new CustomizeException(Code::E100062, ['param' => 'appId']);
                 }
-                $appKey = base64_decode($appKey);
-                if (!$appKey) {
-                    throw new CustomizeException(Code::E100063, ['param' => 'appKey']);
+                $appId = base64_decode($appId);
+                if (!$appId) {
+                    throw new CustomizeException(Code::E100063, ['param' => 'appId']);
                 }
 
-                // 获取apiKey配置
-                $aes = (new SecretKeyService)->aesKey($appKey);
+                // 获取appId配置
+                $aes = (new SecretKeyService)->aesKey($appId);
                 if (!$aes) {
                     throw new CustomizeException(Code::E100064);
                 }
 
-                // 验证apiKey状态
-                if ($aes['status'] != SecretKeyStatus::ENABLED) {
+                // 验证appId状态
+                if ($aes['status'] != SecretKeyStatus::ENABLED->value) {
                     throw new CustomizeException(Code::E100065);
                 }
 
@@ -52,7 +52,9 @@ class EncryptDecryptData
                 if (empty($aes['key'])) {
                     throw new CustomizeException(Code::F5003, ['flag' => '001']);
                 }
-                $key = Crypt::decrypt($aes['key']); // 对key解密
+
+                $key = Crypt::decryptString($aes['key']); // 对key解密
+
                 if (!in_array(strlen($key), [16, 24, 32])) {
                     Logger::error(LogChannel::DEV, 'AES key配置错误', [
                         'key' => $key,
@@ -65,7 +67,7 @@ class EncryptDecryptData
                 if (empty($aes['iv'])) {
                     throw new CustomizeException(Code::F5003, ['flag' => '002']);
                 }
-                $iv = Crypt::decrypt($aes['iv']); // 对iv解密
+                $iv = Crypt::decryptString($aes['iv']); // 对iv解密
                 if (16 != strlen($iv)) {
                     Logger::error(LogChannel::DEV, 'AES iv配置错误', [
                         'iv' => $iv,
@@ -74,11 +76,16 @@ class EncryptDecryptData
                     throw new CustomizeException(Code::F5003, ['flag' => '001-' . strlen($iv)]);
                 }
 
-                // 解密请求数据
-                $originalData = $request->input('ciphertext', '');
+                // 获取解密请求数据
+                $originalData = $request->input('ciphertext');
                 if(empty($originalData)){
                     $originalData = $request->getContent();
+                    $request->offsetUnset('0'); // 删除源加密数据
+                }else{
+                    $request->offsetUnset('ciphertext'); // 删除源加密数据
                 }
+
+                // 解密请求数据
                 $decryptedData = aesDecrypt($originalData, $key, $iv);
                 if (empty($decryptedData)) {
                     Logger::error(LogChannel::DEV, '解密失败', [
@@ -93,8 +100,8 @@ class EncryptDecryptData
 
                 // 将解密后的数据设置回请求对象
                 $data = json_decode($decryptedData, true);
-                foreach ($data as $key => $value) {
-                    $request->merge([$key => $value]);
+                foreach ($data as $k => $v) {
+                    $request->merge([$k => $v]);
                 }
 
                 // 执行下一个中间件
@@ -104,7 +111,7 @@ class EncryptDecryptData
                 $content = $response->getContent();
                 if ($content) {
                     $response->headers->set('X-Cipher', 'AES');
-                    $encryptedData = aesEncrypt(json_encode($response->original), $key, $iv);
+                    $encryptedData = aesEncrypt($content, $key, $iv);
                     // 设置加密后的数据为响应内容
                     $response->setContent($encryptedData);
                 }
@@ -112,7 +119,7 @@ class EncryptDecryptData
             }
             return $next($request);
         } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage(), HttpStatus::INTERNAL_SERVER_ERROR);
+            return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, 'Secret', [
                 'token' => $request->bearerToken(),

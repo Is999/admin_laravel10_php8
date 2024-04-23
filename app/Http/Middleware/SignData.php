@@ -35,29 +35,29 @@ class SignData
                 $routeName = $request->route()->getName();
                 if (!in_array($routeName, $this->except)) {
                     // 请求头中获取
-                    $appKey = $request->header('X-App-Key', '');
+                    $appId = $request->header('X-App-Id', '');
 
                     // 请求主体中获取
-                    if (empty($appKey)) {
-                        $appKey = $request->input('appKey', '');
+                    if (empty($appId)) {
+                        $appId = $request->input('appId', '');
                     }
 
-                    if (empty($appKey)) {
-                        throw new CustomizeException(Code::E100062, ['param' => 'appKey']);
+                    if (empty($appId)) {
+                        throw new CustomizeException(Code::E100062, ['param' => 'appId']);
                     }
-                    $appKey = base64_decode($appKey, true);
-                    if (!$appKey) {
-                        throw new CustomizeException(Code::E100063, ['param' => 'appKey']);
+                    $appId = base64_decode($appId, true);
+                    if (!$appId) {
+                        throw new CustomizeException(Code::E100063, ['param' => 'appId']);
                     }
 
-                    // 获取apiKey配置
-                    $rsa = (new SecretKeyService)->rsaKey($appKey);
+                    // 获取apiId配置
+                    $rsa = (new SecretKeyService)->rsaKey($appId);
                     if (!$rsa) {
                         throw new CustomizeException(Code::E100064);
                     }
 
-                    // 验证apiKey状态
-                    if ($rsa['status'] != SecretKeyStatus::ENABLED) {
+                    // 验证apiId状态
+                    if ($rsa['status'] != SecretKeyStatus::ENABLED->value) {
                         throw new CustomizeException(Code::E100065);
                     }
 
@@ -95,7 +95,7 @@ class SignData
                     }
 
                     // 获取签名数据
-                    $data = getSignStr($input) . '&appKey=' . $appKey;
+                    $data = getSignStr($input) . '&appId=' . $appId;
 
                     // 验证签名
                     $checkResult = openssl_verify($data, base64_decode($sign), $publicKey, OPENSSL_ALGO_SHA512);
@@ -138,7 +138,7 @@ class SignData
                     $content = $response->getContent();
                     if ($content) {
                         $content = json_decode($content, true);
-                        $data = getSignStr($content['data']) . '&appKey=' . $appKey;
+                        $data = getSignStr($content['data']) . '&appId=' . $appId;
                         $signature = '';
                         openssl_sign($data, $signature, $privateKey, OPENSSL_ALGO_SHA256);
                         $content['data']['sign'] = base64_encode($signature);
@@ -150,7 +150,7 @@ class SignData
             }
             return $next($request);
         } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage(), HttpStatus::INTERNAL_SERVER_ERROR);
+            return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, 'Secret', [
                 'token' => $request->bearerToken(),

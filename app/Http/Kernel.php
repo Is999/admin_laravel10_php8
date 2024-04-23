@@ -44,8 +44,8 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\AssignRequestId::class, // 日志添加 request_id
             \App\Http\Middleware\Lang::class, // 多语言
-            // \App\Http\Middleware\CryptRequest::class, // 请求参数加密解密
-            // \App\Http\Middleware\SignRequest::class, // 请求参数签名验证
+            \App\Http\Middleware\EncryptDecryptData::class, // 请求参数加密解密
+            \App\Http\Middleware\SignData::class, // 请求参数签名验证
         ],
     ];
 
