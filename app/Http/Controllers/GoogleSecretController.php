@@ -47,7 +47,7 @@ class GoogleSecretController extends Controller
             $createSecret = GoogleAuthenticator::CreateSecret();
             if ($request->isMethod('post')) {
                 // 验证参数
-                $validator = Validator::make($request->all()
+                $validator = Validator::make($request->input()
                     , [
                         'id' => 'required|integer',
                         'name' => 'required|string',
@@ -107,7 +107,7 @@ class GoogleSecretController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'id' => 'required|integer',
                     'name' => 'required|string',

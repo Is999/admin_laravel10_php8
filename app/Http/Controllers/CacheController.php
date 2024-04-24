@@ -59,7 +59,7 @@ class CacheController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'key' => 'required|string',
                     'type' => [ // 类型: 1 菜单, 0 目录
@@ -145,7 +145,7 @@ class CacheController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'key' => 'required|string',
                 ]);
@@ -189,7 +189,7 @@ class CacheController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'key' => 'required|string',
                 ]);

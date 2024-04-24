@@ -42,10 +42,10 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\AssignRequestId::class, // 日志添加 request_id
+            \App\Http\Middleware\AssignRequestId::class, // 请求和日志添加 request_id
             \App\Http\Middleware\Lang::class, // 多语言
-            \App\Http\Middleware\EncryptDecryptData::class, // 请求参数加密解密
-            \App\Http\Middleware\SignData::class, // 请求参数签名验证
+            \App\Http\Middleware\EncryptDecryptData::class, // 响应和请求参数加密解密
+//            \App\Http\Middleware\SignData::class, // 请求参数签名验证，响应参数签名
         ],
     ];
 
@@ -67,6 +67,6 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'adminAuth' => \App\Http\Middleware\AdminAuth::class, //添加权限认证中间件
+        'adminAuth' => \App\Http\Middleware\AdminAuth::class, //添加Token和权限认证中间件
     ];
 }

@@ -27,7 +27,7 @@ class UserLogController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'user_name' => 'string|max:20', // 账号
                     'action' => [ // 排序方式

@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * 去除支付收尾空字符串
+ */
 namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Http\Middleware\TrimStrings as Middleware;

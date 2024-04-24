@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * 给请求和日志添加Request-Id
+ */
 namespace App\Http\Middleware;
 
 use App\Enum\LogChannel;

@@ -30,7 +30,7 @@ class PermissionController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'uuid' => 'string|max:100', // 唯一标识
                     'title' => 'string|max:100', // 权限名称
@@ -72,7 +72,7 @@ class PermissionController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'uuid' => 'required|string|max:100', // 唯一标识(前端权限标识)
                     'title' => 'required|string|max:100', // 权限名称
@@ -118,7 +118,7 @@ class PermissionController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'title' => 'required|string|max:100', // 权限名称
                     'module' => 'nullable|string|max:250', // 后端权限匹配模型(路由名称 | 控制器/方法)

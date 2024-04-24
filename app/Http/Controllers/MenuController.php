@@ -30,7 +30,7 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'permissions_uuid' => 'string|max:100', // 唯一标识
                     'title' => 'string|max:100', // 菜单名称
@@ -73,7 +73,7 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'permissions_uuid' => 'required|string|max:100', // 权限标识
                     'title' => 'required|string|max:100', // 菜单名称
@@ -132,7 +132,7 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'permissions_uuid' => 'required|string|max:100', // 权限标识
                     'title' => 'required|string|max:100', // 菜单名称
@@ -190,7 +190,7 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'status' => [
                         'required',

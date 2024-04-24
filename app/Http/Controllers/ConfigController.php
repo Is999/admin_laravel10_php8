@@ -29,7 +29,7 @@ class ConfigController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'uuid' => 'string', // 唯一标识
                     'title' => 'string', // 名称
@@ -65,7 +65,7 @@ class ConfigController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'uuid' => 'required|string|max:255',
                     'title' => 'required|string|max:255',
@@ -117,7 +117,7 @@ class ConfigController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'uuid' => 'required|string|max:255',
                     'title' => 'required|string|max:255',

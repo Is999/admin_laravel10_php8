@@ -39,7 +39,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'name' => 'required|string|min:6|max:32',
                     'password' => 'required',
@@ -47,7 +47,7 @@ class UserController extends Controller
                     'captcha' => 'required', // 验证码
                     'secureCode' => 'required|string|size:6' // 安全码
                 ]);
-
+            
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
@@ -110,7 +110,7 @@ class UserController extends Controller
 
             // 过滤敏感字段
             $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'secure_key']));
-            return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)]);
+            return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)])->header('X-Cipher', base64_encode(json_encode(['json:user'])));
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
@@ -129,7 +129,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'name' => 'required|string|min:6|max:32',
                     'password' => 'required',
@@ -250,7 +250,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'roles' => 'required|array', // 角色id
                 ]);
@@ -287,7 +287,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'roleId' => 'required|integer|min:1', // 角色id
                 ]);
@@ -324,7 +324,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'user_roles_id' => 'required|integer|min:1', // 角色与用户关系 user_roles_access.id
                 ]);
@@ -416,7 +416,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'secure' => 'required',
                 ]);
@@ -445,7 +445,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'name' => 'string|max:100', // 账号
                     'email' => 'string|email', // 邮箱
@@ -510,7 +510,7 @@ class UserController extends Controller
     public function updatePassword(Request $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'passwordOld' => [
                         'required', // 接收前端MD5后的密码
@@ -568,7 +568,7 @@ class UserController extends Controller
     public function updateSecureKey(Request $request)
     {
         try {
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'secure_key' => 'required|min:16', // 安全码
                 ]);
@@ -606,7 +606,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'name' => [
                         'required',
@@ -696,7 +696,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'name' => [
                         'required',
@@ -790,7 +790,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'status' => 'required|boolean',
                 ]);

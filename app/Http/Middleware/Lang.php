@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * 多语种处理
+ */
 namespace App\Http\Middleware;
 
 use Closure;

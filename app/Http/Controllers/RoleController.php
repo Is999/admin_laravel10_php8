@@ -45,7 +45,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'title' => 'string|max:100', // 角色名称
                     'status' => [ // 角色状态
@@ -80,7 +80,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'title' => 'required|string|max:100',
                     'pid' => 'required|integer|min:1',
@@ -123,7 +123,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'title' => 'required|string|max:100',
                     'describe' => 'required|string|max:255',
@@ -197,7 +197,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'status' => [
                         'required',
@@ -238,7 +238,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->all()
+            $validator = Validator::make($request->input()
                 , [
                     'permissions' => [
                         'required',

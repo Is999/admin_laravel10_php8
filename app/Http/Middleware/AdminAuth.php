@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * 验证用户token、ip、访问权限等相关信息
+ */
 namespace App\Http\Middleware;
 
 use App\Enum\Code;

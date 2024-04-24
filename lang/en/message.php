@@ -36,6 +36,7 @@ return [
     Code::F5001 => 'System Exception {flag}',
     Code::F5002 => 'System Exception {flag}',
     Code::F5003 => 'System Exception {flag}',
+    Code::F5004 => 'System Exception {flag}',
 
     // 登录|注册消息
     Code::E100000 => '密码不能为空',
@@ -105,5 +106,5 @@ return [
     Code::E100064 => '不存在的ApiKey！',
     Code::E100065 => 'ApiKey未被启用！',
     Code::E100066 => '签名错误！',
-    Code::E100067 => '数据无法解密！',
+    Code::E100067 => '{param}数据无法解密！',
 ];
