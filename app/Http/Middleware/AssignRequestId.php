@@ -21,7 +21,11 @@ class AssignRequestId
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        $requestId = $request->header('X-Request-Id', (string)Str::uuid());
+        $requestId = $request->header('X-Request-Id');
+        if(empty($requestId)){
+            $requestId = (string)Str::uuid();
+            $request->headers->set('X-Request-Id', $requestId);
+        }
         $context = [
             'request-id' => $requestId,
             'route' => $request->route()->getName()
@@ -49,6 +53,6 @@ class AssignRequestId
                 ]);
         }
 
-        return $next($request)->header('X-Request-Id', $requestId);
+        return $next($request);
     }
 }

@@ -32,7 +32,7 @@ class EncryptDecryptData
             $aes = [];
             $cipher = $request->header('X-Cipher');
             if (!empty($cipher)) {
-                $aes = (new SecretKeyService)->getAES($request);
+                $aes = (new SecretKeyService)->getAesKeyByRequestAppId($request);
                 if (strtolower($cipher) === 'cipher') {
                     // 获取解密请求数据, 优先获取ciphertext参数
                     $originalData = $request->input('ciphertext');
@@ -108,7 +108,7 @@ class EncryptDecryptData
             $cipher = $response->headers->get("X-Cipher");
             $originalData = $response->getContent();
             if (!empty($cipher) && !empty($originalData)) {
-                $aes = $aes ?: (new SecretKeyService)->getAES($request);
+                $aes = $aes ?: (new SecretKeyService)->getAesKeyByRequestAppId($request);
 
                 if (strtolower($cipher) === 'cipher') {
                     $encryptedData = aesEncrypt($originalData, $aes['key'], $aes['iv']);

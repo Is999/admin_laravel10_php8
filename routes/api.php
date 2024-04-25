@@ -30,7 +30,7 @@ Route::prefix('api')->group(function () {
 Route::prefix('api')->middleware(['adminAuth'])->group(function () {
 
     // 不验证权限的接口(只验证token, 该路由无须加入权限表)
-    Route::name('free.')->group(function () {
+    Route::name('except.')->group(function () {
         // 角色
         Route::controller(RoleController::class)->prefix('role')->name('role.')->group(function () {
             Route::get('treeList', 'treeList')->name('treeList'); // 新增角色|编辑角色 上级角色(下拉框);

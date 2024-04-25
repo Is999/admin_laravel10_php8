@@ -45,7 +45,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\AssignRequestId::class, // 请求和日志添加 request_id
             \App\Http\Middleware\Lang::class, // 多语言
             \App\Http\Middleware\EncryptDecryptData::class, // 响应和请求参数加密解密
-//            \App\Http\Middleware\SignData::class, // 请求参数签名验证，响应参数签名
+            \App\Http\Middleware\SignData::class, // 请求参数签名验证，响应参数签名
         ],
     ];
 

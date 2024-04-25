@@ -48,8 +48,8 @@ class AdminAuth
                 throw new CustomizeException(Code::E100061);
             }
 
-            // 不受限制的接口(只验证token不验证权限)
-            if (!$request->routeIs('free.*')) {
+            // except.* 只验证token不验证权限
+            if (!$request->routeIs('except.*')) {
                 // 受限的接口必须验证权限, 根据路由名称验证权限
                 $routeName = $request->route()->getName();
                 if (!(new AuthorizeService)->check($uid, $routeName)) {

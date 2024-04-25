@@ -14,13 +14,14 @@ use Illuminate\Support\Facades\Crypt;
 class SecretKeyService extends Service
 {
     /**
+     * AES key
      * @param Request $request
      * @return array
      * @throws CustomizeException
      */
-    public function getAES(Request $request): array
+    public function getAesKeyByRequestAppId(Request $request): array
     {
-        $aes = $this->getSecretKey($request,'AES');
+        $aes = $this->getSecretKey($request, 'AES');
         // 获取配置key
         if (empty($aes['key'])) {
             throw new CustomizeException(Code::F5003, ['flag' => '001']);
@@ -50,6 +51,72 @@ class SecretKeyService extends Service
     }
 
     /**
+     * RSA key 私钥签名，公钥验签
+     * @param Request $request
+     * @return array
+     * @throws CustomizeException
+     */
+    public function getRsaKeyByRequestAppId(Request $request, bool $userPublicKey, bool $serverPrivateKey): array
+    {
+        $publicKey = null;
+        $privateKey = null;
+        $rsa = $this->getSecretKey($request, 'RSA');
+        if ($userPublicKey) {
+            $filePath = storage_path($rsa['user_public_key']);
+
+            // 验证用户公钥文件是否存在
+            if (!$rsa['user_public_key'] || !file_exists($filePath)) {
+                Logger::error(LogChannel::DEV, '用户公钥文件不存在：' . $filePath);
+                throw new CustomizeException(Code::F5000, ['flag' => '003']);
+            }
+
+            // 获取文件中的用户公钥
+            $original = file_get_contents($filePath);
+            if ($original === false) {
+                Logger::error(LogChannel::DEV, '获取用户公钥文件内容失败：' . $filePath);
+                throw new CustomizeException(Code::F5001, ['flag' => '003']);
+            }
+
+            // 验证用户公钥是否是可用的
+            $publicKey = openssl_pkey_get_public($original);
+            if ($publicKey === false) {
+                Logger::error(LogChannel::DEV, '用户公钥无效：' . $filePath, [
+                    'original' => $original
+                ]);
+                throw new CustomizeException(Code::F5002, ['flag' => '003']);
+            }
+        }
+
+        if ($serverPrivateKey) {
+            $filePath = storage_path($rsa['server_private_key']);
+
+            // 验证用服务器私钥文件是否存在
+            if (!$rsa['server_private_key'] || !file_exists($filePath)) {
+                Logger::error(LogChannel::DEV, '服务器私钥文件文件不存在：' . $filePath);
+                throw new CustomizeException(Code::F5000, ['flag' => '001']);
+            }
+
+            // 获取文件中的服务器私钥
+            $original = file_get_contents($filePath);
+            if ($original === false) {
+                Logger::error(LogChannel::DEV, '获取服务器私钥文件内容失败：' . $filePath);
+                throw new CustomizeException(Code::F5001, ['flag' => '001']);
+            }
+
+            // 验证服务器私钥是否是可用的
+            $privateKey = openssl_pkey_get_private($original);
+            if ($privateKey === false) {
+                Logger::error(LogChannel::DEV, '服务器私钥无效：' . $filePath, [
+                    'original' => $original
+                ]);
+                throw new CustomizeException(Code::F5002, ['flag' => '001']);
+            }
+        }
+
+        return ['user_public_key' => $publicKey, 'server_private_key' => $privateKey];
+    }
+
+    /**
      * 获取配置
      * @param Request $request
      * @param string $type
@@ -59,10 +126,7 @@ class SecretKeyService extends Service
     public function getSecretKey(Request $request, string $type): array
     {
         // 请求头中获取
-        $appId = $request->header('X-App-Id', '');// 请求主体中获取
-        if (empty($appId)) {
-            $appId = $request->input('appId', '');
-        }
+        $appId = $request->header('X-App-Id', '');
         if (empty($appId)) {
             throw new CustomizeException(Code::E100062, ['param' => 'appId']);
         }
