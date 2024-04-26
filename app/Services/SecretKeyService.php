@@ -184,4 +184,44 @@ class SecretKeyService extends Service
 
         return RedisService::hGetAllTable($key, $renew);
     }
+
+    /**
+     * 设置私钥
+     * @return bool
+     */
+    private function setupPrivateKey($priKey)
+    {
+        $result = false;
+        if (is_resource($priKey)) {
+            $result = true;
+        } else {
+            $pem = chunk_split(trim($priKey), 64, "\n");
+            $pem = "-----BEGIN RSA PRIVATE KEY-----\n" . $pem . "-----END RSA PRIVATE KEY-----\n";
+            $priKey = openssl_pkey_get_private($pem);
+            if ($priKey) {
+                $result = true;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * 设置公钥
+     * @return bool
+     */
+    private function setupChannelPublicKey($channelPubKey)
+    {
+        $result = false;
+        if (is_resource($this->_channelPublicKey)) {
+            $result = true;
+        } else {
+            $pem = chunk_split(trim($channelPubKey), 64, "\n");
+            $pem = "-----BEGIN PUBLIC KEY-----\n" . $pem . "-----END PUBLIC KEY-----\n";
+            $this->_channelPublicKey = openssl_pkey_get_public($pem);
+            if ($this->_channelPublicKey) {
+                $result = true;
+            }
+        }
+        return $result;
+    }
 }

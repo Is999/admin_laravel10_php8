@@ -37,6 +37,7 @@ return [
     Code::F5002 => 'System Exception {flag}',
     Code::F5003 => 'System Exception {flag}',
     Code::F5004 => 'System Exception {flag}',
+    Code::F5005 => 'System Exception',
 
     // 登录|注册消息
     Code::E100000 => '密码不能为空',

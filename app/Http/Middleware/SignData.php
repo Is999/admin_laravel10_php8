@@ -5,8 +5,7 @@ namespace App\Http\Middleware;
 use App\Enum\Code;
 use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
-use App\Enum\SecretKeyStatus;
-use App\Enum\SignParams;
+use App\Enum\SignRules;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Services\ConfigService;
@@ -19,6 +18,12 @@ use Throwable;
 
 class SignData
 {
+    /**
+     * 必须签名的路由
+     * @var array<string>
+     */
+    protected array $must = SignRules::signRules;
+
     public function handle(Request $request, Closure $next)
     {
         try {
@@ -50,7 +55,7 @@ class SignData
                         $signStr = $this->getSignStr($input, $signParams['request'], $requestId, $appId);
 
                         // 验证签名
-                        $checkResult = openssl_verify($signStr, base64_decode($sign), $rsa['user_public_key'], OPENSSL_ALGO_SHA512);
+                        $checkResult = openssl_verify($signStr, base64_decode($sign), $rsa['user_public_key'], OPENSSL_ALGO_SHA256);
                         if ($checkResult !== 1) {
                             Logger::error(LogChannel::DEV, '签名错误', [
                                 'signStr' => $signStr,
@@ -71,8 +76,11 @@ class SignData
                         if ($content) {
                             $content = json_decode($content, true);
                             $signStr = $this->getSignStr($content['data'], $signParams['response'], $requestId, $appId);
-                            $signature = '';
+                            $signature = false;
                             openssl_sign($signStr, $signature, $rsa['server_private_key'], OPENSSL_ALGO_SHA256);
+                            if (!$signature) {
+                                throw new CustomizeException(Code::F5005);
+                            }
                             $content['data']['sign'] = base64_encode($signature);
                             $response->setContent(json_encode($content));
                         }
@@ -85,7 +93,7 @@ class SignData
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
-            Logger::error(LogChannel::DEV, 'Secret', [
+            Logger::error(LogChannel::DEV, 'Sign', [
                 'token' => $request->bearerToken(),
             ], $e);
             return Response::fail(Code::SYSTEM_ERR, null, HttpStatus::INTERNAL_SERVER_ERROR);
@@ -100,29 +108,22 @@ class SignData
      */
     public function getSignStr(array $data, array $signParams, string $requestId, string $appId): string
     {
-        //排序
+        // 参数key按ASCII编码顺序排序
         ksort($signParams);
 
         $str = '';
         foreach ($signParams as $k) {
-            if (!isset($data[$k])) {
+            // 检查参数
+            if (!array_key_exists($k, $data)) {
                 throw new CustomizeException(Code::E100062, ['param' => $k]);
+            }
+            // 空字符串不参与签名
+            if ($data[$k] === '' || $data[$k] === null) {
+                continue;
             }
             $str .= $k . '=' . $data[$k] . '&';
         }
 
         return $str . "requestId=$requestId&key=$appId";
     }
-
-
-    /**
-     * 必须签名的路由
-     *
-     * @var array<string>
-     */
-    protected array $must = [
-        'user.login' => SignParams::userLogin,
-    ];
-
-
 }
