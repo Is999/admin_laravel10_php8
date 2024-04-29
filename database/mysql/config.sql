@@ -40,7 +40,7 @@ CREATE TABLE `config` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (1, 'CAPTCHA_DISABLE', '禁用验证码', 3, '0', '0', '禁用验证码：0启用；1禁用', '2023-06-21 15:25:40', '2023-06-29 21:41:28');
-INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (2, 'SECURE_DISABLE', '禁用安全码', 3, '1', '0', '禁用安全码：0启用；1禁用', '2023-06-21 09:13:31', '2023-06-29 21:41:09');
+INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (2, 'SECURE_DISABLE', '禁用TOTP MFA(2FA两步验证)', 3, '1', '0', '禁用TOTP MFA(2FA两步验证)：0启用；1禁用', '2023-06-21 09:13:31', '2023-06-29 21:41:09');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (3, 'ADMIN_IP_WHITELIST_DISABLE', '禁用后台IP白名单', 3, '1', '0', '禁用后台IP白名单：0启用；1禁用', '2023-06-21 09:21:02', '2023-06-29 21:43:00');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (4, 'ADMIN_IP_WHITELIST', '后台IP白名单', 4, '[\"8.8.8.8\",\"127.0.0.1\"]', '[\"8.8.8.8\",\"127.0.0.1\"]', '后台IP白名单: 多个IP以英文逗号分割', '2023-06-21 09:23:25', '2023-06-29 21:19:46');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (5, 'CHECK_CHANGE_IP', '验证IP是否变更', 3, '1', '0', '验证IP是否变更：0 验证； 1不验证', '2023-06-21 10:18:11', '2023-06-29 21:30:55');

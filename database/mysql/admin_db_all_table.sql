@@ -40,7 +40,7 @@ CREATE TABLE `config` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (1, 'CAPTCHA_DISABLE', '禁用验证码', 3, '0', '0', '禁用验证码：0启用；1禁用', '2023-06-21 15:25:40', '2023-06-29 21:41:28');
-INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (2, 'SECURE_DISABLE', '禁用安全码', 3, '1', '0', '禁用安全码：0启用；1禁用', '2023-06-21 09:13:31', '2023-06-29 21:41:09');
+INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (2, 'SECURE_DISABLE', '禁用 TOTP MFA(2FA两步验证)', 3, '1', '0', '禁用 TOTP MFA(2FA两步验证)：0启用；1禁用', '2023-06-21 09:13:31', '2023-06-29 21:41:09');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (3, 'ADMIN_IP_WHITELIST_DISABLE', '禁用后台IP白名单', 3, '1', '0', '禁用后台IP白名单：0启用；1禁用', '2023-06-21 09:21:02', '2023-06-29 21:43:00');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (4, 'ADMIN_IP_WHITELIST', '后台IP白名单', 4, '[\"8.8.8.8\",\"127.0.0.1\"]', '[\"8.8.8.8\",\"127.0.0.1\"]', '后台IP白名单: 多个IP以英文逗号分割', '2023-06-21 09:23:25', '2023-06-29 21:19:46');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (5, 'CHECK_CHANGE_IP', '验证IP是否变更', 3, '1', '0', '验证IP是否变更：0 验证； 1不验证', '2023-06-21 10:18:11', '2023-06-29 21:30:55');
@@ -292,7 +292,8 @@ CREATE TABLE `users` (
   `password` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '密码hash',
   `email` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '邮箱',
   `phone` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '电话',
-  `secure_key` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'MFA密码秘钥：如Google Authenticator、Microsoft Authenticator等基于时间的一次性密码(TOTP)',
+  `mfa_secure_key` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '基于时间的动态密码 (TOTP) 多重身份验证 (MFA) 秘钥：如Google Authenticator、Microsoft Authenticator',
+  `mfa_status` tinyint UNSIGNED NOT NULL DEFAULT 0 COMMENT '启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '账户状态: 1正常, 0禁用',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '头像',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '简介备注',
@@ -309,8 +310,8 @@ CREATE TABLE `users` (
 -- Records of users
 -- ----------------------------
 BEGIN;
-INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `secure_key`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (1, 'super999', 'super999', '$2y$10$qOjSQkQ43o4RIy36ZP.FLef3nPtJDJWYZDKdCvvyYjYqyBgl30axu', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0', 1, '', '', '2023-06-30 15:18:38', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-06-30 15:18:38');
-INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `secure_key`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (2, 'admin999', 'admin999', '$2y$10$ltUtx9xHJLhuPsjNS2EmZ.5ccYAyYfFznyrYmS0cNrdWRQRR2lhhq', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0=', 1, '', '', '2023-07-18 10:51:07', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-07-18 10:51:07');
+INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `mfa_secure_key`, `mfa_status`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (1, 'super999', 'super999', '$2y$10$qOjSQkQ43o4RIy36ZP.FLef3nPtJDJWYZDKdCvvyYjYqyBgl30axu', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0', 0, 1, '', '', '2023-06-30 15:18:38', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-06-30 15:18:38');
+INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `mfa_secure_key`, `mfa_status`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (2, 'admin999', 'admin999', '$2y$10$ltUtx9xHJLhuPsjNS2EmZ.5ccYAyYfFznyrYmS0cNrdWRQRR2lhhq', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0=', 0, 1, '', '', '2023-07-18 10:51:07', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-07-18 10:51:07');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

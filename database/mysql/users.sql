@@ -28,7 +28,8 @@ CREATE TABLE `users` (
   `password` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '密码hash',
   `email` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '邮箱',
   `phone` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '电话',
-  `secure_key` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'MFA密码秘钥：如Google Authenticator、Microsoft Authenticator等基于时间的一次性密码(TOTP)',
+  `mfa_secure_key` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '基于时间的动态密码 (TOTP) 多重身份验证 (MFA) 秘钥：如Google Authenticator、Microsoft Authenticator',
+  `mfa_status` tinyint UNSIGNED NOT NULL DEFAULT 0 COMMENT '启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '账户状态: 1正常, 0禁用',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '头像',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '简介备注',
@@ -45,8 +46,8 @@ CREATE TABLE `users` (
 -- Records of users
 -- ----------------------------
 BEGIN;
-INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `secure_key`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (1, 'super999', 'super999', '$2y$10$qOjSQkQ43o4RIy36ZP.FLef3nPtJDJWYZDKdCvvyYjYqyBgl30axu', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0', 1, '', '', '2023-06-30 15:18:38', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-06-30 15:18:38');
-INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `secure_key`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (2, 'admin999', 'admin999', '$2y$10$ltUtx9xHJLhuPsjNS2EmZ.5ccYAyYfFznyrYmS0cNrdWRQRR2lhhq', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0=', 1, '', '', '2023-07-18 10:51:07', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-07-18 10:51:07');
+INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `mfa_secure_key`, `mfa_status`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (1, 'super999', 'super999', '$2y$10$qOjSQkQ43o4RIy36ZP.FLef3nPtJDJWYZDKdCvvyYjYqyBgl30axu', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0', 0, 1, '', '', '2023-06-30 15:18:38', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-06-30 15:18:38');
+INSERT INTO `users` (`id`, `name`, `real_name`, `password`, `email`, `phone`, `mfa_secure_key`, `mfa_status`, `status`, `avatar`, `remark`, `last_login_time`, `last_login_ip`, `last_login_ipaddr`, `created_at`, `updated_at`) VALUES (2, 'admin999', 'admin999', '$2y$10$ltUtx9xHJLhuPsjNS2EmZ.5ccYAyYfFznyrYmS0cNrdWRQRR2lhhq', '', '', 'eyJpdiI6Ikp1NG1yazZZbW9ObVRLdmRDKzlCS2c9PSIsInZhbHVlIjoiT3lJYTdwblhQYnUzbFhYMzl4SjhNTGFpbmdtV3VDNUdHV0hsb2VVWEovcz0iLCJtYWMiOiI3M2FiZmFiMWFjOGY3YzIzMmNjZmQ2NjhjMTg2OGM2OTk5NzNjYTRjNzgxYzg4MDExYjBlNmZmY2ZiNjgxYjhhIiwidGFnIjoiIn0=', 0, 1, '', '', '2023-07-18 10:51:07', '172.18.0.1', '广东省深圳市', '2022-03-21 21:54:26', '2023-07-18 10:51:07');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
