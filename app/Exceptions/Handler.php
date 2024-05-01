@@ -23,7 +23,7 @@ class Handler extends ExceptionHandler
         'password_confirmation',
         'email',
         'phone',
-        'secure_key',
+        'mfa_secure_key',
     ];
 
     /**

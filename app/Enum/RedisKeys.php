@@ -23,9 +23,11 @@ enum RedisKeys: string
 
     // TABLE 数据缓存 keys end
 
-    const TOKEN = 'token' . self::DELIMIT; // 用户token String token:{user.id}
-    const USERINFO = 'userinfo' . self::DELIMIT; // 用户信息 Hash userinfo:{user.id}
-    const USER_ROLES = 'user_roles' . self::DELIMIT; // 用户权限 Set user_roles:{user.id}
+    const ADMIN_TOKEN = 'admin_token' . self::DELIMIT; // 用户token String admin_token:{user.id}
+    const ADMIN_USERINFO = 'admin_userinfo' . self::DELIMIT; // 用户信息 Hash admin_userinfo:{user.id}
+    const ADMIN_USER_ROLES = 'admin_user_roles' . self::DELIMIT; // 用户权限 Set admin_user_roles:{user.id}
+    const ADMIN_USER_TWO_STEP = 'admin_user_two_step' . self::DELIMIT; // 用户权限 String admin_user_two_step:{user.id}
+    const ADMIN_MFA_SECRET = 'admin_mfa_secret' . self::DELIMIT; // 用户权限 String admin_mfa_secret:{user.id}
 
 
 }

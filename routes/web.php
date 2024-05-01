@@ -21,6 +21,6 @@ Route::get('/', function () {
 });
 
 // 创建谷歌验证码
-Route::match(['GET', 'POST'], '/google/secret/{sign}', [GoogleSecretController::class, 'secret'])->name('user.secret');
-Route::post('/google/buildSecret', [GoogleSecretController::class, 'buildSecretKey'])->name('user.buildSecret');
+Route::match(['GET', 'POST'], '/mfa/secret/{sign}', [GoogleSecretController::class, 'secret'])->name('user.secret');
+Route::post('/mfa/buildSecret', [GoogleSecretController::class, 'buildSecretKey'])->name('user.buildSecret');
 

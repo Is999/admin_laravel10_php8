@@ -13,8 +13,8 @@ enum UserAction: string
     case BUILD_SECRET_VERIFY_ACCOUNT = '绑定安全码账号验证';
     case LOGOUT = '登出';
     case UPDATE_PASSWORD = '更新密码';
-    case UPDATE_SECURE_KEY = '更新安全秘钥';
-    case BUILD_SECURE_KEY = '绑定安全码';
+    case UPDATE_MFA_SECURE_KEY = '更新 MFA 秘钥';
+    case BUILD_MFA_SECURE_KEY = '绑定 MFA 秘钥';
     case ADD_USER = '新增账号';
     case EDIT_USER = '编辑账号';
     case EDIT_STATUS_USER = '更新账号状态';

@@ -6,6 +6,8 @@ use App\Enum\Code;
 use App\Enum\ConfigUuid;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
+use App\Enum\RedisKeys;
+use App\Enum\UserMfaStatus;
 use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
@@ -91,7 +93,7 @@ class UserService extends Service
         // 验证IP
         if (true !== ConfigService::getCache(ConfigUuid::ADMIN_IP_WHITELIST_DISABLE)) {
             // 验证IP是否变更
-            if (true !== ConfigService::getCache(ConfigUuid::CHECK_CHANGE_IP) && $jwt->ip != $ip) {
+            if (true !== ConfigService::getCache(ConfigUuid::ADMIN_CHECK_CHANGE_IP) && $jwt->ip != $ip) {
                 throw new CustomizeException(Code::E100057);
             }
             // 验证IP变更后验证是否在白名单
@@ -237,17 +239,17 @@ class UserService extends Service
      * @return bool
      * @throws CustomizeException
      */
-    public function CheckSecure(int $id, string $secure): bool
+    public function checkSecure(int $id, string $secure): bool
     {
-        $user = User::where('id', $id)->first();
+        $user = $this->getUserInfo($id);
         if (!$user) {
             throw new CustomizeException(Code::E100015);
         }
 
         // 校验安全验证码
-        if (true !== ConfigService::getCache(ConfigUuid::SECURE_DISABLE)) {
-            if ($user->secure_key) {
-                if (GoogleAuthenticator::CheckCode(Crypt::decryptString($user->secure_key), $secure)) {
+        if (UserMfaStatus::DISABLED->value != intval($user['mfa_status'])) {
+            if ($user['mfa_secure_key']) {
+                if (GoogleAuthenticator::CheckCode(Crypt::decryptString($user['mfa_secure_key']), $secure)) {
                     return true;
                 }
             }
@@ -255,8 +257,35 @@ class UserService extends Service
         }
 
         // 验证密码
-        if (Hash::check(md5($secure) . substr(md5($user->name), 10, 10), $user->password)) {
+        if (Hash::check(md5($secure) . substr(md5($user['name']), 10, 10), $user['password'])) {
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 校验MFA动态密码
+     * @param int $id
+     * @param string $secure
+     * @return bool
+     * @throws CustomizeException
+     */
+    public function checkMfaSecure(int $id, string $secure): bool
+    {
+        $user = $this->getUserInfo($id);
+        if (!$user) {
+            throw new CustomizeException(Code::E100015);
+        }
+
+        // 校验安全验证码
+        if (UserMfaStatus::DISABLED->value != intval($user['mfa_status'])) {
+            if ($user['mfa_secure_key']) {
+                if (GoogleAuthenticator::CheckCode(Crypt::decryptString($user['mfa_secure_key']), $secure)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         return false;
@@ -276,7 +305,8 @@ class UserService extends Service
         $password = Arr::get($input, 'password', Str::random(32)); // 密码
         $email = Arr::get($input, 'email', ''); // 邮箱
         $phone = Arr::get($input, 'phone', ''); // 邮箱
-        $secure_key = Arr::get($input, 'secure_key'); // 安全码秘钥
+        $mfa_secure_key = Arr::get($input, 'mfa_secure_key'); // 基于时间的动态密码 (TOTP) 多重身份验证 (MFA) 秘钥：如Google Authenticator、Microsoft Authenticator
+        $mfa_status = Arr::get($input, 'mfa_status', UserMfaStatus::DISABLED->value); // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
         $status = Arr::get($input, 'status', UserStatus::ENABLED); // 状态
         $avatar = Arr::get($input, 'avatar', ''); // 状态
         $remark = Arr::get($input, 'remark', ''); // 状态
@@ -292,7 +322,8 @@ class UserService extends Service
         $model->password = Hash::make($password . substr(md5($name), 10, 10));
         $model->email = $email;
         $model->phone = $phone;
-        $model->secure_key = $secure_key ? Crypt::encryptString($secure_key) : '';
+        $model->mfa_secure_key = $mfa_secure_key ? Crypt::encryptString($mfa_secure_key) : '';
+        $model->mfa_status = (UserMfaStatus::DISABLED->value != $mfa_status && '' != $model->mfa_secure_key) ? UserMfaStatus::ENABLED->value : UserMfaStatus::DISABLED->value;
         $model->status = $status;
         $model->avatar = $avatar;
         $model->remark = $remark;
@@ -321,7 +352,8 @@ class UserService extends Service
     public function editAccount(Request $request, int $id, array $input): bool
     {
         $password = Arr::get($input, 'password'); // 密码
-        $secure_key = Arr::get($input, 'secure_key'); // 密码
+        $mfa_secure_key = Arr::get($input, 'mfa_secure_key'); // 密码
+        $mfa_status = Arr::get($input, 'mfa_status'); // 密码
 
         // 获取要编辑的账号
         $model = User::find($id);
@@ -334,7 +366,8 @@ class UserService extends Service
         $model->password = $password ? Hash::make($password . substr(md5($model->name), 10, 10)) : $model->password; // 密码
         $model->email = Arr::get($input, 'email', $model->email); // 邮箱
         $model->phone = Arr::get($input, 'phone', $model->phone); // 手机
-        $model->secure_key = $secure_key ? Crypt::encryptString($secure_key) : $model->secure_key; // 安全码秘钥
+        $model->mfa_secure_key = $mfa_secure_key ? Crypt::encryptString($mfa_secure_key) : $model->mfa_secure_key; // 基于时间的动态密码 (TOTP) 多重身份验证 (MFA) 秘钥：如Google Authenticator、Microsoft Authenticator
+        $model->mfa_status = $mfa_status === null ? $model->mfa_status : ((UserMfaStatus::DISABLED->value != $mfa_status && '' != $model->mfa_secure_key) ? UserMfaStatus::ENABLED->value : UserMfaStatus::DISABLED->value); // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
         $model->status = Arr::get($input, 'status', $model->status); // 是否禁用
         $model->avatar = Arr::get($input, 'avatar', $model->avatar); // 头像
         $model->remark = Arr::get($input, 'remark', $model->remark); // 备注
@@ -432,7 +465,7 @@ class UserService extends Service
         if ($total) {
             // 排序,分页
             $items = $query->select([
-                'users.id', 'users.name', 'users.real_name', 'users.email', 'users.phone', 'users.secure_key', 'users.status'
+                'users.id', 'users.name', 'users.real_name', 'users.email', 'users.phone', 'users.mfa_secure_key', 'users.mfa_status', 'users.status'
                 , 'users.avatar', 'users.remark', 'users.last_login_time', 'users.last_login_ip'
                 , 'users.last_login_ipaddr', 'users.created_at', 'users.updated_at'
             ])->orderBy($orderByField, $orderByType)
@@ -449,7 +482,7 @@ class UserService extends Service
      * @param $secureKey
      * @return bool
      */
-    public function buildSecureKey(Request $request, $id, $secureKey): bool
+    public function buildMfaSecureKey(Request $request, $id, $secureKey): bool
     {
         $user = User::find($id);
         if (!$user) {
@@ -458,11 +491,60 @@ class UserService extends Service
 
         $ip = $request->getClientIp();
         $update = [
-            'secure_key' => $secureKey,
+            'mfa_secure_key' => $secureKey,
+            'mfa_status' => UserMfaStatus::ENABLED->value, // 每次重新绑定后默认启用
             'last_login_ip' => $ip,
             'last_login_ipaddr' => IpService::getIpAddr($ip)
         ];
 
-        return $user->update($update);
+        $res = $user->update($update);
+        $this->cacheUserInfo($user);
+        return $res;
     }
+
+
+    /**
+     * 设置两步验证码
+     * @param string $key
+     * @param int $uid
+     * @return array
+     * @throws CustomizeException
+     */
+    public static function setTwoStepCode(string $key, int $uid): array
+    {
+        // 生成随机码
+        $code = rand(60466176, 2176782335); // 100000-zzzzzz
+        // 转换后缀
+        $suffix = base_convert($code, 10, 36);
+        // 值
+        $twoStepCode = base64_encode(json_encode(['code' => $code, 'stime' => time(), 'expire' => 1800, 'id' => $uid]));
+        // 拼接key
+        $key .= $uid . RedisKeys::DELIMIT . $suffix;
+
+        // 存入缓存
+        if (!RedisService::set($key, $twoStepCode, 1800)) {
+            throw new CustomizeException(Code::F5006, ['flag' => 'set']);
+        }
+
+        return ['key' => $suffix, 'expire' => time() + 1800, 'value' => $twoStepCode];
+    }
+
+    /**
+     * 校验两步验证码
+     * @param string $key
+     * @param int $uid
+     * @param $suffix
+     * @return string
+     */
+    public static function checkTwoStepCode(string $key, int $uid, $suffix): string
+    {
+        // 拼接key
+        $key .= $uid . RedisKeys::DELIMIT . $suffix;
+        if (Service::redis()->exists($key)) {
+            return Service::redis()->get($key);
+        }
+
+        return '';
+    }
+
 }

@@ -50,18 +50,20 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
             Route::get('maxUuid', 'maxUuid')->name('maxUuid'); // 权限下拉列表
         });
 
-        // 用户
+        // 个人信息
         Route::controller(UserController::class)->prefix('user')->name('user.')->group(function () {
             Route::post('logout', 'logout')->name('logout'); // 登出
-            Route::post('checkSecure', 'checkSecure')->name('checkSecure'); // 校验安全码或密码（没有开启安全码校验则校验密码）
-            Route::post('updatePassword', 'updatePassword')->name('updatePassword'); // 修改密码
-            Route::post('updateSecureKey', 'updateSecureKey')->name('updateSecureKey'); // 修改安全秘钥
+            Route::post('checkSecure', 'checkSecure')->name('checkSecure'); // 个人信息 校验安全码或密码（没有开启安全码校验则校验密码）
+            Route::post('checkMfaSecure', 'checkMfaSecure')->name('checkMfaSecure'); // 个人信息 校验MFA动态密码并设置两步校验状态码
+            Route::post('updatePassword', 'updatePassword')->name('updatePassword'); // 个人信息 安全设置 账号密码
+            Route::post('updateMfaSecureKey', 'updateMfaSecureKey')->name('updateMfaSecureKey'); // 个人信息 安全设置 身份验证器(TOTP MFA 应用程序)
+            Route::post('updateMfaStatus', 'updateMfaStatus')->name('updateMfaStatus'); // 个人信息 安全设置 修改MFA校验状态
             Route::get('mine', 'mine')->name('mine'); // 个人信息
-            Route::post('update/{id}', 'edit')->name('update'); // 编辑账号
-            Route::get('permissions', 'permissions')->name('permissions'); // 用户权限uuid控制 permission.uuid
-            Route::get('roleTreeList', 'roleTreeList')->name('roleTreeList'); // 角色下拉框
-            Route::get('roles/{id}', 'roles')->name('roles'); // 角色下拉框
-            Route::get('buildSecretKeyUrl/{id}', 'buildSecretKeyUrl')->name('buildSecretKeyUrl'); // 获取绑定安全秘钥的地址
+            Route::post('updateMine', 'updateMine')->name('updateMine'); // 个人信息 基本设置 更新基本信息
+            Route::get('permissions', 'permissions')->name('permissions'); // 当前登录用户 权限uuid控制 permission.uuid
+            Route::get('roleTreeList', 'roleTreeList')->name('roleTreeList'); // 账号管理 查看账号校色 角色下拉框
+            Route::get('roles/{id}', 'roles')->name('roles'); // 账号管理 获取账号{id}角色
+            Route::get('buildMfaSecretKeyUrl/{id}', 'buildMfaSecretKeyUrl')->name('buildMfaSecretKeyUrl'); // 获取绑定安全秘钥的地址
         });
 
         // 操作日志
@@ -105,7 +107,8 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         Route::post('delRole/{id}', 'delRole')->name('delRole'); // 解除角色与用户的关系
         Route::post('add', 'add')->name('add'); // 添加账号
         Route::post('edit/{id}', 'edit')->name('edit'); // 编辑账号
-        Route::post('editStatus/{id}', 'editStatus')->name('editStatus');  // 编辑
+        Route::post('editStatus/{id}', 'editStatus')->name('editStatus');  // 编辑账号状态
+        Route::post('editMfaStatus/{id}', 'editMfaStatus')->name('editMfaStatus');  // 编辑MFA校验状态
     });
 
     // 参数配置

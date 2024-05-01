@@ -6,7 +6,9 @@ use App\Enum\Code;
 use App\Enum\ConfigUuid;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
+use App\Enum\RedisKeys;
 use App\Enum\UserAction;
+use App\Enum\UserMfaStatus;
 use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
@@ -45,9 +47,9 @@ class UserController extends Controller
                     'password' => 'required',
                     'key' => 'required|string',
                     'captcha' => 'required', // 验证码
-                    'secureCode' => 'required|string|size:6' // 安全码
+                    // 'secureCode' => 'required|string|size:6' // 安全码
                 ]);
-            
+
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
@@ -55,7 +57,7 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 校验验证码
-            if (true !== ConfigService::getCache(ConfigUuid::CAPTCHA_DISABLE) && !captcha_api_check($input["captcha"], $input["key"])) {
+            if (!captcha_api_check($input["captcha"], $input["key"])) {
                 throw new CustomizeException(Code::E100014, "验证码错误");
             }
 
@@ -76,19 +78,19 @@ class UserController extends Controller
             $user = $userService->userCheck($request, $name, $password);
 
             // 校验安全验证码
-            if (true !== ConfigService::getCache(ConfigUuid::SECURE_DISABLE)) {
-                if ($user->secure_key) {
-                    $secureCode = $input['secureCode'] ?? '';
-                    if (!GoogleAuthenticator::CheckCode(Crypt::decryptString($user->secure_key), $secureCode)) {
-                        throw new CustomizeException(Code::E100048);
-                    }
-                    $userInfo['is_build_secure_key'] = true;
-                } else {
-                    $userInfo['is_build_secure_key'] = false;
-                }
-            }
+            // if (UserMfaStatus::DISABLED->value != intval($user->mfa_status)) {
+            //     if ($user->mfa_secure_key) {
+            //         $secureCode = $input['secureCode'] ?? '';
+            //         if (!GoogleAuthenticator::CheckCode(Crypt::decryptString($user->mfa_secure_key), $secureCode)) {
+            //             throw new CustomizeException(Code::E100048);
+            //         }
+            //     }
+            // }
+
+            $userInfo = [];
+            $userInfo['exist_mfa'] = (bool)$user->mfa_secure_key;
             $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
+            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
 
             // 更新登录信息
             $update = [
@@ -109,7 +111,10 @@ class UserController extends Controller
             $this->addUserLog(__FUNCTION__, UserAction::LOGIN);
 
             // 过滤敏感字段
-            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'secure_key']));
+            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'mfa_secure_key']));
+
+            // return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)]);
+            // 返回加密数据
             return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)])->header('X-Cipher', base64_encode(json_encode(['json:user'])));
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -144,7 +149,7 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 校验验证码
-            if (true !== ConfigService::getCache(ConfigUuid::CAPTCHA_DISABLE) && !captcha_api_check($input["captcha"], $input["key"])) {
+            if (!captcha_api_check($input["captcha"], $input["key"])) {
                 throw new CustomizeException(Code::E100014, "验证码错误");
             }
 
@@ -164,13 +169,13 @@ class UserController extends Controller
             $userService = new UserService;
             $user = $userService->userCheck($request, $name, $password);
 
-            if ($user->secure_key) {
-                $userInfo['is_build_secure_key'] = true;
+            if ($user->mfa_secure_key) {
+                $userInfo['exist_mfa'] = true;
             } else {
-                $userInfo['is_build_secure_key'] = false;
+                $userInfo['exist_mfa'] = false;
             }
             $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
+            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
 
             // 更新登录信息
             /*$ip = $request->getClientIp();
@@ -192,7 +197,7 @@ class UserController extends Controller
             $this->addUserLog(__FUNCTION__, UserAction::BUILD_SECRET_VERIFY_ACCOUNT);
 
             // 过滤敏感字段
-            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'secure_key']));
+            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'mfa_secure_key']));
             return Response::success(['user' => $userInfo]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -425,8 +430,47 @@ class UserController extends Controller
             }
 
             // 校验安全码
-            $isOk = (new UserService)->CheckSecure($request->offsetGet('user.id'), $validator->validated()['secure']);
+            $isOk = (new UserService)->checkSecure($request->offsetGet('user.id'), $validator->validated()['secure']);
             return Response::success(['isOk' => $isOk]);
+        } catch (CustomizeException $e) {
+            return Response::fail($e->getCode(), $e->getMessage());
+        } catch (Throwable $e) {
+            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+            $this->systemException(__METHOD__, $e);
+            return Response::fail(Code::SYSTEM_ERR);
+        }
+    }
+
+
+    /**
+     * 校验MFA动态密码
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function checkMfaSecure(Request $request): JsonResponse
+    {
+        try {
+            // 验证参数
+            $validator = Validator::make($request->input()
+                , [
+                    'secure' => 'required',
+                ]);
+            if ($validator->fails()) {
+                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
+            }
+
+            $adminId = $request->offsetGet('user.id');
+            $userService = new UserService;
+            // 校验安全码
+            $isOk = $userService->checkMfaSecure($adminId, $validator->validated()['secure']);
+
+            $twoStep = [];
+            // 存储两步校验码时间30分钟
+            if ($isOk) {
+                $twoStep = $userService::setTwoStepCode(RedisKeys::ADMIN_USER_TWO_STEP, $adminId);
+            }
+            $info = $userService->getUserInfo($adminId);
+            return Response::success(['isOk' => $isOk, 'twoStep' => $twoStep, 'exist_mfa' => (bool)$info['mfa_secure_key'], 'mfa_status' => $info['mfa_status']]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
@@ -488,11 +532,11 @@ class UserController extends Controller
             // 过滤敏感字段
             $userService = new UserService;
             $user = $userService->getUserInfo($request->offsetGet('user.id'));
-            $userInfo = Arr::except($user, ['password', 'secure_key']);
+            $userInfo = Arr::except($user, ['password', 'mfa_secure_key']);
 
             $sign = $userService->generateSign(['id' => $user['id'], 'name' => $user['name']]);
-            $userInfo['is_build_secure_key'] = (bool)$user['secure_key'];
-            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
+            $userInfo['exist_mfa'] = (bool)$user['mfa_secure_key'];
+            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
 
             return Response::success($userInfo);
         } catch (Throwable $e) {
@@ -565,12 +609,12 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function updateSecureKey(Request $request)
+    public function updateMfaSecureKey(Request $request)
     {
         try {
             $validator = Validator::make($request->input()
                 , [
-                    'secure_key' => 'required|min:16', // 安全码
+                    'mfa_secure_key' => 'required|min:16', // 安全码
                 ]);
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
@@ -584,8 +628,8 @@ class UserController extends Controller
             }
 
             // 记录操作日志
-            $input['secure_key'] = Crypt::encryptString($input['secure_key']);
-            $this->addUserLog(__FUNCTION__, UserAction::UPDATE_SECURE_KEY, '', $input);
+            $input['mfa_secure_key'] = Crypt::encryptString($input['mfa_secure_key']);
+            $this->addUserLog(__FUNCTION__, UserAction::UPDATE_MFA_SECURE_KEY, '', $input);
 
             return Response::success([], Code::S1001);
         } catch (CustomizeException $e) {
@@ -648,7 +692,10 @@ class UserController extends Controller
                         'required',
                         new Enum(UserStatus::class),
                     ],
-                    'secure_key' => [
+                    'mfa_status' => [
+                        new Enum(UserMfaStatus::class),
+                    ],
+                    'mfa_secure_key' => [
                         'string',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{16,32}$/", $value)) {
@@ -671,7 +718,7 @@ class UserController extends Controller
             }
 
             // 过滤敏感字段
-            $input = Arr::except($input, ['password', 'secure_key']);
+            $input = Arr::except($input, ['password', 'mfa_secure_key']);
 
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::ADD_USER, 'name=' . $input['name'], $input);
@@ -727,7 +774,10 @@ class UserController extends Controller
                     'status' => [
                         new Enum(UserStatus::class),
                     ],
-                    'secure_key' => [
+                    'mfa_status' => [
+                        new Enum(UserMfaStatus::class),
+                    ],
+                    'mfa_secure_key' => [
                         'string',
                         function (string $attribute, mixed $value, Closure $fail) {
                             if (!preg_match("/^[A-Za-z0-9]{16,32}$/", $value)) {
@@ -749,10 +799,10 @@ class UserController extends Controller
                 $adminId = $request->offsetGet('user.id');
                 // 自己的数据不能修改
                 if ($id == $adminId && Arr::get($input, 'status') != $request->offsetGet('user.status')) {
-                    throw new CustomizeException(Code::E100059, ['param'=>'状态']);
+                    throw new CustomizeException(Code::E100059, ['param' => '状态']);
                 }
 
-                if($id != $adminId ){
+                if ($id != $adminId) {
                     (new AuthorizeService)->checkEditStatus($adminId, $id);
                 }
             }
@@ -764,7 +814,7 @@ class UserController extends Controller
             }
 
             // 过滤敏感字段
-            $input = Arr::except($input, ['password', 'secure_key']);
+            $input = Arr::except($input, ['password', 'mfa_secure_key']);
 
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::EDIT_USER, 'user.id=' . $id, $input);
@@ -778,6 +828,28 @@ class UserController extends Controller
             return Response::fail(Code::SYSTEM_ERR);
         }
 
+    }
+
+    /**
+     * 更新基本信息(修改个人信息)
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function updateMine(Request $request)
+    {
+        return $this->edit($request, $request->offsetGet('user.id'));
+    }
+
+    /**
+     * 修改MFA校验状态
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function updateMfaStatus(Request $request)
+    {
+        return $this->editMfaStatus($request, $request->offsetGet('user.id'));
     }
 
     /**
@@ -802,12 +874,12 @@ class UserController extends Controller
 
             $adminId = $request->offsetGet('user.id');
 
-            // 自己的数据不能修改
+            // 自己的状态不能修改
             if ($id == $adminId) {
-                throw new CustomizeException(Code::E100059, ['param'=>'状态']);
+                throw new CustomizeException(Code::E100059, ['param' => '状态']);
             }
 
-            // 不能修改自己的状态
+            // 非下级角色状态不能修改
             (new AuthorizeService)->checkEditStatus($adminId, $id);
 
             $input = $validator->validated();
@@ -829,13 +901,61 @@ class UserController extends Controller
         }
     }
 
+
     /**
-     * 获取绑定安全秘钥的地址
+     * 编辑MFA校验状态
      * @param Request $request
      * @param $id
      * @return JsonResponse
      */
-    public function buildSecretKeyUrl(Request $request, $id): JsonResponse
+    public function editMfaStatus(Request $request, $id): JsonResponse
+    {
+        try {
+            // 验证参数
+            $validator = Validator::make($request->input()
+                , [
+                    'mfa_status' => 'required|boolean',
+                ]);
+            if ($validator->fails()) {
+                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
+            }
+
+            $isEnabled = $request->input('mfa_status', true);
+
+            $adminId = $request->offsetGet('user.id');
+
+
+            if ($id != $adminId) {
+                // 非下级角色状态不能修改
+                (new AuthorizeService)->checkEditStatus($adminId, $id);
+            }
+            $input = $validator->validated();
+            $result = (new UserService)->editAccount($request, $id, $input);
+            if (!$result) {
+                throw new CustomizeException($isEnabled ? Code::F2004 : Code::F2005);
+            }
+
+            // 记录操作日志
+            $this->addUserLog(__FUNCTION__, UserAction::EDIT_STATUS_USER, 'user.id=' . $id, $input);
+
+            return Response::success([], $isEnabled ? Code::S1004 : Code::S1005);
+        } catch (CustomizeException $e) {
+            return Response::fail($e->getCode(), $e->getMessage());
+        } catch (Throwable $e) {
+            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+            $this->systemException(__METHOD__, $e);
+            return Response::fail(Code::SYSTEM_ERR);
+        }
+    }
+
+    /**
+     * 获取绑定 TOTP MFA 设备秘钥的地址
+     * 常用的基于时间的动态密码 (TOTP) 多重身份验证 (MFA)设备：如Google Authenticator、Microsoft Authenticator、Authing令牌、宁盾令牌等
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function buildMfaSecretKeyUrl(Request $request, $id): JsonResponse
     {
         try {
             // 验证参数
@@ -845,7 +965,7 @@ class UserController extends Controller
             }
 
             $sign = (new UserService)->generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_secure_key_url'] = "/google/secret/$sign";
+            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
             return Response::success($userInfo);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());

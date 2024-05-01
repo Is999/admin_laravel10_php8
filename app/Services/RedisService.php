@@ -24,7 +24,7 @@ class RedisService extends Service
      */
     public static function setToken(int $uid, string $value): bool
     {
-        return self::set(RedisKeys::TOKEN . $uid, $value, 3600);
+        return self::set(RedisKeys::ADMIN_TOKEN . $uid, $value, 3600);
     }
 
     /**
@@ -34,7 +34,7 @@ class RedisService extends Service
      */
     public static function getToken(int $uid): mixed
     {
-        return self::redis()->get(RedisKeys::TOKEN . $uid);
+        return self::redis()->get(RedisKeys::ADMIN_TOKEN . $uid);
     }
 
     /**
@@ -45,7 +45,7 @@ class RedisService extends Service
      */
     public static function renewToken(int $uid, int $ttl = 3600): bool
     {
-        return self::redis()->expire(RedisKeys::TOKEN . $uid, $ttl);
+        return self::redis()->expire(RedisKeys::ADMIN_TOKEN . $uid, $ttl);
     }
 
     /**
@@ -55,7 +55,7 @@ class RedisService extends Service
      */
     public static function delToken(int $uid): int
     {
-        return self::redis()->del(RedisKeys::TOKEN . $uid);
+        return self::redis()->del(RedisKeys::ADMIN_TOKEN . $uid);
     }
 
     /**
@@ -66,9 +66,9 @@ class RedisService extends Service
      */
     public static function setUserInfo(int $uid, array $userInfo): bool
     {
-        $res = self::redis()->hMSet(RedisKeys::USERINFO . $uid, $userInfo);
+        $res = self::redis()->hMSet(RedisKeys::ADMIN_USERINFO . $uid, $userInfo);
         if ($res) {
-            self::redis()->expire(RedisKeys::USERINFO . $uid, 3600 * 8);
+            self::redis()->expire(RedisKeys::ADMIN_USERINFO . $uid, 3600 * 8);
         }
         return $res;
     }
@@ -82,9 +82,9 @@ class RedisService extends Service
     public static function getUserInfo(int $uid, array $fields = []): array
     {
         if (empty($fields)) {
-            return self::redis()->hGetAll(RedisKeys::USERINFO . $uid);
+            return self::redis()->hGetAll(RedisKeys::ADMIN_USERINFO . $uid);
         }
-        return self::redis()->hMGet(RedisKeys::USERINFO . $uid, $fields);
+        return self::redis()->hMGet(RedisKeys::ADMIN_USERINFO . $uid, $fields);
     }
 
     /**
@@ -94,7 +94,7 @@ class RedisService extends Service
      */
     public static function checkUserInfoExists(int $uid): bool|int
     {
-        return self::redis()->exists(RedisKeys::USERINFO . $uid);
+        return self::redis()->exists(RedisKeys::ADMIN_USERINFO . $uid);
     }
 
 
@@ -105,7 +105,7 @@ class RedisService extends Service
      */
     public static function delUserInfo(int $uid): int
     {
-        return self::redis()->del(RedisKeys::USERINFO . $uid);
+        return self::redis()->del(RedisKeys::ADMIN_USERINFO . $uid);
     }
 
     /**
@@ -116,7 +116,7 @@ class RedisService extends Service
      */
     public static function setUserRoles(int $uid, array $roles): bool
     {
-        $key = RedisKeys::USER_ROLES . $uid;
+        $key = RedisKeys::ADMIN_USER_ROLES . $uid;
         $res = self::redis()->sAddArray($key, $roles);
         if ($res) {
             self::redis()->expire($key, 3600 * 24);
@@ -131,7 +131,7 @@ class RedisService extends Service
      */
     public static function getUserRoles(int $uid): array
     {
-        return self::redis()->sMembers(RedisKeys::USER_ROLES . $uid);
+        return self::redis()->sMembers(RedisKeys::ADMIN_USER_ROLES . $uid);
     }
 
     /**
@@ -141,7 +141,7 @@ class RedisService extends Service
      */
     public static function checkUserRolesExists(int $uid): bool|int
     {
-        return self::redis()->exists(RedisKeys::USER_ROLES . $uid);
+        return self::redis()->exists(RedisKeys::ADMIN_USER_ROLES . $uid);
     }
 
     /**
@@ -151,7 +151,7 @@ class RedisService extends Service
      */
     public static function delUserRoles(int $uid): int
     {
-        return self::redis()->del(RedisKeys::USER_ROLES . $uid);
+        return self::redis()->del(RedisKeys::ADMIN_USER_ROLES . $uid);
     }
 
     /**
@@ -904,7 +904,7 @@ class RedisService extends Service
      * 将字符串值value关联到key并设置过期时间
      * @param string $key
      * @param mixed $value
-     * @param int $timeout
+     * @param int $timeout 时间秒
      * @return bool
      */
     public static function set(string $key, mixed $value, int $timeout = 0): bool
