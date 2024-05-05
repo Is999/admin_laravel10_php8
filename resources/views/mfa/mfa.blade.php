@@ -29,7 +29,6 @@
             }
         }
 
-        @if(Session::has('exist_mfa'))
         function startCountdown(duration, display) {
             let timer = duration, minutes, seconds;
             const intervalId = setInterval(function () {
@@ -52,12 +51,22 @@
             }, 1000 * duration); // 5秒后执行
         }
 
+        @if(Session::has('exist_mfa'))
         // 启动到计时
         const duration = 5; // 单位秒
         startCountdown(duration, "time");
-
         // 关闭页面
         setTimeout('window.close()', 1000 * duration);
+        @else
+        // 启动到计时
+        const ttl = parseInt({{$ttl}}); // 单位秒
+        startCountdown(ttl, "ttl");
+
+        // 刷新页面
+        if (ttl > 0) {
+            console.log('@@@ttl',ttl);
+            setTimeout('location.reload()', 1000 * ttl);
+        }
         @endif
     </script>
     <style type="text/css">
@@ -201,17 +210,17 @@
 <div class="container">
     <h3>绑定身份验证器(MFA)</h3>
     <div class="container-form">
-        <p>本页面刷新后二维码会重置，请重新扫描</p>
+        <p><span id="ttl">05:00</span> 本页面会刷新并重置二维码，请重新扫描</p>
         {!! QrCode::encoding('UTF-8')->size(200)->margin(1)->generate($createSecret["codeurl"]); !!}
-        <br/>服务器当前时间为：&nbsp;&nbsp;<font id="txt"></font>
+        <br/>服务器当前时间为：<span id="txt"></span>
         <br/>如果图片无法显示或者无法扫描，请在手机登录器中手动输入:
-        <font color="#FF6666">{{ $createSecret["secret"] }}</font>
+        <span style="color: #FF6666">{{ $createSecret["secret"] }}</span>
         <form action="{{ empty(Config::get('google.authenticatorurl')) ? URL::current() : Config::get('google.authenticatorurl') }}"
               method="POST">
             {!! csrf_field() !!}
             @if(!Session::has('exist_mfa'))
                 @if(!Session::has('error_mfa'))
-                    <input name="onecode" type="text" class="verificationcode" placeholder="请输入扫描后手机显示的6位动态密码"
+                    <input name="onecode" type="text" maxlength="6" class="verificationcode" placeholder="请输入扫描后手机显示的6位动态密码"
                            value="{{ old('onecode') }}"/>
                     @foreach($parameter as $parame)
                         <input type="hidden" name="{{ $parame['name'] }}" value="{{ $parame['value'] }}"/>
@@ -222,7 +231,8 @@
                     <button class="submit-button">立即绑定</button>
                 @endif
             @else
-                <div class="notice">恭喜你绑定成功！本页面将在<span id="time">00:05</span>秒后关闭</div>
+                <div class="notice" style="color: green; font-weight: bolder; font-size: 1.3em">恭喜你绑定成功！本页面将在<span id="time">00:05</span>秒后关闭
+                </div>
             @endif
             @if(Session::has('msg'))
                 <div class="notice">{{ Session::get('msg') }}</div>
@@ -277,7 +287,7 @@
 
         <h5>步骤二：</h5>
         <p>
-            软件安装完成后，选择开始设置-扫描条形码，来扫描本页面的二维码，扫描成功后，您手机里的谷歌验证器会生成一个与您账户对应的六位动态密码，每30秒变化一次。</p>
+            软件安装完成后，选择开始设置-扫描条形码，来扫描本页面的二维码，扫描成功后，您手机里的身份验证器（MFA）会生成一个与您账户对应的六位动态密码，每30秒变化一次。</p>
         <h5>步骤三：</h5>
         <p>之后您每次登陆时都需要输入身份验证器（MFA）动态密码，无论手机是否连接网络都可以使用。在允许时间内输入有效数字，保证了账户安全。
         </p>

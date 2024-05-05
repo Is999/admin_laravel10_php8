@@ -130,83 +130,83 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function buildSecretVerifyAccount(Request $request): JsonResponse
-    {
-        try {
-            // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'name' => 'required|string|min:6|max:32',
-                    'password' => 'required',
-                    'key' => 'required|string',
-                    'captcha' => 'required|string|min:1|max:5', // 验证码
-                ]);
-
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
-
-            // 校验验证码
-            if (!captcha_api_check($input["captcha"], $input["key"])) {
-                throw new CustomizeException(Code::E100014, "验证码错误");
-            }
-
-            // 验证ip
-            $ip = $request->getClientIp();
-            if (true !== ConfigService::getCache(ConfigUuid::ADMIN_IP_WHITELIST_DISABLE)) {
-                $whitelist = ConfigService::getCache(ConfigUuid::ADMIN_IP_WHITELIST);
-                if ($whitelist && !in_array($ip, $whitelist)) {
-                    throw new CustomizeException(Code::E100058);
-                }
-            }
-
-            $name = $input['name'];
-            $password = $input['password'];
-
-            // 校验登录
-            $userService = new UserService;
-            $user = $userService->userCheck($request, $name, $password);
-
-            if ($user->mfa_secure_key) {
-                $userInfo['exist_mfa'] = true;
-            } else {
-                $userInfo['exist_mfa'] = false;
-            }
-            $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
-
-            // 更新登录信息
-            /*$ip = $request->getClientIp();
-            $update = [
-                'last_login_time' => Carbon::now(),
-                'last_login_ip' => $ip,
-                'last_login_ipaddr' => IpService::getIpAddr($ip)
-            ];
-
-            if (!$user->update($update)) {
-                throw new CustomizeException(Code::E100056);
-            }
-            // 更新缓存
-            UserService::cacheUserInfo($user);*/
-
-
-            // 记录操作日志
-            $this->setUserLogByUid($user->id); // 设置日志用户id
-            $this->addUserLog(__FUNCTION__, UserAction::BUILD_SECRET_VERIFY_ACCOUNT);
-
-            // 过滤敏感字段
-            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'mfa_secure_key']));
-            return Response::success(['user' => $userInfo]);
-        } catch (CustomizeException $e) {
-            return Response::fail($e->getCode(), $e->getMessage());
-        } catch (Throwable $e) {
-            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
-            $this->systemException(__METHOD__, $e);
-            return Response::fail(Code::SYSTEM_ERR);
-        }
-    }
+//    public function buildSecretVerifyAccount(Request $request): JsonResponse
+//    {
+//        try {
+//            // 验证参数
+//            $validator = Validator::make($request->input()
+//                , [
+//                    'name' => 'required|string|min:6|max:32',
+//                    'password' => 'required',
+//                    'key' => 'required|string',
+//                    'captcha' => 'required|string|min:1|max:5', // 验证码
+//                ]);
+//
+//            if ($validator->fails()) {
+//                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
+//            }
+//
+//            $input = $validator->validated();
+//
+//            // 校验验证码
+//            if (!captcha_api_check($input["captcha"], $input["key"])) {
+//                throw new CustomizeException(Code::E100014, "验证码错误");
+//            }
+//
+//            // 验证ip
+//            $ip = $request->getClientIp();
+//            if (true !== ConfigService::getCache(ConfigUuid::ADMIN_IP_WHITELIST_DISABLE)) {
+//                $whitelist = ConfigService::getCache(ConfigUuid::ADMIN_IP_WHITELIST);
+//                if ($whitelist && !in_array($ip, $whitelist)) {
+//                    throw new CustomizeException(Code::E100058);
+//                }
+//            }
+//
+//            $name = $input['name'];
+//            $password = $input['password'];
+//
+//            // 校验登录
+//            $userService = new UserService;
+//            $user = $userService->userCheck($request, $name, $password);
+//
+//            if ($user->mfa_secure_key) {
+//                $userInfo['exist_mfa'] = true;
+//            } else {
+//                $userInfo['exist_mfa'] = false;
+//            }
+//            $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
+//            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
+//
+//            // 更新登录信息
+//            /*$ip = $request->getClientIp();
+//            $update = [
+//                'last_login_time' => Carbon::now(),
+//                'last_login_ip' => $ip,
+//                'last_login_ipaddr' => IpService::getIpAddr($ip)
+//            ];
+//
+//            if (!$user->update($update)) {
+//                throw new CustomizeException(Code::E100056);
+//            }
+//            // 更新缓存
+//            UserService::cacheUserInfo($user);*/
+//
+//
+//            // 记录操作日志
+//            $this->setUserLogByUid($user->id); // 设置日志用户id
+//            $this->addUserLog(__FUNCTION__, UserAction::BUILD_SECRET_VERIFY_ACCOUNT);
+//
+//            // 过滤敏感字段
+//            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'mfa_secure_key']));
+//            return Response::success(['user' => $userInfo]);
+//        } catch (CustomizeException $e) {
+//            return Response::fail($e->getCode(), $e->getMessage());
+//        } catch (Throwable $e) {
+//            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+//            $this->systemException(__METHOD__, $e);
+//            return Response::fail(Code::SYSTEM_ERR);
+//        }
+//    }
 
     /**
      * 用户权限uuid控制
@@ -693,6 +693,7 @@ class UserController extends Controller
                         new Enum(UserStatus::class),
                     ],
                     'mfa_status' => [
+                        'required',
                         new Enum(UserMfaStatus::class),
                     ],
                     'mfa_secure_key' => [
@@ -772,9 +773,11 @@ class UserController extends Controller
                         },
                     ],
                     'status' => [
+                        'required',
                         new Enum(UserStatus::class),
                     ],
                     'mfa_status' => [
+                        'required',
                         new Enum(UserMfaStatus::class),
                     ],
                     'mfa_secure_key' => [
@@ -864,7 +867,10 @@ class UserController extends Controller
             // 验证参数
             $validator = Validator::make($request->input()
                 , [
-                    'status' => 'required|boolean',
+                    'status' => [
+                        'required',
+                        new Enum(UserStatus::class),
+                    ],
                 ]);
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
@@ -914,7 +920,10 @@ class UserController extends Controller
             // 验证参数
             $validator = Validator::make($request->input()
                 , [
-                    'mfa_status' => 'required|boolean',
+                    'mfa_status' => [
+                        'required',
+                        new Enum(UserMfaStatus::class),
+                    ],
                 ]);
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
@@ -936,7 +945,7 @@ class UserController extends Controller
             }
 
             // 记录操作日志
-            $this->addUserLog(__FUNCTION__, UserAction::EDIT_STATUS_USER, 'user.id=' . $id, $input);
+            $this->addUserLog(__FUNCTION__, UserAction::EDIT_MFA_STATUS_USER, 'user.id=' . $id, $input);
 
             return Response::success([], $isEnabled ? Code::S1004 : Code::S1005);
         } catch (CustomizeException $e) {

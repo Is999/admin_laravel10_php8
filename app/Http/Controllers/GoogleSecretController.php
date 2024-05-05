@@ -46,12 +46,13 @@ class GoogleSecretController extends Controller
             }
 
             // 创建谷歌验证码
-            $createSecret = $this->redis()->get(RedisKeys::ADMIN_MFA_SECRET.$sign->id);
+            $createSecret = $this->redis()->get(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
             $createSecret = json_decode($createSecret, true);
-            if(!$createSecret){
+            if (!$createSecret) {
                 $createSecret = GoogleAuthenticator::CreateSecret();
-                RedisService::set(RedisKeys::ADMIN_MFA_SECRET.$sign->id, json_encode($createSecret), 1800);
+                RedisService::set(RedisKeys::ADMIN_MFA_SECRET . $sign->id, json_encode($createSecret), 300);
             }
+            $ttl = $this->redis()->ttl(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
 
             if ($request->isMethod('post')) {
                 // 验证参数
@@ -85,6 +86,9 @@ class GoogleSecretController extends Controller
                     // 记录操作日志
                     $this->addUserLog(__FUNCTION__, UserAction::BUILD_MFA_SECURE_KEY, "name={$input['name']}", $input);
 
+                    // 绑定成功删除缓存
+                    $this->redis()->del(RedisKeys::ADMIN_MFA_SECRET . $user->id);
+
                     // 登录认证场景：认证成功，执行认证操作
                     return back()->with('exist_mfa', true)->with('msg', '绑定成功, 可以去您的应用程序中使用了！')->onlyInput();
 
@@ -96,7 +100,7 @@ class GoogleSecretController extends Controller
 
             // 您自定义的参数，随表单返回
             $parameter = [["name" => "id", "value" => $user->id], ["name" => "name", "value" => $user->name]];
-            return view('mfa.mfa', ['createSecret' => $createSecret, "parameter" => $parameter]);
+            return view('mfa.mfa', ['createSecret' => $createSecret, "parameter" => $parameter, 'ttl' => $ttl]);
         } catch (CustomizeException $e) {
             return back()->with('error_mfa', true)->with('msg', '【' . $e->getCode() . '】' . $e->getMessage())->withInput();
         } catch (Throwable $e) {
@@ -126,6 +130,7 @@ class GoogleSecretController extends Controller
                 return back()->with('msg', '请正确输入手机上的动态密码 ！')->withInput();
             }
 
+
             $input = $validator->validated();
             $user = User::where(['id' => $input['id'], 'name' => $input['name']])->first();
             if (!$user) {
@@ -148,6 +153,10 @@ class GoogleSecretController extends Controller
 
                 // 登录认证场景：认证成功，执行认证操作
                 //return Redirect('/')->with('msg', '绑定成功, 请去登录页面登录！')->onlyInput();
+
+                // 绑定成功删除缓存
+                $this->redis()->del(RedisKeys::ADMIN_MFA_SECRET . $user->id);
+
                 return back()->with('exist_mfa', true)->with('msg', '绑定成功, 可以去您的应用程序中使用了！')->onlyInput();
 
             } else {

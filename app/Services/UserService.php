@@ -300,20 +300,27 @@ class UserService extends Service
      */
     public function addAccount(Request $request, array $input): array
     {
+        // 身份验证器（基于时间的动态密码 (TOTP) 多重身份验证 (MFA)）秘钥：如 Google Authenticator、Microsoft Authenticator
+        $mfa_secure_key = Arr::get($input, 'mfa_secure_key');
+        $mfa_status = Arr::get($input, 'mfa_status', UserMfaStatus::DISABLED->value); // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
+
+        // 验证是否可以启用MFA校验
+        if($mfa_status == UserMfaStatus::ENABLED->value && empty($mfa_secure_key)) {
+            throw new CustomizeException(Code::E100068);
+        }
+
         $name = Arr::get($input, 'name'); // 账号
+        if (User::where('name', $name)->exists()) {
+            throw new CustomizeException(Code::E100047, ['name' => $name]);
+        }
+
         $real_name = Arr::get($input, 'real_name', ''); // 真实姓名
         $password = Arr::get($input, 'password', Str::random(32)); // 密码
         $email = Arr::get($input, 'email', ''); // 邮箱
         $phone = Arr::get($input, 'phone', ''); // 邮箱
-        $mfa_secure_key = Arr::get($input, 'mfa_secure_key'); // 基于时间的动态密码 (TOTP) 多重身份验证 (MFA) 秘钥：如Google Authenticator、Microsoft Authenticator
-        $mfa_status = Arr::get($input, 'mfa_status', UserMfaStatus::DISABLED->value); // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
         $status = Arr::get($input, 'status', UserStatus::ENABLED); // 状态
         $avatar = Arr::get($input, 'avatar', ''); // 状态
         $remark = Arr::get($input, 'remark', ''); // 状态
-
-        if (User::where('name', $name)->exists()) {
-            throw new CustomizeException(Code::E100047, ['name' => $name]);
-        }
 
         // 添加数据
         $model = new User();
@@ -323,7 +330,7 @@ class UserService extends Service
         $model->email = $email;
         $model->phone = $phone;
         $model->mfa_secure_key = $mfa_secure_key ? Crypt::encryptString($mfa_secure_key) : '';
-        $model->mfa_status = (UserMfaStatus::DISABLED->value != $mfa_status && '' != $model->mfa_secure_key) ? UserMfaStatus::ENABLED->value : UserMfaStatus::DISABLED->value;
+        $model->mfa_status = $mfa_status;
         $model->status = $status;
         $model->avatar = $avatar;
         $model->remark = $remark;
@@ -366,8 +373,14 @@ class UserService extends Service
         $model->password = $password ? Hash::make($password . substr(md5($model->name), 10, 10)) : $model->password; // 密码
         $model->email = Arr::get($input, 'email', $model->email); // 邮箱
         $model->phone = Arr::get($input, 'phone', $model->phone); // 手机
-        $model->mfa_secure_key = $mfa_secure_key ? Crypt::encryptString($mfa_secure_key) : $model->mfa_secure_key; // 基于时间的动态密码 (TOTP) 多重身份验证 (MFA) 秘钥：如Google Authenticator、Microsoft Authenticator
-        $model->mfa_status = $mfa_status === null ? $model->mfa_status : ((UserMfaStatus::DISABLED->value != $mfa_status && '' != $model->mfa_secure_key) ? UserMfaStatus::ENABLED->value : UserMfaStatus::DISABLED->value); // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
+        $model->mfa_secure_key = $mfa_secure_key ? Crypt::encryptString($mfa_secure_key) : $model->mfa_secure_key; // MFA 秘钥
+        $model->mfa_status = $mfa_status === null ? $model->mfa_status : $mfa_status; // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
+
+        // 验证是否可以启用MFA校验
+        if($model->mfa_status == UserMfaStatus::ENABLED->value && empty($model->mfa_secure_key)) {
+            throw new CustomizeException(Code::E100068);
+        }
+
         $model->status = Arr::get($input, 'status', $model->status); // 是否禁用
         $model->avatar = Arr::get($input, 'avatar', $model->avatar); // 头像
         $model->remark = Arr::get($input, 'remark', $model->remark); // 备注
