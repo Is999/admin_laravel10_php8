@@ -121,6 +121,6 @@ class SignData
             $str .= $k . '=' . $data[$k] . '&';
         }
 
-        return $str . 'requestId=' . $requestId . '&key=' . $appId;
+        return $str . 'key=' . md5($appId . '-' . $requestId);
     }
 }
