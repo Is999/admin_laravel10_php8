@@ -78,7 +78,7 @@ class SecretKeyService extends Service
             }
 
             // 验证用户公钥是否是可用的
-            $publicKey = openssl_pkey_get_public($original);
+            $publicKey = openssl_pkey_get_public(trim($original));
             if ($publicKey === false) {
                 Logger::error(LogChannel::DEV, '用户公钥无效：' . $filePath, [
                     'original' => $original
@@ -104,7 +104,7 @@ class SecretKeyService extends Service
             }
 
             // 验证服务器私钥是否是可用的
-            $privateKey = openssl_pkey_get_private($original);
+            $privateKey = openssl_pkey_get_private(trim($original));
             if ($privateKey === false) {
                 Logger::error(LogChannel::DEV, '服务器私钥无效：' . $filePath, [
                     'original' => $original

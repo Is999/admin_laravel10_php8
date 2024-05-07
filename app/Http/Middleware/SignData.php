@@ -30,16 +30,16 @@ class SignData
             if (!ConfigService::getCache("SIGNATURE_DISABLE")) {
                 // 获取路由
                 $routeName = $request->route()->getName();
-                if (isset($routeName, $this->must)) {
+
+                if (isset($this->must[$routeName])) {
                     $requestId = $request->header('X-Request-Id', '');
-                    $appId = $request->header('X-App-Id', '');
+                    $appId = base64_decode($request->header('X-App-Id', ''));
 
                     $signParams = $this->must[$routeName];
                     $requestSign = isset($signParams['request']);
                     $responseSign = isset($signParams['response']);
 
                     $rsa = ($requestSign || $responseSign) ? (new SecretKeyService)->getRsaKeyByRequestAppId($request, $requestSign, $responseSign) : [];
-
                     if ($requestSign) {
                         $input = $request->input();
 
@@ -56,6 +56,7 @@ class SignData
 
                         // 验证签名
                         $checkResult = openssl_verify($signStr, base64_decode($sign), $rsa['user_public_key'], OPENSSL_ALGO_SHA256);
+
                         if ($checkResult !== 1) {
                             Logger::error(LogChannel::DEV, '签名错误', [
                                 'signStr' => $signStr,
@@ -85,8 +86,8 @@ class SignData
                             $response->setContent(json_encode($content));
                         }
                     }
+                    return $response;
                 }
-                return $response;
             }
 
             return $next($request);
@@ -113,17 +114,13 @@ class SignData
 
         $str = '';
         foreach ($signParams as $k) {
-            // 检查参数
-            if (!array_key_exists($k, $data)) {
-                throw new CustomizeException(Code::E100062, ['param' => $k]);
-            }
             // 空字符串不参与签名
-            if ($data[$k] === '' || $data[$k] === null) {
+            if (!array_key_exists($k, $data) || $data[$k] === '' || $data[$k] === null) {
                 continue;
             }
             $str .= $k . '=' . $data[$k] . '&';
         }
 
-        return $str . "requestId=$requestId&key=$appId";
+        return $str . 'requestId=' . $requestId . '&key=' . $appId;
     }
 }
