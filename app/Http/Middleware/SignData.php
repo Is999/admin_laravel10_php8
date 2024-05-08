@@ -76,14 +76,16 @@ class SignData
                         $content = $response->getContent();
                         if ($content) {
                             $content = json_decode($content, true);
-                            $signStr = $this->getSignStr($content['data'], $signParams['response'], $requestId, $appId);
-                            $signature = false;
-                            openssl_sign($signStr, $signature, $rsa['server_private_key'], OPENSSL_ALGO_SHA256);
-                            if (!$signature) {
-                                throw new CustomizeException(Code::F5005);
+                            if ($content['success']) { // 成功的数据签名
+                                $signStr = $this->getSignStr($content['data'], $signParams['response'], $requestId, $appId);
+                                $signature = false;
+                                openssl_sign($signStr, $signature, $rsa['server_private_key'], OPENSSL_ALGO_SHA256);
+                                if (!$signature) {
+                                    throw new CustomizeException(Code::F5005);
+                                }
+                                $content['data']['sign'] = base64_encode($signature);
+                                $response->setContent(json_encode($content));
                             }
-                            $content['data']['sign'] = base64_encode($signature);
-                            $response->setContent(json_encode($content));
                         }
                     }
                     return $response;

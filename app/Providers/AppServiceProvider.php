@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Database\Events\QueryExecuted;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         // sql 日志
         try {
             if (env('DB_LOG')) {
-                DB::listen(function ($query) {
+                DB::listen(function (QueryExecuted $query) {
                     $sql = $query->sql;
                     foreach ($query->bindings as $key => $value) {
                         if ($value instanceof DateTime) {

@@ -2,6 +2,7 @@
 /**
  * 给请求和日志添加Request-Id
  */
+
 namespace App\Http\Middleware;
 
 use App\Enum\LogChannel;
@@ -22,7 +23,7 @@ class AssignRequestId
     public function handle(Request $request, Closure $next): mixed
     {
         $requestId = $request->header('X-Request-Id');
-        if(empty($requestId)){
+        if (empty($requestId)) {
             $requestId = (string)Str::uuid();
             $request->headers->set('X-Request-Id', $requestId);
         }
@@ -37,7 +38,9 @@ class AssignRequestId
         // 添加上下文 request-id
         Logger::withContext(LogChannel::DEFAULT, $context); // 系统默认日志
         Logger::withContext(LogChannel::DEV, $context); // 开发专用日志
-        Logger::withContext(LogChannel::SQL, $context); // sql记录
+        if (env('DB_LOG')) {
+            Logger::withContext(LogChannel::SQL, $context); // sql记录
+        }
 
         // 记录网关日志
         if (env('APP_GATEWAY_LOG')) {
@@ -45,14 +48,39 @@ class AssignRequestId
                 . $request->route()->getName()
                 . '[' . $request->path() . ']'
                 , [
-                    //'headers' => $request->headers->all(),
                     'request-id' => $requestId,
+                    'app-id' => $request->header('X-App-Id'),
                     'token' => $request->bearerToken(),
                     'ip' => $request->ip(),
+                    'headers' => $this->getHeaders($request),
                     'body' => $request->all()
                 ]);
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        // 设置请求的X-Request-Id到响应
+        $response->header('X-Request-Id', $requestId);
+
+        return $response;
+    }
+
+    private function getHeaders(Request $request)
+    {
+        $headers = [];
+        $headers['User-Agent'] = $request->header('User-Agent');
+        $headers['Host'] = $request->header('Host');
+        $headers['Origin'] = $request->header('Origin');
+        $headers['Referer'] = $request->header('Referer');
+        $headers['Sec-Ch-Ua'] = $request->header('Sec-Ch-Ua');
+        $headers['Sec-Ch-Ua-Mobile'] = $request->header('Sec-Ch-Ua-Mobile'); // 0 pc 1移动
+        $headers['Sec-Ch-Ua-Platform'] = $request->header('Sec-Ch-Ua-Platform');
+        $headers['Sec-Fetch-Site'] = $request->header('Sec-Fetch-Site');
+
+        $headers['X-Cipher'] = $request->header('X-Cipher');
+
+        return array_filter($headers, function ($v) {
+            return $v !== null;
+        });
     }
 }
