@@ -773,11 +773,9 @@ class UserController extends Controller
                         },
                     ],
                     'status' => [
-                        'required',
                         new Enum(UserStatus::class),
                     ],
                     'mfa_status' => [
-                        'required',
                         new Enum(UserMfaStatus::class),
                     ],
                     'mfa_secure_key' => [
@@ -836,10 +834,9 @@ class UserController extends Controller
     /**
      * 更新基本信息(修改个人信息)
      * @param Request $request
-     * @param $id
      * @return JsonResponse
      */
-    public function updateMine(Request $request)
+    public function updateMine(Request $request): JsonResponse
     {
         return $this->edit($request, $request->offsetGet('user.id'));
     }
@@ -847,10 +844,9 @@ class UserController extends Controller
     /**
      * 修改MFA校验状态
      * @param Request $request
-     * @param $id
      * @return JsonResponse
      */
-    public function updateMfaStatus(Request $request)
+    public function updateMfaStatus(Request $request): JsonResponse
     {
         return $this->editMfaStatus($request, $request->offsetGet('user.id'));
     }

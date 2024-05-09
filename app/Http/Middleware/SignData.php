@@ -107,7 +107,6 @@ class SignData
      * 生成待签名的字符串
      * @param array $data 参与签名的参数数组
      * @return string 待签名的字符串
-     * @throws CustomizeException
      */
     public function getSignStr(array $data, array $signParams, string $requestId, string $appId): string
     {
