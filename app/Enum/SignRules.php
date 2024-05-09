@@ -24,6 +24,6 @@ enum SignRules
      */
     const userLogin = [
         'request' => ['name', 'password', 'secureCode'],
-        //'response' => [],
+        'response' => ['token'],
     ];
 }
