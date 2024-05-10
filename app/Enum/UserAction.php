@@ -38,6 +38,7 @@ enum UserAction: string
     case ADD_PERMISSION = '新增权限';
     case EDIT_PERMISSION = '编辑权限';
     case DEL_PERMISSION = '删除权限';
+    case UPLOAD_FILES = '上传文件';
 
 
     /**

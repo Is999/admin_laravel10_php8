@@ -40,6 +40,11 @@ return [
     Code::F5005 => 'System Exception',
     Code::F5006 => 'System Exception {flag}',
 
+    // 其它统一的异常
+    Code::F10001 => '不支持的文件类型 {type}',
+    Code::F10002 => '文件类型{type}与扩展名{ext}不一致',
+    Code::F10003 => '文件大小{size}超过{maxSize}限制',
+
     // 登录|注册消息
     Code::E100000 => '密码不能为空',
     Code::E100001 => '密码必须大于8个字符',
