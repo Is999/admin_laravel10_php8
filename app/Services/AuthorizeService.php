@@ -519,7 +519,7 @@ class AuthorizeService extends Service
 
             // 过滤禁用的角色
             self::arrayWalkRecursive($data, function (&$arr, $key, $item) use ($isSuperRole, &$roles) {
-                if ($item['status'] !== RoleStatus::ENABLED->value || $item['is_delete'] != Delete::NO->value) {
+                if ($item['status'] != RoleStatus::ENABLED->value || $item['is_delete'] != Delete::NO->value) {
                     unset($arr[$key]);
                 } else {
                     // 将子级角色添加到角色列表中
@@ -795,7 +795,7 @@ class AuthorizeService extends Service
             $model->status = $status;
 
             // 禁用处理
-            if ($model->status !== RoleStatus::ENABLED->value) {
+            if ($model->status != RoleStatus::ENABLED->value) {
                 // 禁用所有下级角色
                 $this->subRoleStatusDisabled($model->id);
             } else {
