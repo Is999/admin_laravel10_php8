@@ -37,7 +37,7 @@ class Permissions extends Model
     {
         return $this->hasMany(self::class, 'pid', 'id')
             ->select([
-                'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type', 'describe', 'created_at', 'updated_at'
+                'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type', 'status', 'describe', 'created_at', 'updated_at'
             ])
             ->with(['childRecursion']);
     }
@@ -54,7 +54,7 @@ class Permissions extends Model
         // 查询数据
         $list = self::when($key, function ($query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
-        })->orderBy('id')->get([
+        })->where('status', 1)->orderBy('id')->get([
             'id', 'module'
         ])->toArray();
 
@@ -79,7 +79,7 @@ class Permissions extends Model
         // 查询数据
         $list = self::when($key, function ($query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
-        })->orderBy('id')->get([
+        })->where('status', 1)->orderBy('id')->get([
             'id', 'uuid'
         ])->toArray();
 
@@ -107,7 +107,7 @@ class Permissions extends Model
             ->where('pid', 0)
             ->orderBy('id')
             ->get([
-                'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type', 'describe', 'created_at', 'updated_at'
+                'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type', 'status', 'describe', 'created_at', 'updated_at'
             ])->toArray();
 
         (new AuthorizeService)->permissionsToTree($permissions);

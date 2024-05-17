@@ -37,6 +37,7 @@ enum UserAction: string
     case EDIT_STATUS_MENU = '更新菜单状态';
     case ADD_PERMISSION = '新增权限';
     case EDIT_PERMISSION = '编辑权限';
+    case EDIT_STATUS_PERMISSION = '更新权限状态';
     case DEL_PERMISSION = '删除权限';
     case UPLOAD_FILES = '上传文件';
 

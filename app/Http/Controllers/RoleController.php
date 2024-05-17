@@ -60,7 +60,7 @@ class RoleController extends Controller
             }
 
             // 查询数据
-            $result = (new AuthorizeService)->roleIndex($request, $validator->validated());
+            $result = (new AuthorizeService)->roleList($request, $validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());

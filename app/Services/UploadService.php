@@ -11,6 +11,12 @@ class UploadService extends Service
 {
     public $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']; // 允许的文件类型
 
+    public function __construct(array $mimes=[])
+    {
+        if(!empty($mimes)){
+            $this->allowedTypes = $mimes;
+        }
+    }
 
     /**
      * @param UploadedFile $file
@@ -20,7 +26,7 @@ class UploadService extends Service
      * @return string
      * @throws CustomizeException
      */
-    public function file(UploadedFile $file, string $path = 'uploads', int $maxSize = 1024*1024*10, bool $consistency = true):string
+    public function file(UploadedFile $file, string $path = 'uploads/', int $maxSize = 1024*1024*10, bool $consistency = true):string
     {
         // 验证文件类型
         $type = $file->getMimeType();
@@ -43,13 +49,15 @@ class UploadService extends Service
         // 生成新的唯一文件名
         $filename = time() . '_' . uniqid() . '.' . $ext;
 
+        $path = str_ends_with($path, '/') ? $path : $path . '/';
+
         // 存储文件到指定位置
-        $path = $file->storeAs('uploads', $filename);
+        $newPath = $file->storeAs($path, $filename);
 
         // 存储文件地址到数据库
         $model = new Files();
         $model->name = $filename;
-        $model->path = 'uploads/';
+        $model->path = $path;
         $model->type = $type;
         $model->size = $size;
         $model->modTime = date('Y-m-d H:i:s');
@@ -58,6 +66,6 @@ class UploadService extends Service
         $model->updated_at = date('Y-m-d H:i:s');
         $model->save();
 
-        return $path;
+        return $newPath;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enum\Code;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
+use App\Enum\PermissionStatus;
 use App\Enum\PermissionType;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
@@ -38,6 +39,9 @@ class PermissionController extends Controller
                     'type' => [ // 类型
                         'array',
                         Rule::in(PermissionType::values()),
+                    ],
+                    'status' => [ // 状态：1 启用, 0 禁用
+                        new Enum(PermissionStatus::class),
                     ],
                     'pid' => 'integer|min:0', // 上级id
                     'is_genealogy' => 'integer|min:0', // 0 直属, 1 族谱
@@ -80,6 +84,10 @@ class PermissionController extends Controller
                     'type' => [ // 类型
                         'required',
                         new Enum(PermissionType::class),
+                    ],
+                    'status' => [ // 状态：1 启用, 0 禁用
+                        'required',
+                        new Enum(PermissionStatus::class),
                     ],
                     'pid' => 'required|integer|min:0', // 上级id
                     'describe' => 'required|string|max:255',
@@ -126,6 +134,10 @@ class PermissionController extends Controller
                         'required',
                         new Enum(PermissionType::class),
                     ],
+                    'status' => [ // 状态：1 启用, 0 禁用
+                        'required',
+                        new Enum(PermissionStatus::class),
+                    ],
                     'describe' => 'required|string|max:255',
                 ]);
             if ($validator->fails()) {
@@ -143,6 +155,47 @@ class PermissionController extends Controller
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::EDIT_PERMISSION, 'title=' . $input['title'], $input);
             return Response::success([], Code::S1001);
+        } catch (CustomizeException $e) {
+            return Response::fail($e->getCode(), $e->getMessage());
+        } catch (Throwable $e) {
+            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+            $this->systemException(__METHOD__, $e);
+            return Response::fail(Code::SYSTEM_ERR);
+        }
+    }
+
+    /**
+     * 编辑状态 启用/禁用
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function editStatus(Request $request, int $id): JsonResponse
+    {
+        try {
+            // 验证参数
+            $validator = Validator::make($request->input()
+                , [
+                    'status' => [ // 状态：1 启用, 0 禁用
+                        'required',
+                        new Enum(PermissionStatus::class),
+                    ],
+                ]);
+            if ($validator->fails()) {
+                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
+            }
+
+            $input = $validator->validated();
+
+            // 更新权限状态
+            $result = (new AuthorizeService)->permissionEdit($request, $id, $input);
+            if (!$result) {
+                throw new CustomizeException($request->input('status') ? Code::F2006 : Code::F2007);
+            }
+
+            // 记录操作日志
+            $this->addUserLog(__FUNCTION__, UserAction::EDIT_STATUS_PERMISSION, 'permissions.id=' . $id, $input);
+            return Response::success([], Code::S1002);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {

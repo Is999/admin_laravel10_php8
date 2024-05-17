@@ -5,6 +5,7 @@ use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserLogController;
 use Illuminate\Support\Facades\Route;
@@ -32,8 +33,11 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     // 不验证权限的接口(只验证token, 该路由无须加入权限表)
     Route::name('except.')->group(function () {
         // 上传文件
-        Route::prefix('upload')->name('upload.')->group(function () {
-
+        Route::controller(UploadController::class)->prefix('upload')->name('upload.')->group(function () {
+            Route::post('image', 'image')->name('image'); // 上传图片 限制图片格式
+            Route::post('images', 'images')->name('images'); // 批量上传图片 限制图片格式
+            Route::post('file', 'file')->name('file'); // 上传文件
+            Route::post('files', 'files')->name('files'); // 批量上传文件
         });
 
         // 角色
@@ -82,9 +86,9 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         Route::match(['GET', 'POST'], 'index', 'index')->name('index'); // 列表,搜索
         Route::post('add', 'add')->name('add'); // 添加
         Route::post('edit/{id}', 'edit')->name('edit'); // 编辑
-        Route::post('del/{id}', 'del')->name('del'); // 删除
-        Route::post('editStatus/{id}', 'editStatus')->name('editStatus'); // 启用禁用
+        Route::post('editStatus/{id}', 'editStatus')->name('editStatus'); // 启用/禁用
         Route::post('editPermission/{id}', 'editPermission')->name('editPermission'); // 编辑角色权限
+        Route::post('del/{id}', 'del')->name('del'); // 删除
     });
 
     // 权限管理
@@ -92,6 +96,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         Route::match(['GET', 'POST'], 'index', 'index')->name('index'); // 列表,搜索
         Route::post('add', 'add')->name('add'); // 添加
         Route::post('edit/{id}', 'edit')->name('edit'); // 编辑
+        Route::post('editStatus/{id}', 'editStatus')->name('editStatus'); // 启用/禁用
         Route::post('del/{id}', 'del')->name('del'); // 删除
     });
 
@@ -112,7 +117,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         Route::post('delRole/{id}', 'delRole')->name('delRole'); // 解除角色与用户的关系
         Route::post('add', 'add')->name('add'); // 添加账号
         Route::post('edit/{id}', 'edit')->name('edit'); // 编辑账号
-        Route::post('editStatus/{id}', 'editStatus')->name('editStatus');  // 编辑账号状态
+        Route::post('editStatus/{id}', 'editStatus')->name('editStatus');  // 编辑账号状态 启用/禁用
         Route::post('editMfaStatus/{id}', 'editMfaStatus')->name('editMfaStatus');  // 编辑MFA校验状态
     });
 

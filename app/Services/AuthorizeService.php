@@ -9,6 +9,7 @@ use App\Enum\MenuShortcut;
 use App\Enum\MenuStatus;
 use App\Enum\MenuType;
 use App\Enum\OrderBy;
+use App\Enum\PermissionStatus;
 use App\Enum\PermissionType;
 use App\Enum\RedisKeys;
 use App\Enum\RoleStatus;
@@ -166,7 +167,7 @@ class AuthorizeService extends Service
         // 查询数据库并刷新缓存
         if ($list) {
             // 查询数据, 获取id, module
-            $data = Permissions::whereIn('id', array_keys($list))->get(['id', 'module']);
+            $data = Permissions::whereIn('id', array_keys($list))->where('status', 1)->get(['id', 'module']);
 
             // 重新赋值
             foreach ($data as $v) {
@@ -543,7 +544,7 @@ class AuthorizeService extends Service
      * @param array $input 查询字段
      * @return array
      */
-    public function roleIndex(Request $request, array $input = []): array
+    public function roleList(Request $request, array $input = []): array
     {
         $status = Arr::get($input, 'status'); // 状态
         $title = Arr::get($input, 'title'); // 角色名称
@@ -1030,6 +1031,7 @@ class AuthorizeService extends Service
                 'disableCheckbox' => !($isChecked || $isParentHas), // 上级没有得权限禁止选择
                 'selectable' => $isChecked || $isParentHas, // 上级有得权限才可以选择
                 'uuid' => $item['uuid'],
+                'status' => $item['status'],
                 'describe' => $item['describe'],
                 'module' => $item['module'],
             ];
@@ -1097,6 +1099,7 @@ class AuthorizeService extends Service
         $module = Arr::get($input, 'module'); // 权限匹配模型
         $pid = Arr::get($input, 'pid'); // 父级Id
         $type = Arr::get($input, 'type'); // 类型
+        $status = Arr::get($input, 'status'); // 状态
         $cache = Arr::get($input, 'cache', true); // 查缓存
 
         if ($cache) {
@@ -1123,6 +1126,8 @@ class AuthorizeService extends Service
             return $query->where('title', $val);
         })->when($module, function ($query, $val) {
             return $query->where('module', $val);
+        })->when($status !== null, function ($query) use ($status) { // 状态
+            return $query->where('status', $status);
         })->when($type !== null, function ($query) use ($type) {
             if (is_array($type)) {
                 if (count($type) > 1) {
@@ -1139,7 +1144,7 @@ class AuthorizeService extends Service
         })->orderBy($orderByField, $orderByType)->orderBy('id') // 排序
         ->select([
             'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type'
-            , 'describe', 'created_at', 'updated_at'
+            , 'status', 'describe', 'created_at', 'updated_at'
         ])->lazyById()->each(function ($permission) use (&$list) { // 获取子级
             $permission = $permission->toArray();
             if (isset($permission['children']) && $permission['children']) {
@@ -1249,17 +1254,21 @@ class AuthorizeService extends Service
         $model->module = $module; // 权限匹配模型(路由名称 | 控制器/方法)
         $model->pid = $pid; // 父级ID
         $model->pids = $pids; // 父级ID(族谱)
-        $model->type = Arr::get($input, 'type', PermissionType::OTHERS->value); //状态：1正常
+        $model->type = Arr::get($input, 'type', PermissionType::OTHERS->value); //类型：类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它
+        $model->status = Arr::get($input, 'status', PermissionStatus::ENABLED->value);  //状态：1 启用；0 禁用
         $model->describe = Arr::get($input, 'describe', $model->title); // 描述
         $model->created_at = date('Y-m-d H:i:s'); // 创建时间
 
         $res = $model->save();
         if ($res) {
-            // 刷新 权限 Hash permissions_module
-            if (!is_numeric($model->module)) RedisService::setPermissionsModule([$model->id => $model->module]);
+            // 状态启用才存入缓存
+            if($model->status === PermissionStatus::ENABLED->value) {
+                // 刷新 权限 Hash permissions_module
+                if (!is_numeric($model->module)) RedisService::setPermissionsModule([$model->id => $model->module]);
 
-            // 刷新 权限 Hash permissions_uuid
-            RedisService::setPermissionsUuid([$model->id => $model->uuid]);
+                // 刷新 权限 Hash permissions_uuid
+                RedisService::setPermissionsUuid([$model->id => $model->uuid]);
+            }
 
             // 刷新 权限下拉框 String permissions_select_tree
             RedisService::initTable(RedisKeys::PERMISSIONS_TREE);
@@ -1303,8 +1312,11 @@ class AuthorizeService extends Service
             $model->module = $module; // 权限匹配模型(路由名称 | 控制器/方法)
         }
 
+        $oldStatus = $model->status;
+
         $model->title = Arr::get($input, 'title', $model->title); // 权限名称
-        $model->type = Arr::get($input, 'type', $model->type);  //状态：1正常
+        $model->type = Arr::get($input, 'type', $model->type);  //类型：类型: 0查看, 1新增, 2修改, 3删除, 4目录, 5菜单, 6页面, 7按钮, 8其它
+        $model->status = Arr::get($input, 'status', $model->status);  //状态：1 启用；0 禁用
         $model->describe = Arr::get($input, 'describe', $model->describe); // 描述
         $model->updated_at = date('Y-m-d H:i:s'); // 创建时间
 
@@ -1317,6 +1329,23 @@ class AuthorizeService extends Service
                     RedisService::setPermissionsModule([$model->id => $model->module]);
                 }
             }
+
+            // 禁用状态删除缓存
+            if($oldStatus != $model->status){
+                if($model->status === PermissionStatus::DISABLED->value){
+                    // 删除 权限 Hash permissions_module
+                    RedisService::delPermissionsModule($model->id);
+                    // 删除 权限 Hash permissions_uuid
+                    RedisService::delPermissionsUuid($model->id);
+                } else {
+                    // 刷新 权限 Hash permissions_module
+                    if (!is_numeric($model->module)) RedisService::setPermissionsModule([$model->id => $model->module]);
+
+                    // 刷新 权限 Hash permissions_uuid
+                    RedisService::setPermissionsUuid([$model->id => $model->uuid]);
+                }
+            }
+
             // 刷新 权限下拉框 String permissions_select_tree
             RedisService::initTable(RedisKeys::PERMISSIONS_TREE);
         }
@@ -1370,7 +1399,7 @@ class AuthorizeService extends Service
      * @param array $input
      * @return array
      */
-    public function menuIndex(Request $request, array $input): array
+    public function menuList(Request $request, array $input): array
     {
         // 查缓存
         if (Arr::get($input, 'cache', true)) {
