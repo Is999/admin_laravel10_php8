@@ -190,12 +190,12 @@ class PermissionController extends Controller
             // 更新权限状态
             $result = (new AuthorizeService)->permissionEdit($request, $id, $input);
             if (!$result) {
-                throw new CustomizeException($request->input('status') ? Code::F2006 : Code::F2007);
+                throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
 
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::EDIT_STATUS_PERMISSION, 'permissions.id=' . $id, $input);
-            return Response::success([], Code::S1002);
+            return Response::success([], $request->input('status') ? Code::S1004 : Code::S1005);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {

@@ -872,8 +872,6 @@ class UserController extends Controller
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
-            $isEnabled = $request->input('status', true);
-
             $adminId = $request->offsetGet('user.id');
 
             // 自己的状态不能修改
@@ -887,13 +885,13 @@ class UserController extends Controller
             $input = $validator->validated();
             $result = (new UserService)->editAccount($request, $id, $input);
             if (!$result) {
-                throw new CustomizeException($isEnabled ? Code::F2004 : Code::F2005);
+                throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
 
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::EDIT_STATUS_USER, 'user.id=' . $id, $input);
 
-            return Response::success([], $isEnabled ? Code::S1004 : Code::S1005);
+            return Response::success([], $request->input('status') ? Code::S1004 : Code::S1005);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
@@ -925,10 +923,7 @@ class UserController extends Controller
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
-            $isEnabled = $request->input('mfa_status', true);
-
             $adminId = $request->offsetGet('user.id');
-
 
             if ($id != $adminId) {
                 // 非下级角色状态不能修改
@@ -937,13 +932,13 @@ class UserController extends Controller
             $input = $validator->validated();
             $result = (new UserService)->editAccount($request, $id, $input);
             if (!$result) {
-                throw new CustomizeException($isEnabled ? Code::F2004 : Code::F2005);
+                throw new CustomizeException($request->input('mfa_status') ? Code::F2004 : Code::F2005);
             }
 
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::EDIT_MFA_STATUS_USER, 'user.id=' . $id, $input);
 
-            return Response::success([], $isEnabled ? Code::S1004 : Code::S1005);
+            return Response::success([], $request->input('mfa_status') ? Code::S1004 : Code::S1005);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
