@@ -193,7 +193,34 @@ class AuthorizeService extends Service
      */
     public function getPermissionsUuid(array $permissionIds): array
     {
-        return RedisService::getPermissionsUuid($permissionIds);
+        $uuids = []; // 找到的uuid
+        $list = []; // 缓存中未找到的权限
+
+        // 缓存中获取权限module
+        foreach (RedisService::getPermissionsUuid($permissionIds) as $k => $v) {
+            if ($v === false) {
+                $list[$permissionIds[$k]] = '-'; // 将缓存未找到的数据值用"-"占位, 避免重复查询数据库
+            }else{
+                $uuids[] = $v;
+            }
+        }
+
+        // 查询数据库并刷新缓存
+        if ($list) {
+            // 查询数据, 获取id, uuid
+            $data = Permissions::whereIn('id', array_keys($list))->where('status', 1)->get(['id', 'uuid']);
+
+            // 重新赋值
+            foreach ($data as $v) {
+                $list[$v->id] = $v->uuid; // 放置缓存的数据
+                $uuids[] = $v->uuid;
+            }
+
+            //写入缓存
+            RedisService::setPermissionsUuid($list);
+        }
+
+        return $uuids;
     }
 
     /**
