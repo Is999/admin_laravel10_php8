@@ -1289,7 +1289,7 @@ class AuthorizeService extends Service
         $res = $model->save();
         if ($res) {
             // 状态启用才存入缓存
-            if($model->status === PermissionStatus::ENABLED->value) {
+            if($model->status == PermissionStatus::ENABLED->value) {
                 // 刷新 权限 Hash permissions_module
                 if (!is_numeric($model->module)) RedisService::setPermissionsModule([$model->id => $model->module]);
 
@@ -1359,7 +1359,7 @@ class AuthorizeService extends Service
 
             // 禁用状态删除缓存
             if($oldStatus != $model->status){
-                if($model->status === PermissionStatus::DISABLED->value){
+                if($model->status == PermissionStatus::DISABLED->value){
                     // 删除 权限 Hash permissions_module
                     RedisService::delPermissionsModule($model->id);
                     // 删除 权限 Hash permissions_uuid
