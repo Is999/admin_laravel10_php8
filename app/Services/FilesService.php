@@ -7,7 +7,7 @@ use App\Exceptions\CustomizeException;
 use App\Models\Files;
 use Illuminate\Http\UploadedFile;
 
-class UploadService extends Service
+class FilesService extends Service
 {
     public $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']; // 允许的文件类型
 
@@ -26,7 +26,7 @@ class UploadService extends Service
      * @return string
      * @throws CustomizeException
      */
-    public function file(UploadedFile $file, string $path = 'uploads/', int $maxSize = 1024*1024*10, bool $consistency = true):string
+    public function upload(UploadedFile $file, string $path = 'uploads/', int $maxSize = 1024*1024*10, bool $consistency = true):string
     {
         // 验证文件类型
         $type = $file->getMimeType();
@@ -60,8 +60,9 @@ class UploadService extends Service
         $model->path = $path;
         $model->type = $type;
         $model->size = $size;
+        $model->status = 0; // '文件状态：0 未使用，1使用中，2 删除标记， 3 已删除';
+        $model->expiration = null;
         $model->modTime = date('Y-m-d H:i:s');
-        $model->status = 0;
         $model->created_at = date('Y-m-d H:i:s');
         $model->updated_at = date('Y-m-d H:i:s');
         $model->save();

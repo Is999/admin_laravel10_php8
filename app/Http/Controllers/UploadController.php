@@ -8,7 +8,7 @@ use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Services\ResponseService as Response;
-use App\Services\UploadService;
+use App\Services\FilesService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -29,8 +29,8 @@ class UploadController extends Controller
                 // 验证文件类型
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // 允许的图片类型
 
-                $uploadService = new UploadService($allowedTypes);
-                $path = $uploadService->file($file);
+                $uploadService = new FilesService($allowedTypes);
+                $path = $uploadService->upload($file);
 
                 // 记录操作日志
                 $this->addUserLog(__FUNCTION__, UserAction::UPLOAD_FILES, '上传图片', [
@@ -64,12 +64,12 @@ class UploadController extends Controller
                 $files = $request->file('files');
                 // 验证文件类型
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // 允许的图片类型
-                $uploadService = new UploadService($allowedTypes);
+                $uploadService = new FilesService($allowedTypes);
                 $originals = [];
                 $paths = [];
                 foreach ($files as $file) {
                     $originals[] =$file->getClientOriginalName();
-                    $paths[] = $uploadService->file($file);
+                    $paths[] = $uploadService->upload($file);
                 }
 
                 // 记录操作日志
@@ -102,8 +102,8 @@ class UploadController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
 
-                $uploadService = new UploadService;
-                $path = $uploadService->file($file);
+                $uploadService = new FilesService;
+                $path = $uploadService->upload($file);
 
                 // 记录操作日志
                 $this->addUserLog(__FUNCTION__, UserAction::UPLOAD_FILES, '上传文件', [
@@ -134,12 +134,12 @@ class UploadController extends Controller
         try {
             if ($request->hasFile('files')) {
                 $files = $request->file('files');
-                $uploadService = new UploadService;
+                $uploadService = new FilesService;
                 $originals = [];
                 $paths = [];
                 foreach ($files as $file) {
                     $originals[] =$file->getClientOriginalName();
-                    $paths[] = $uploadService->file($file);
+                    $paths[] = $uploadService->upload($file);
                 }
 
                 // 记录操作日志
