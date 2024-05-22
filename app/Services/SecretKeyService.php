@@ -53,6 +53,8 @@ class SecretKeyService extends Service
     /**
      * RSA key 私钥签名，公钥验签
      * @param Request $request
+     * @param bool $userPublicKey
+     * @param bool $serverPrivateKey
      * @return array
      * @throws CustomizeException
      */
@@ -187,9 +189,10 @@ class SecretKeyService extends Service
 
     /**
      * 设置私钥
+     * @param $priKey
      * @return bool
      */
-    private function setupPrivateKey($priKey)
+    private function setupPrivateKey($priKey): bool
     {
         $result = false;
         if (is_resource($priKey)) {
@@ -207,18 +210,19 @@ class SecretKeyService extends Service
 
     /**
      * 设置公钥
+     * @param $pubKey
      * @return bool
      */
-    private function setupChannelPublicKey($channelPubKey)
+    private function setupChannelPublicKey($pubKey): bool
     {
         $result = false;
-        if (is_resource($this->_channelPublicKey)) {
+        if (is_resource($pubKey)) {
             $result = true;
         } else {
-            $pem = chunk_split(trim($channelPubKey), 64, "\n");
+            $pem = chunk_split(trim($pubKey), 64, "\n");
             $pem = "-----BEGIN PUBLIC KEY-----\n" . $pem . "-----END PUBLIC KEY-----\n";
-            $this->_channelPublicKey = openssl_pkey_get_public($pem);
-            if ($this->_channelPublicKey) {
+            $pubKey = openssl_pkey_get_public($pem);
+            if ($pubKey) {
                 $result = true;
             }
         }

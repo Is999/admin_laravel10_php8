@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enum\OrderBy;
 use App\Models\UserLog;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -25,9 +26,9 @@ class UserLogService extends Service
         $pageSize = Arr::get($input, 'pageSize', 10); // 每页条数
 
         // 查询
-        $query = UserLog::when(Arr::get($input, 'user_name'), function ($query, $val) {
+        $query = UserLog::when(Arr::get($input, 'user_name'), function (Builder $query, $val) {
             return $query->where('user_name', $val);
-        })->when(Arr::get($input, 'action'), function ($query, $val) {
+        })->when(Arr::get($input, 'action'), function (Builder $query, $val) {
             return $query->where('action', $val);
         });
 

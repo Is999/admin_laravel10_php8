@@ -12,7 +12,8 @@ use App\Models\User;
 use App\Services\RedisService;
 use App\Services\ResponseService as Response;
 use App\Services\UserService;
-use Earnp\GoogleAuthenticator\Facades\GoogleAuthenticator;
+use Earnp\GoogleAuthenticator\GoogleAuthenticator;
+use Earnp\GoogleAuthenticator\Librarys\GoogleAuthenticator as GoogleSecretAuthenticator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -49,7 +50,8 @@ class GoogleSecretController extends Controller
             $createSecret = $this->redis()->get(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
             $createSecret = json_decode($createSecret, true);
             if (!$createSecret) {
-                $createSecret = GoogleAuthenticator::CreateSecret();
+                // $createSecret = GoogleAuthenticator::CreateSecret();
+                $createSecret = self::CreateSecret('Admin-' . $user->real_name);
                 RedisService::set(RedisKeys::ADMIN_MFA_SECRET . $sign->id, json_encode($createSecret), 300);
             }
             $ttl = $this->redis()->ttl(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
@@ -170,5 +172,20 @@ class GoogleSecretController extends Controller
             $this->systemException(__METHOD__, $e);
             return back()->with('msg', '【' . Code::SYSTEM_ERR . '】系统异常')->withInput();
         }
+    }
+
+
+    /**
+     * 创建验证器秘钥
+     * @param string $name
+     * @return array
+     */
+    public static function CreateSecret(string $name = 'Laravel-Admin'): array
+    {
+        $google = new GoogleSecretAuthenticator();
+        $secret = $google->createSecret();//创建一个Secret
+        $qrCodeUrl = 'otpauth://totp/' . urlencode($name) . '?secret=' . $secret;//二维码中填充的内容
+        $googlesecret = array('secret' => $secret, 'codeurl' => $qrCodeUrl);
+        return $googlesecret;
     }
 }

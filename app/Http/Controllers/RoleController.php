@@ -276,6 +276,7 @@ class RoleController extends Controller
      * 角色权限
      * @param Request $request
      * @param int $id
+     * @param string $isPid
      * @return JsonResponse
      */
     public function permission(Request $request, int $id, string $isPid): JsonResponse

@@ -6,9 +6,8 @@ use App\Enum\LogChannel;
 use App\Enum\RedisKeys;
 use App\Enum\RedisType;
 use App\Logging\Logger;
-use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Redis;
+use RedisException;
 use Throwable;
 
 class RedisService extends Service
@@ -21,6 +20,7 @@ class RedisService extends Service
      * @param int $uid
      * @param string $value
      * @return bool
+     * @throws RedisException
      */
     public static function setToken(int $uid, string $value): bool
     {
@@ -31,6 +31,7 @@ class RedisService extends Service
      * 获取token
      * @param int $uid
      * @return mixed false|mixed|string
+     * @throws RedisException
      */
     public static function getToken(int $uid): mixed
     {
@@ -42,6 +43,7 @@ class RedisService extends Service
      * @param int $uid
      * @param int $ttl
      * @return bool
+     * @throws RedisException
      */
     public static function renewToken(int $uid, int $ttl = 3600): bool
     {
@@ -52,6 +54,7 @@ class RedisService extends Service
      * 删除token
      * @param int $uid
      * @return int
+     * @throws RedisException
      */
     public static function delToken(int $uid): int
     {
@@ -63,6 +66,7 @@ class RedisService extends Service
      * @param int $uid
      * @param array $userInfo
      * @return bool
+     * @throws RedisException
      */
     public static function setUserInfo(int $uid, array $userInfo): bool
     {
@@ -78,6 +82,7 @@ class RedisService extends Service
      * @param int $uid
      * @param array $fields
      * @return array
+     * @throws RedisException
      */
     public static function getUserInfo(int $uid, array $fields = []): array
     {
@@ -91,6 +96,7 @@ class RedisService extends Service
      * 是否存在用户信息
      * @param int $uid
      * @return bool|int
+     * @throws RedisException
      */
     public static function checkUserInfoExists(int $uid): bool|int
     {
@@ -102,6 +108,7 @@ class RedisService extends Service
      * 删除用户信息
      * @param int $uid
      * @return int
+     * @throws RedisException
      */
     public static function delUserInfo(int $uid): int
     {
@@ -113,6 +120,7 @@ class RedisService extends Service
      * @param int $uid
      * @param array $roles
      * @return bool
+     * @throws RedisException
      */
     public static function setUserRoles(int $uid, array $roles): bool
     {
@@ -128,6 +136,7 @@ class RedisService extends Service
      * 获取用户角色信息
      * @param int $uid
      * @return array
+     * @throws RedisException
      */
     public static function getUserRoles(int $uid): array
     {
@@ -138,6 +147,7 @@ class RedisService extends Service
      * 是否存在用户角色信息
      * @param int $uid
      * @return bool|int
+     * @throws RedisException
      */
     public static function checkUserRolesExists(int $uid): bool|int
     {
@@ -148,6 +158,7 @@ class RedisService extends Service
      * 删除用户角色信息
      * @param int $uid
      * @return int
+     * @throws RedisException
      */
     public static function delUserRoles(int $uid): int
     {
@@ -159,6 +170,7 @@ class RedisService extends Service
      * @param int $id
      * @param array $permissions
      * @return bool
+     * @throws RedisException
      */
     public static function setRolePermissions(int $id, array $permissions): bool
     {
@@ -169,6 +181,7 @@ class RedisService extends Service
      * 获取角色权限信息
      * @param int $id
      * @return array
+     * @throws RedisException
      */
     public static function getRolePermissions(int $id): array
     {
@@ -179,6 +192,7 @@ class RedisService extends Service
      * 删除角色信息
      * @param int $id
      * @return int
+     * @throws RedisException
      */
     public static function delRolePermissions(int $id): int
     {
@@ -189,6 +203,7 @@ class RedisService extends Service
      * 存储角色status信息
      * @param array $roles
      * @return bool
+     * @throws RedisException
      */
     public static function setRolesStatus(array $roles): bool
     {
@@ -199,6 +214,7 @@ class RedisService extends Service
      * 获取权限module信息
      * @param string $roleId
      * @return mixed
+     * @throws RedisException
      */
     public static function getRoleStatus(string $roleId): mixed
     {
@@ -209,6 +225,7 @@ class RedisService extends Service
      * 删除权限module信息
      * @param array $roleIds
      * @return int
+     * @throws RedisException
      */
     public static function delRolesStatus(array $roleIds): int
     {
@@ -219,6 +236,7 @@ class RedisService extends Service
      * 存储权限module信息
      * @param array $permissions
      * @return bool
+     * @throws RedisException
      */
     public static function setPermissionsModule(array $permissions): bool
     {
@@ -229,6 +247,7 @@ class RedisService extends Service
      * 获取权限module信息
      * @param array $permissionIds
      * @return array
+     * @throws RedisException
      */
     public static function getPermissionsModule(array $permissionIds): array
     {
@@ -239,6 +258,7 @@ class RedisService extends Service
      * 删除权限module信息
      * @param int $permissionIds
      * @return int
+     * @throws RedisException
      */
     public static function delPermissionsModule(int $permissionIds): int
     {
@@ -249,6 +269,7 @@ class RedisService extends Service
      * 存储权限uuid信息
      * @param array $permissions
      * @return bool
+     * @throws RedisException
      */
     public static function setPermissionsUuid(array $permissions): bool
     {
@@ -259,6 +280,7 @@ class RedisService extends Service
      * 获取权限uuid信息
      * @param array $permissionIds
      * @return array
+     * @throws RedisException
      */
     public static function getPermissionsUuid(array $permissionIds): array
     {
@@ -269,6 +291,7 @@ class RedisService extends Service
      * 删除权限uuid信息
      * @param int $permissionIds
      * @return int
+     * @throws RedisException
      */
     public static function delPermissionsUuid(int $permissionIds): int
     {
@@ -281,6 +304,7 @@ class RedisService extends Service
      * @param array $data
      * @param int $expire
      * @return bool
+     * @throws RedisException
      */
     private static function loadHash(string $key, array $data, int $expire = 0): bool
     {
@@ -301,6 +325,7 @@ class RedisService extends Service
      * @param array $data
      * @param int $expire
      * @return bool|int
+     * @throws RedisException
      */
     private static function loadList(string $key, array $data, int $expire = 0): bool|int
     {
@@ -321,6 +346,7 @@ class RedisService extends Service
      * @param array $data
      * @param int $expire
      * @return bool|int
+     * @throws RedisException
      */
     private static function loadSet(string $key, array $data, int $expire = 0): bool|int
     {
@@ -341,6 +367,7 @@ class RedisService extends Service
      * @param array $data
      * @param int $expire
      * @return bool|int
+     * @throws RedisException
      */
     private static function loadSortedSet(string $key, array $data, int $expire = 0): bool|int
     {
@@ -361,6 +388,7 @@ class RedisService extends Service
      * @param mixed $value
      * @param int $expire
      * @return bool
+     * @throws RedisException
      */
     private static function loadString(string $key, mixed $value, int $expire = 0): bool
     {
@@ -374,6 +402,7 @@ class RedisService extends Service
     /**
      * 删除所有的缓存
      * @param string $key
+     * @throws RedisException
      */
     public static function flushTableAll(string $key = '*'): void
     {
@@ -388,6 +417,7 @@ class RedisService extends Service
      * @param string $key
      * @param array $secondIndex
      * @return bool|array
+     * @throws RedisException
      * @example
      * <pre>
      * RedisService::initTable() // 刷新配置文件所有的key
@@ -614,6 +644,7 @@ class RedisService extends Service
      * @param string $key
      * @param bool $notExistsRefresh
      * @return false|mixed
+     * @throws RedisException
      */
     public static function getTable(string $key, bool $notExistsRefresh = false): mixed
     {
@@ -633,6 +664,7 @@ class RedisService extends Service
      * @param int $end
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function lRangeTable(string $key, int $start = 0, int $end = -1, bool $notExistsRefresh = false): array
     {
@@ -651,6 +683,7 @@ class RedisService extends Service
      * @param int $index
      * @param bool $notExistsRefresh
      * @return mixed
+     * @throws RedisException
      */
     public static function lIndexTable(string $key, int $index = 0, bool $notExistsRefresh = false): mixed
     {
@@ -668,6 +701,7 @@ class RedisService extends Service
      * @param array $hashKeys
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function hMGetTable(string $key, array $hashKeys, bool $notExistsRefresh = false): array
     {
@@ -684,6 +718,7 @@ class RedisService extends Service
      * @param string $key
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function hGetAllTable(string $key, bool $notExistsRefresh = false): array
     {
@@ -701,6 +736,7 @@ class RedisService extends Service
      * @param string $hashKey
      * @param bool $notExistsRefresh
      * @return mixed
+     * @throws RedisException
      */
     public static function hGetTable(string $key, string $hashKey, bool $notExistsRefresh = false): mixed
     {
@@ -717,6 +753,7 @@ class RedisService extends Service
      * @param string $key
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function sMembersTable(string $key, bool $notExistsRefresh = false): array
     {
@@ -733,6 +770,7 @@ class RedisService extends Service
      * @param string $key
      * @param $value
      * @return bool
+     * @throws RedisException
      */
     public static function sIsMemberTable(string $key, $value): bool
     {
@@ -756,6 +794,7 @@ class RedisService extends Service
      * @param array $otherKeys
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function sInterTable(string $key, array $otherKeys, bool $notExistsRefresh = false): array
     {
@@ -773,6 +812,7 @@ class RedisService extends Service
      * @param array $otherKeys
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function sDiffTable(string $key, array $otherKeys, bool $notExistsRefresh = false): array
     {
@@ -791,6 +831,7 @@ class RedisService extends Service
      * @param int $end
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function zRangeTable(string $key, int $start = 0, int $end = -1, bool $notExistsRefresh = false): array
     {
@@ -809,6 +850,7 @@ class RedisService extends Service
      * @param int $max
      * @param bool $notExistsRefresh
      * @return array
+     * @throws RedisException
      */
     public static function zRangeByScoreTable(string $key, int $min = 0, int $max = -1, bool $notExistsRefresh = false): array
     {
@@ -826,6 +868,7 @@ class RedisService extends Service
      * @param $value
      * @param bool $notExistsRefresh
      * @return int|bool
+     * @throws RedisException
      */
     public static function zRankTable(string $key, $value, bool $notExistsRefresh = false): bool|int
     {
@@ -844,6 +887,7 @@ class RedisService extends Service
      * @param $value
      * @param bool $notExistsRefresh
      * @return int|bool
+     * @throws RedisException
      */
     public static function zRevRankTable(string $key, $value, bool $notExistsRefresh = false): bool|int
     {
@@ -860,6 +904,7 @@ class RedisService extends Service
      * 游标-删除所有的 key 相当于keys
      * @param string $pattern
      * @param int $count
+     * @throws RedisException
      */
     public static function delKeysScan(string $pattern, int $count = 100): void
     {
@@ -882,6 +927,7 @@ class RedisService extends Service
      * @param null $pattern
      * @param int $count
      * @return array
+     * @throws RedisException
      */
     public static function getKeysScan($pattern = null, int $count = 100): array
     {
@@ -906,6 +952,7 @@ class RedisService extends Service
      * @param mixed $value
      * @param int $timeout 时间秒
      * @return bool
+     * @throws RedisException
      */
     public static function set(string $key, mixed $value, int $timeout = 0): bool
     {

@@ -20,7 +20,6 @@ use App\Services\ResponseService as Response;
 use App\Services\UserService;
 use Carbon\Carbon;
 use Closure;
-use Earnp\GoogleAuthenticator\Facades\GoogleAuthenticator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -404,7 +403,7 @@ class UserController extends Controller
             // 清除缓存
             (new UserService)->clearUserInfo($request->offsetGet('user.id'));
 
-            return Response::success([]);
+            return Response::success();
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
@@ -609,7 +608,7 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function updateMfaSecureKey(Request $request)
+    public function updateMfaSecureKey(Request $request): JsonResponse
     {
         try {
             $validator = Validator::make($request->input()

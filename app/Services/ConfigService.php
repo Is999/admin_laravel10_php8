@@ -8,7 +8,7 @@ use App\Enum\OrderBy;
 use App\Enum\RedisKeys;
 use App\Exceptions\CustomizeException;
 use App\Models\Config;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Throwable;

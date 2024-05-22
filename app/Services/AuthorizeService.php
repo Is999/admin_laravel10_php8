@@ -19,7 +19,7 @@ use App\Models\Menus;
 use App\Models\Permissions;
 use App\Models\Roles;
 use App\Models\UserRolesAccess;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -200,7 +200,7 @@ class AuthorizeService extends Service
         foreach (RedisService::getPermissionsUuid($permissionIds) as $k => $v) {
             if ($v === false) {
                 $list[$permissionIds[$k]] = '-'; // 将缓存未找到的数据值用"-"占位, 避免重复查询数据库
-            }else{
+            } else {
                 $uuids[] = $v;
             }
         }
@@ -279,7 +279,7 @@ class AuthorizeService extends Service
                     $isEdit = $this->checkUserHasChildRole($adminId, $role);
                     if (!$isEdit) {
                         $title = Roles::where('id', $role)->value('title');
-                        throw new CustomizeException(Code::E100060,['role'=>$title]);
+                        throw new CustomizeException(Code::E100060, ['role' => $title]);
                     }
                 }
             }
@@ -355,7 +355,7 @@ class AuthorizeService extends Service
 
         // 去重, 并获取uuid
         if ($permissions) {
-            $data['permissions'] = $this->getPermissionsUuid(array_unique($permissions,SORT_NUMERIC));
+            $data['permissions'] = $this->getPermissionsUuid(array_unique($permissions, SORT_NUMERIC));
         }
 
         return $data;
@@ -595,9 +595,9 @@ class AuthorizeService extends Service
 
         Roles::with('children:id,pid')->where([
             ['is_delete', Delete::NO]
-        ])->when($status !== null, function ($query) use ($status) {
+        ])->when($status !== null, function (Builder $query) use ($status) {
             return $query->where('status', $status);
-        })->when($title, function ($query, $val) {
+        })->when($title, function (Builder $query, $val) {
             return $query->where('title', $val);
         })->when($pid !== null, function (Builder $query) use ($isGenealogy, $pid) {
             return self::getPids($query, $pid, $isGenealogy);
@@ -1021,7 +1021,7 @@ class AuthorizeService extends Service
             $isSuperRole = true;
         }
         // 当前用户是否是超级管理员
-        $userIsSuperRole =$this->checkUserIsSuperRole($request->offsetGet('user.id'));
+        $userIsSuperRole = $this->checkUserIsSuperRole($request->offsetGet('user.id'));
         // 超级管理员添加下级
         if ($isPid && $superRoleId == $id && $userIsSuperRole) {
             $isChecked = true;
@@ -1145,17 +1145,17 @@ class AuthorizeService extends Service
         // 返回数据
         $list = [];
 
-        Permissions::when($type === null, function ($query) {
+        Permissions::when($type === null, function (Builder $query) {
             return $query->with('children:id,pid');
-        })->when($uuid, function ($query, $val) {
+        })->when($uuid, function (Builder $query, $val) {
             return $query->where('uuid', $val);
-        })->when($title, function ($query, $val) {
+        })->when($title, function (Builder $query, $val) {
             return $query->where('title', $val);
-        })->when($module, function ($query, $val) {
+        })->when($module, function (Builder $query, $val) {
             return $query->where('module', $val);
-        })->when($status !== null, function ($query) use ($status) { // 状态
+        })->when($status !== null, function (Builder $query) use ($status) { // 状态
             return $query->where('status', $status);
-        })->when($type !== null, function ($query) use ($type) {
+        })->when($type !== null, function (Builder $query) use ($type) {
             if (is_array($type)) {
                 if (count($type) > 1) {
                     return $query->whereIn('type', $type);
@@ -1289,7 +1289,7 @@ class AuthorizeService extends Service
         $res = $model->save();
         if ($res) {
             // 状态启用才存入缓存
-            if($model->status == PermissionStatus::ENABLED->value) {
+            if ($model->status == PermissionStatus::ENABLED->value) {
                 // 刷新 权限 Hash permissions_module
                 if (!is_numeric($model->module)) RedisService::setPermissionsModule([$model->id => $model->module]);
 
@@ -1358,8 +1358,8 @@ class AuthorizeService extends Service
             }
 
             // 禁用状态删除缓存
-            if($oldStatus != $model->status){
-                if($model->status == PermissionStatus::DISABLED->value){
+            if ($oldStatus != $model->status) {
+                if ($model->status == PermissionStatus::DISABLED->value) {
                     // 删除 权限 Hash permissions_module
                     RedisService::delPermissionsModule($model->id);
                     // 删除 权限 Hash permissions_uuid
@@ -1400,7 +1400,7 @@ class AuthorizeService extends Service
         }
 
         // 绑定到角色的权限不能删除
-        $title = Roles::when($id, function ($query, $id) {
+        $title = Roles::when($id, function (Builder $query, $id) {
             return $query->whereRaw('FIND_IN_SET(?, permissions_id)', [$id]);
         })->value('title');
         if ($title !== null) {
@@ -1453,14 +1453,14 @@ class AuthorizeService extends Service
         $list = [];
 
         // 查询数据
-        //Menus::with('parent:id,title')->when($uuid, function ($query, $val) { // 获取父级
-        Menus::when($uuid, function ($query, $val) { // uuid
+        //Menus::with('parent:id,title')->when($uuid, function (Builder $query, $val) { // 获取父级
+        Menus::when($uuid, function (Builder $query, $val) { // uuid
             return $query->where('permissions_uuid', $val);
-        })->when($title, function ($query, $val) { // 菜单名称
+        })->when($title, function (Builder $query, $val) { // 菜单名称
             return $query->where('title', $val);
-        })->when($status !== null, function ($query) use ($status) { // 状态
+        })->when($status !== null, function (Builder $query) use ($status) { // 状态
             return $query->where('status', $status);
-        })->when($isShortcut !== null, function ($query) use ($isShortcut) { // 快捷
+        })->when($isShortcut !== null, function (Builder $query) use ($isShortcut) { // 快捷
             return $query->where('is_shortcut', $isShortcut);
         })->when($pid !== null, function (Builder $query) use ($isGenealogy, $pid) { // pid
             return $this->getPids($query, $pid, $isGenealogy);

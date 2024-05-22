@@ -85,9 +85,9 @@ message;
 
     /**
      * redis 连接
-     * @return Connection
+     * @param string|null $name
      */
-    protected function redis(string $name = null): Connection
+    protected function redis(string $name = null): Connection|\Redis
     {
         return Service::redis($name);
     }

@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use DateTimeInterface;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
-class Model extends BaseModel
+class Model extends BaseModel implements Builder
 {
     // 时间转换
     protected $casts = [

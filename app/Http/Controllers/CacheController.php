@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use RedisException;
 use Throwable;
 
 class CacheController extends Controller
@@ -212,6 +213,7 @@ class CacheController extends Controller
      * @param string $pattern
      * @param int $count
      * @return array
+     * @throws RedisException
      */
     public function Scan(string $pattern = '*', int $count = 100): array
     {

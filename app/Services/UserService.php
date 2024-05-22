@@ -16,6 +16,7 @@ use App\Models\UserRolesAccess;
 use Earnp\GoogleAuthenticator\Facades\GoogleAuthenticator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
@@ -461,13 +462,13 @@ class UserService extends Service
         $pageSize = Arr::get($input, 'pageSize', 10); // 每页条数
 
         // 查询
-        $query = User::when($email, function ($query) use ($email) { // email
+        $query = User::when($email, function (Builder $query) use ($email) { // email
             return $query->where('email', $email);
-        })->when($name, function ($query) use ($name) { // name
+        })->when($name, function (Builder $query) use ($name) { // name
             return $query->where('name', $name);
-        })->when($status !== null, function ($query) use ($status) { // status
+        })->when($status !== null, function (Builder $query) use ($status) { // status
             return $query->where('status', $status);
-        })->when($role !== null, function ($query) use ($role) { // role
+        })->when($role !== null, function (Builder $query) use ($role) { // role
             return $query->join((new UserRolesAccess)->tableName('role'), 'users.id', '=', 'role.user_id')
                 ->where('role.role_id', $role);
         });
