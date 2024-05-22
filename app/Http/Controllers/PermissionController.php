@@ -10,7 +10,6 @@ use App\Enum\PermissionType;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
-use App\Models\Permissions;
 use App\Services\AuthorizeService;
 use App\Services\ResponseService as Response;
 use Illuminate\Http\JsonResponse;

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Query\Builder;
+
 class SecretKey extends Model
 {
     /**
@@ -24,7 +26,7 @@ class SecretKey extends Model
         }
 
         // 查询数据
-        $list = self::when($key, function ($query, $uuid) {
+        $list = self::when($key, function (Builder $query, $uuid) {
             return count($uuid) == 1 ? $query->where('uuid', $uuid[0]) : $query->whereIn('uuid', $uuid);
         })->orderBy('id')->get([
             'uuid', 'aes_key', 'aes_iv', 'status'

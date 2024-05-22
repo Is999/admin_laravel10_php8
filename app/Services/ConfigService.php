@@ -11,6 +11,7 @@ use App\Models\Config;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use RedisException;
 use Throwable;
 
 class ConfigService extends Service
@@ -55,7 +56,7 @@ class ConfigService extends Service
      * @param Request $request
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function add(Request $request, array $input): bool
     {
@@ -88,7 +89,7 @@ class ConfigService extends Service
      * @param int $id
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function edit(Request $request, int $id, array $input): bool
     {
@@ -114,6 +115,7 @@ class ConfigService extends Service
      * 查看缓存数据
      * @param string $uuid
      * @return mixed
+     * @throws RedisException
      */
     public static function getCache(string $uuid): mixed
     {
@@ -145,6 +147,7 @@ class ConfigService extends Service
      * 刷新配置
      * @param string $uuid
      * @return void
+     * @throws RedisException
      */
     public static function renew(string $uuid): void
     {

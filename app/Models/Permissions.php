@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\AuthorizeService;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -52,7 +53,7 @@ class Permissions extends Model
     {
         $key = array_merge($key, $index);
         // 查询数据
-        $list = self::when($key, function ($query, $id) {
+        $list = self::when($key, function (Builder $query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
         })->where('status', 1)->orderBy('id')->get([
             'id', 'module'
@@ -77,7 +78,7 @@ class Permissions extends Model
     {
         $key = array_merge($key, $index);
         // 查询数据
-        $list = self::when($key, function ($query, $id) {
+        $list = self::when($key, function (Builder $query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
         })->where('status', 1)->orderBy('id')->get([
             'id', 'uuid'

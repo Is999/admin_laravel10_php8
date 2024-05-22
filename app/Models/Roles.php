@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enum\Delete;
 use App\Enum\RoleStatus;
 use App\Services\AuthorizeService;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -89,7 +90,7 @@ class Roles extends Model
         $list = self::where([
             ['is_delete', Delete::NO]
             , ['id', '>', (new AuthorizeService)->getSuperRole()] // 超级管理员角色
-        ])->when($key, function ($query, $id) {
+        ])->when($key, function (Builder $query, $id) {
             return count($id) == 1 ? $query->where('id', $id[0]) : $query->whereIn('id', $id);
         })->get([
             'id', 'status'

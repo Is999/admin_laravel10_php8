@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Query\Builder;
+
 class Config extends Model
 {
     /**
@@ -20,7 +22,7 @@ class Config extends Model
     public function configsUuidHash(array $key = [], array $index = []): array
     {
         // 查询数据
-        $list = self::when($key, function ($query, $uuid) {
+        $list = self::when($key, function (Builder $query, $uuid) {
             return count($uuid) == 1 ? $query->where('uuid', $uuid[0]) : $query->whereIn('uuid', $uuid);
         })->orderBy('id')->get([
             'uuid', 'value', 'type'

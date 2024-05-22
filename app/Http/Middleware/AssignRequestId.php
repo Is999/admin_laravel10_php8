@@ -65,7 +65,7 @@ class AssignRequestId
         return $response;
     }
 
-    private function getHeaders(Request $request)
+    private function getHeaders(Request $request): array
     {
         $headers = [];
         $headers['User-Agent'] = $request->header('User-Agent');

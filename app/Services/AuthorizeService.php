@@ -23,6 +23,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use RedisException;
 use Throwable;
 
 class AuthorizeService extends Service
@@ -44,6 +45,7 @@ class AuthorizeService extends Service
      * @param int $uid 用户id
      * @param string $module 匹配模型
      * @return false
+     * @throws RedisException
      */
     public function check(int $uid, string $module): bool
     {
@@ -81,6 +83,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @param bool $renew
      * @return array
+     * @throws RedisException
      */
     public function getUserRoles(int $uid, bool $renew = false): array
     {
@@ -112,6 +115,7 @@ class AuthorizeService extends Service
      * 获取角色状态
      * @param int $id
      * @return mixed
+     * @throws RedisException
      */
     public function getRoleStatus(int $id): mixed
     {
@@ -134,6 +138,7 @@ class AuthorizeService extends Service
      * 获取角色权限
      * @param int $id 角色 传
      * @return array
+     * @throws RedisException
      */
     public function getRolePermissions(int $id): array
     {
@@ -145,6 +150,7 @@ class AuthorizeService extends Service
      * 获取权限列表modules
      * @param array $permissionIds
      * @return array
+     * @throws RedisException
      */
     public function getPermissionsModule(array $permissionIds): array
     {
@@ -190,6 +196,7 @@ class AuthorizeService extends Service
      * 获取权限列表uuid
      * @param array $permissionIds
      * @return array
+     * @throws RedisException
      */
     public function getPermissionsUuid(array $permissionIds): array
     {
@@ -227,6 +234,7 @@ class AuthorizeService extends Service
      * 验证用户是否是超级管理员
      * @param int $uid
      * @return bool
+     * @throws RedisException
      */
     public function checkUserIsSuperRole(int $uid): bool
     {
@@ -246,6 +254,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @param int $roleId
      * @return bool
+     * @throws RedisException
      */
     public function checkUserHasRole(int $uid, int $roleId): bool
     {
@@ -266,9 +275,9 @@ class AuthorizeService extends Service
      * @param int $adminId 管理员id
      * @param int $uid 用户id
      * @return void
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
-    public function checkEditStatus(int $adminId, int $uid)
+    public function checkEditStatus(int $adminId, int $uid): void
     {
         // 判断用户是否拥有超级管理员权限
         if (!$this->checkUserIsSuperRole($adminId)) {
@@ -287,10 +296,11 @@ class AuthorizeService extends Service
     }
 
     /**
-     * 验证角色【roleid】是否是用户【uid】所拥有角色的子角色
+     * 验证角色【roleId】是否是用户【uid】所拥有角色的子角色
      * @param int $uid
      * @param int $roleId
      * @return bool
+     * @throws RedisException
      */
     public function checkUserHasChildRole(int $uid, int $roleId): bool
     {
@@ -321,6 +331,7 @@ class AuthorizeService extends Service
      * 获取用户权限uuid
      * @param int $uid
      * @return array
+     * @throws RedisException
      */
     public function getUserPermissionUuid(int $uid): array
     {
@@ -366,6 +377,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param int $uid
      * @return array
+     * @throws RedisException
      */
     public function getMenuNav(Request $request, int $uid): array
     {
@@ -418,6 +430,7 @@ class AuthorizeService extends Service
      * 菜单下拉框
      * @param Request $request
      * @return array
+     * @throws RedisException
      */
     public function menuTreeList(Request $request): array
     {
@@ -502,6 +515,7 @@ class AuthorizeService extends Service
      * 账号管理 编辑|新增角色下拉列表
      * @param Request $request
      * @return array
+     * @throws RedisException
      */
     public function userRoleTreeList(Request $request): array
     {
@@ -557,6 +571,7 @@ class AuthorizeService extends Service
      * 角色管理 上级角色下拉列表
      * @param Request $request
      * @return array
+     * @throws RedisException
      */
     public function roleTreeList(Request $request): array
     {
@@ -570,6 +585,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input 查询字段
      * @return array
+     * @throws RedisException
      */
     public function roleList(Request $request, array $input = []): array
     {
@@ -623,7 +639,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function roleAdd(Request $request, array $input): bool
     {
@@ -707,7 +723,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function roleEdit(Request $request, int $id, array $input): bool
     {
@@ -861,6 +877,7 @@ class AuthorizeService extends Service
      * 给所有下级角色添加权限
      * @param int $roleId
      * @param array $permissions
+     * @throws RedisException
      */
     private function subRoleAddPermissions(int $roleId, array $permissions): void
     {
@@ -892,6 +909,7 @@ class AuthorizeService extends Service
      * 去掉所有下级角色的权限
      * @param int $roleId
      * @param array $permissions
+     * @throws RedisException
      */
     private function subRoleDelPermissions(int $roleId, array $permissions): void
     {
@@ -918,10 +936,10 @@ class AuthorizeService extends Service
         });
     }
 
-    /*
+    /**
      * 禁用所有下级角色
      * @param int $roleId
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     private function subRoleStatusDisabled(int $roleId): void
     {
@@ -949,7 +967,7 @@ class AuthorizeService extends Service
     /**
      * 解除该角色与用户的关系
      * @param int $roleId
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     private function delUserRolesAccess(int $roleId): void
     {
@@ -1003,6 +1021,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @param bool $isPid 验证上级是否有权限
      * @return array
+     * @throws RedisException
      */
     public function permission(Request $request, int $id, bool $isPid): array
     {
@@ -1076,6 +1095,7 @@ class AuthorizeService extends Service
      * menu.menuPermissionUuid
      * @param Request $request
      * @return array
+     * @throws RedisException
      */
     public function menuPermissionUuid(Request $request): array
     {
@@ -1106,6 +1126,7 @@ class AuthorizeService extends Service
      * permission.parentPermissionTreeList
      * @param Request $request
      * @return array
+     * @throws RedisException
      */
     public function permissionTreeList(Request $request): array
     {
@@ -1118,6 +1139,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input
      * @return array
+     * @throws RedisException
      */
     public function permissionList(Request $request, array $input): array
     {
@@ -1228,7 +1250,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function permissionAdd(Request $request, array $input): bool
     {
@@ -1309,7 +1331,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function permissionEdit(Request $request, int $id, array $input): bool
     {
@@ -1384,7 +1406,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param int $id
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function permissionDel(Request $request, int $id): bool
     {
@@ -1425,6 +1447,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input
      * @return array
+     * @throws RedisException
      */
     public function menuList(Request $request, array $input): array
     {
@@ -1484,7 +1507,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function menuAdd(Request $request, array $input): bool
     {
@@ -1555,7 +1578,7 @@ class AuthorizeService extends Service
      * @param int $id
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function menuEdit(Request $request, int $id, array $input): bool
     {
@@ -1633,6 +1656,7 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param int $uid
      * @return array
+     * @throws RedisException
      */
     public function userRoleList(Request $request, int $uid): array
     {
@@ -1656,7 +1680,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function userEditRoles(Request $request, int $uid, array $input): bool
     {
@@ -1740,7 +1764,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function userAddRole(Request $request, int $uid, array $input): bool
     {
@@ -1777,7 +1801,7 @@ class AuthorizeService extends Service
      * @param int $uid
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function userDelRole(Request $request, int $uid, array $input): bool
     {

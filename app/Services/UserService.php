@@ -13,7 +13,7 @@ use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\User;
 use App\Models\UserRolesAccess;
-use Earnp\GoogleAuthenticator\Facades\GoogleAuthenticator;
+use Earnp\GoogleAuthenticator\GoogleAuthenticator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -22,6 +22,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use RedisException;
 use stdClass;
 use Throwable;
 
@@ -63,7 +64,7 @@ class UserService extends Service
      * @param string $token
      * @param $ip
      * @return int
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function checkToken(string $token, $ip): int
     {
@@ -179,6 +180,7 @@ class UserService extends Service
      * @param int $uid
      * @param array $fields
      * @return array
+     * @throws RedisException
      */
     public function getUserInfo(int $uid, array $fields = []): array
     {
@@ -223,6 +225,7 @@ class UserService extends Service
      * 缓存用户信息
      * @param User $user
      * @return void
+     * @throws RedisException
      */
     public function cacheUserInfo(User $user): void
     {
@@ -238,7 +241,7 @@ class UserService extends Service
      * @param int $id
      * @param string $secure
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function checkSecure(int $id, string $secure): bool
     {
@@ -270,7 +273,7 @@ class UserService extends Service
      * @param int $id
      * @param string $secure
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function checkMfaSecure(int $id, string $secure): bool
     {
@@ -355,7 +358,7 @@ class UserService extends Service
      * @param int $id
      * @param array $input
      * @return bool
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function editAccount(Request $request, int $id, array $input): bool
     {
@@ -427,6 +430,7 @@ class UserService extends Service
      * 清楚用户缓存信息
      * @param int $uid 用户id
      * @return bool
+     * @throws RedisException
      */
     public function clearUserInfo(int $uid): bool
     {
@@ -495,6 +499,7 @@ class UserService extends Service
      * @param $id
      * @param $secureKey
      * @return bool
+     * @throws RedisException
      */
     public function buildMfaSecureKey(Request $request, $id, $secureKey): bool
     {
@@ -522,7 +527,7 @@ class UserService extends Service
      * @param string $key
      * @param int $uid
      * @return array
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public static function setTwoStepCode(string $key, int $uid): array
     {
@@ -549,6 +554,7 @@ class UserService extends Service
      * @param int $uid
      * @param $suffix
      * @return string
+     * @throws RedisException
      */
     public static function checkTwoStepCode(string $key, int $uid, $suffix): string
     {
