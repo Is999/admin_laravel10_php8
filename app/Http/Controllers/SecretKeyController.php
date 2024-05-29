@@ -5,21 +5,21 @@ namespace App\Http\Controllers;
 use App\Enum\Code;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
-use App\Enum\UserAction;
+use App\Enum\SecretKeyStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Services\ResponseService as Response;
-use App\Services\UserLogService;
+use App\Services\SecretKeyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
-class UserLogController extends Controller
+class SecretKeyController extends Controller
 {
     /**
-     * 操作日志
+     * 秘钥管理列表
      * @param Request $request
      * @return JsonResponse
      */
@@ -29,9 +29,10 @@ class UserLogController extends Controller
             // 验证参数
             $validator = Validator::make($request->input()
                 , [
-                    'user_name' => 'string|max:20', // 用户账户
-                    'action' => [ // 动作名称
-                        new Enum(UserAction::class),
+                    'title' => 'string|max:100', // 标题
+                    'uuid' => 'string|max:64', // 标题
+                    'status' => [ // 状态
+                        new Enum(SecretKeyStatus::class),
                     ],
                     'field' => 'string', // 排序字段
                     'order' => [ // 排序方式
@@ -47,7 +48,7 @@ class UserLogController extends Controller
             $input = $validator->validated();
 
             // 查询数据
-            $result = (new UserLogService())->list($request, $input);
+            $result = (new SecretKeyService())->list($request, $input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -58,14 +59,4 @@ class UserLogController extends Controller
         }
     }
 
-    public function actionList(Request $request): JsonResponse
-    {
-        try {
-            return Response::success(UserAction::forSelect());
-        } catch (Throwable $e) {
-            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
-            $this->systemException(__METHOD__, $e);
-            return Response::fail(Code::SYSTEM_ERR);
-        }
-    }
 }

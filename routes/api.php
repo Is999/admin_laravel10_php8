@@ -5,6 +5,7 @@ use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SecretKeyController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserLogController;
@@ -76,7 +77,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         });
 
         // 操作日志
-        Route::controller(UserLogController::class)->prefix('userlog')->name('userlog.')->group(function () {
+        Route::controller(UserLogController::class)->prefix('userLog')->name('userLog.')->group(function () {
             Route::get('actionList', [UserLogController::class, 'actionList'])->name('actionList'); // 操作类型下拉框
         });
     });
@@ -142,8 +143,13 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 操作日志
-    Route::controller(UserLogController::class)->prefix('userlog')->name('userlog.')->group(function () {
+    Route::controller(UserLogController::class)->prefix('userLog')->name('userLog.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [UserLogController::class, 'index'])->name('index'); // 缓存列表
+    });
+
+    // 秘钥管理
+    Route::controller(SecretKeyController::class)->prefix('secretKey')->name('secretKey.')->group(function () {
+        Route::match(['GET', 'POST'], 'index', [SecretKeyController::class, 'index'])->name('index'); // 秘钥管理列表
     });
 
 });

@@ -4,11 +4,15 @@ namespace App\Services;
 
 use App\Enum\Code;
 use App\Enum\LogChannel;
+use App\Enum\OrderBy;
 use App\Enum\RedisKeys;
 use App\Enum\SecretKeyStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
+use App\Models\SecretKey;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 
 class SecretKeyService extends Service
@@ -227,5 +231,44 @@ class SecretKeyService extends Service
             }
         }
         return $result;
+    }
+
+    /**
+     * 秘钥管理列表
+     * @param Request $request
+     * @param array $input
+     * @return array
+     */
+    public function list(Request $request, array $input): array
+    {
+        // 分页, 排序
+        $orderByField = Arr::get($input, 'field', 'id'); // 排序字段
+        $orderByType = OrderBy::getLabel(Arr::get($input, 'order')); // 排序方式
+        $page = Arr::get($input, 'page', 1); // 页码
+        $pageSize = Arr::get($input, 'pageSize', 10); // 每页条数
+
+        $uuid = Arr::get($input, 'uuid'); // 唯一标识
+        $title = Arr::get($input, 'title'); // 权限名称
+        $status = Arr::get($input, 'status'); // 状态
+
+        // 查询
+        $query = SecretKey::when($uuid, function (Builder $query, $val) {
+            return $query->where('uuid', $val);
+        })->when($title, function (Builder $query, $val) {
+            return $query->where('title', 'like', "%$val%");
+        })->when($status !== null, function (Builder $query) use ($status) { // 状态
+            return $query->where('status', $status);
+        });
+
+        // 总数
+        $total = $query->count();
+
+        // 排序,分页
+        $items = $query->select([
+            'id', 'uuid', 'title', 'aes_key', 'aes_iv', 'rsa_public_key_user', 'rsa_public_key_server', 'rsa_private_key_server', 'status', 'remark', 'created_at', 'updated_at'
+        ])->orderBy($orderByField, $orderByType)
+            ->offset($pageSize * ($page - 1))->limit($pageSize)->get();
+
+        return ['total' => $total, 'items' => $items];
     }
 }
