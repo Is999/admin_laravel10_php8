@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SecretKeyService;
 use Illuminate\Contracts\Database\Query\Builder;
 
 class SecretKey extends Model
@@ -66,9 +67,9 @@ class SecretKey extends Model
         // 格式处理数据 key => value
         foreach ($list as $v) {
             $data[$v['uuid']] = [
-                'user_public_key' => $v['rsa_public_key_user'],
-                'server_public_key' => $v['rsa_public_key_server'],
-                'server_private_key' => $v['rsa_private_key_server'],
+                SecretKeyService::USER_PUBLIC_KEY => $v['rsa_public_key_user'],
+                SecretKeyService::SERVER_PUBLIC_KEY => $v['rsa_public_key_server'],
+                SecretKeyService::SERVER_PRIVATE_KEY => $v['rsa_private_key_server'],
                 'status' => $v['status']
             ];
         }

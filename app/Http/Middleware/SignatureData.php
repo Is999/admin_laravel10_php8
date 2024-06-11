@@ -2,21 +2,25 @@
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Signature;
 use App\Enum\Code;
 use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
 use App\Enum\SignRules;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
+use App\Services\AesService;
 use App\Services\ConfigService;
+use App\Services\Md5SignatureService;
 use App\Services\ResponseService as Response;
+use App\Services\RsaService;
 use App\Services\SecretKeyService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Throwable;
 
-class SignData
+class SignatureData
 {
     /**
      * 必须签名的路由
@@ -33,13 +37,20 @@ class SignData
 
                 if (isset($this->must[$routeName])) {
                     $requestId = $request->header('X-Request-Id', '');
-                    $appId = base64_decode($request->header('X-App-Id', ''));
+                    $appId = $request->header('X-App-Id', '');
+                    if (empty($appId)) {
+                        throw new CustomizeException(Code::E100062, ['param' => 'appId']);
+                    }
+                    $appId = base64_decode($appId);
+                    if (!$appId) {
+                        throw new CustomizeException(Code::E100063, ['param' => 'appId']);
+                    }
+                    $signatureType = strtoupper($request->header('X-Signature', '')); // 签名方式
 
                     $signParams = $this->must[$routeName];
                     $requestSign = isset($signParams['request']);
                     $responseSign = isset($signParams['response']);
 
-                    $rsa = ($requestSign || $responseSign) ? (new SecretKeyService)->getRsaKeyByRequestAppId($request, $requestSign, $responseSign) : [];
                     if ($requestSign) {
                         $input = $request->input();
 
@@ -55,9 +66,9 @@ class SignData
                         $signStr = $this->getSignStr($input, $signParams['request'], $requestId, $appId);
 
                         // 验证签名
-                        $checkResult = openssl_verify($signStr, base64_decode($sign), $rsa['user_public_key'], OPENSSL_ALGO_SHA256);
-
-                        if ($checkResult !== 1) {
+                        $signature = $this->getSignature($appId, $signatureType, true);
+                        $checkResult = $signature->verify($signStr, $sign);
+                        if (!$checkResult) {
                             Logger::error(LogChannel::DEV, '签名错误', [
                                 'signStr' => $signStr,
                                 'sign' => $sign,
@@ -77,13 +88,13 @@ class SignData
                         if ($content) {
                             $content = json_decode($content, true);
                             if ($content['success']) { // 成功的数据签名
+                                $signature = $this->getSignature($appId, $signatureType, false);
                                 $signStr = $this->getSignStr($content['data'], $signParams['response'], $requestId, $appId);
-                                $signature = false;
-                                openssl_sign($signStr, $signature, $rsa['server_private_key'], OPENSSL_ALGO_SHA256);
-                                if (!$signature) {
+                                $sign = $signature->sign($signStr);
+                                if (!$sign) {
                                     throw new CustomizeException(Code::F5005);
                                 }
-                                $content['data']['sign'] = base64_encode($signature);
+                                $content['data']['sign'] = $sign;
                                 $response->setContent(json_encode($content));
                             }
                         }
@@ -101,6 +112,29 @@ class SignData
             ], $e);
             return Response::fail(Code::SYSTEM_ERR, null, HttpStatus::INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * 获取签名方式
+     * @param string $appId
+     * @param string $signatureType
+     * @param bool $isVerify true 验证签名， false 签名
+     * @return Signature
+     * @throws CustomizeException
+     */
+    public function getSignature(string $appId, string $signatureType, bool $isVerify = false): Signature
+    {
+        /* @var $signature Signature */
+        if ($signatureType == 'M') {
+            $signature = new Md5SignatureService;
+        } elseif ($signatureType == 'A') {
+            $aes = (new SecretKeyService)->getAesKeyByRequestAppId($appId);
+            $signature = new AesService($aes['key'], $aes['iv']);
+        } else {
+            $key = (new SecretKeyService)->getRsaKeyByRequestAppId($appId, $isVerify ? SecretKeyService::USER_PUBLIC_KEY : SecretKeyService::SERVER_PRIVATE_KEY);
+            $signature = new RsaService($key);
+        }
+        return $signature;
     }
 
     /**

@@ -14,18 +14,25 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
+use OpenSSLAsymmetricKey;
 
 class SecretKeyService extends Service
 {
+    const AES = 'AES';
+    const RSA = 'RSA';
+    const USER_PUBLIC_KEY = 'user_public_key';
+    const SERVER_PUBLIC_KEY = 'server_public_key';
+    const SERVER_PRIVATE_KEY = 'server_private_key';
+
     /**
      * AES key
-     * @param Request $request
+     * @param string $appId
      * @return array
      * @throws CustomizeException
      */
-    public function getAesKeyByRequestAppId(Request $request): array
+    public function getAesKeyByRequestAppId(string $appId): array
     {
-        $aes = $this->getSecretKey($request, 'AES');
+        $aes = $this->getSecretKey($appId, SecretKeyService::AES);
         // 获取配置key
         if (empty($aes['key'])) {
             throw new CustomizeException(Code::F5003, ['flag' => '001']);
@@ -56,96 +63,85 @@ class SecretKeyService extends Service
 
     /**
      * RSA key 私钥签名，公钥验签
-     * @param Request $request
-     * @param bool $userPublicKey
-     * @param bool $serverPrivateKey
-     * @return array
+     * @param string $appId
+     * @param string $keyType
+     * @return OpenSSLAsymmetricKey
      * @throws CustomizeException
      */
-    public function getRsaKeyByRequestAppId(Request $request, bool $userPublicKey, bool $serverPrivateKey): array
+    public function getRsaKeyByRequestAppId(string $appId, string $keyType): OpenSSLAsymmetricKey
     {
-        $publicKey = null;
-        $privateKey = null;
-        $rsa = $this->getSecretKey($request, 'RSA');
-        if ($userPublicKey) {
-            $filePath = storage_path($rsa['user_public_key']);
+        $rsa = $this->getSecretKey($appId, SecretKeyService::RSA);
+        if ($keyType == SecretKeyService::USER_PUBLIC_KEY || $keyType == SecretKeyService::SERVER_PUBLIC_KEY) {
+            $filePath = storage_path($rsa[$keyType]);
 
-            // 验证用户公钥文件是否存在
-            if (!$rsa['user_public_key'] || !file_exists($filePath)) {
-                Logger::error(LogChannel::DEV, '用户公钥文件不存在：' . $filePath);
+            // 验证公钥文件是否存在
+            if (!$rsa[$keyType] || !file_exists($filePath)) {
+                Logger::error(LogChannel::DEV, '公钥文件不存在：' . $filePath);
                 throw new CustomizeException(Code::F5000, ['flag' => '003']);
             }
 
-            // 获取文件中的用户公钥
+            // 获取文件中的公钥
             $original = file_get_contents($filePath);
             if ($original === false) {
-                Logger::error(LogChannel::DEV, '获取用户公钥文件内容失败：' . $filePath);
+                Logger::error(LogChannel::DEV, '获取公钥文件内容失败：' . $filePath);
                 throw new CustomizeException(Code::F5001, ['flag' => '003']);
             }
 
-            // 验证用户公钥是否是可用的
+            // 验证公钥是否是可用的
             $publicKey = openssl_pkey_get_public(trim($original));
             if ($publicKey === false) {
-                Logger::error(LogChannel::DEV, '用户公钥无效：' . $filePath, [
+                Logger::error(LogChannel::DEV, '公钥无效：' . $filePath, [
                     'original' => $original
                 ]);
                 throw new CustomizeException(Code::F5002, ['flag' => '003']);
             }
+            return $publicKey;
         }
 
-        if ($serverPrivateKey) {
-            $filePath = storage_path($rsa['server_private_key']);
+        if ($keyType == SecretKeyService::SERVER_PRIVATE_KEY) {
+            $filePath = storage_path($rsa[$keyType]);
 
-            // 验证用服务器私钥文件是否存在
-            if (!$rsa['server_private_key'] || !file_exists($filePath)) {
-                Logger::error(LogChannel::DEV, '服务器私钥文件文件不存在：' . $filePath);
+            // 验证用私钥文件是否存在
+            if (!$rsa[$keyType] || !file_exists($filePath)) {
+                Logger::error(LogChannel::DEV, '私钥文件文件不存在：' . $filePath);
                 throw new CustomizeException(Code::F5000, ['flag' => '001']);
             }
 
-            // 获取文件中的服务器私钥
+            // 获取文件中的私钥
             $original = file_get_contents($filePath);
             if ($original === false) {
-                Logger::error(LogChannel::DEV, '获取服务器私钥文件内容失败：' . $filePath);
+                Logger::error(LogChannel::DEV, '获取私钥文件内容失败：' . $filePath);
                 throw new CustomizeException(Code::F5001, ['flag' => '001']);
             }
 
-            // 验证服务器私钥是否是可用的
+            // 验证私钥是否是可用的
             $privateKey = openssl_pkey_get_private(trim($original));
             if ($privateKey === false) {
-                Logger::error(LogChannel::DEV, '服务器私钥无效：' . $filePath, [
+                Logger::error(LogChannel::DEV, '私钥无效：' . $filePath, [
                     'original' => $original
                 ]);
                 throw new CustomizeException(Code::F5002, ['flag' => '001']);
             }
+            return $privateKey;
         }
 
-        return ['user_public_key' => $publicKey, 'server_private_key' => $privateKey];
+        throw new CustomizeException(Code::F5007, ['param' => $keyType]);
     }
 
     /**
      * 获取配置
-     * @param Request $request
+     * @param string $appId
      * @param string $type
      * @return array
      * @throws CustomizeException
      */
-    public function getSecretKey(Request $request, string $type): array
+    public function getSecretKey(string $appId, string $type): array
     {
-        // 请求头中获取
-        $appId = $request->header('X-App-Id', '');
-        if (empty($appId)) {
-            throw new CustomizeException(Code::E100062, ['param' => 'appId']);
-        }
-        $appId = base64_decode($appId);
-        if (!$appId) {
-            throw new CustomizeException(Code::E100063, ['param' => 'appId']);
-        }
-
         // 获取appId配置
         $keys = [];
-        if ($type === 'AES') {
+        if ($type === SecretKeyService::AES) {
             $keys = $this->aesKey($appId);
-        } elseif ($type === 'RSA') {
+        } elseif ($type === SecretKeyService::RSA) {
             $keys = $this->rsaKey($appId);
         }
 
@@ -192,45 +188,31 @@ class SecretKeyService extends Service
     }
 
     /**
-     * 设置私钥
-     * @param $priKey
-     * @return bool
+     * 去掉 RSA秘钥串 头尾标记和换行符
+     * @param $pem
+     * @return string
      */
-    private function setupPrivateKey($priKey): bool
+    public function removePEMHeaders($pem): string
     {
-        $result = false;
-        if (is_resource($priKey)) {
-            $result = true;
-        } else {
-            $pem = chunk_split(trim($priKey), 64, "\n");
-            $pem = "-----BEGIN RSA PRIVATE KEY-----\n" . $pem . "-----END RSA PRIVATE KEY-----\n";
-            $priKey = openssl_pkey_get_private($pem);
-            if ($priKey) {
-                $result = true;
-            }
-        }
-        return $result;
+        $key = preg_replace('/-----BEGIN.*?-----|-----END.*?-----/', '', $pem);
+        return str_replace(["\n", " "], '', $key);
     }
 
+
+
     /**
-     * 设置公钥
-     * @param $pubKey
-     * @return bool
+     * 为 RSA 密钥串添加头尾标记
+     * @param string $key 秘钥
+     * @param string $keyType 秘钥类型
+     * @return string
      */
-    private function setupChannelPublicKey($pubKey): bool
+    public function addPEMHeaders(string $key, string $keyType): string
     {
-        $result = false;
-        if (is_resource($pubKey)) {
-            $result = true;
-        } else {
-            $pem = chunk_split(trim($pubKey), 64, "\n");
-            $pem = "-----BEGIN PUBLIC KEY-----\n" . $pem . "-----END PUBLIC KEY-----\n";
-            $pubKey = openssl_pkey_get_public($pem);
-            if ($pubKey) {
-                $result = true;
-            }
+        $pem = chunk_split(trim($key), 64, "\n");
+        if (strtolower($key) == 'public') {
+            return "-----BEGIN RSA PRIVATE KEY-----\n" . $pem . "-----END RSA PRIVATE KEY-----";
         }
-        return $result;
+        return "-----BEGIN PUBLIC KEY-----\n" . $pem . "-----END PUBLIC KEY-----";
     }
 
     /**

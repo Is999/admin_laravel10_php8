@@ -43,6 +43,9 @@ enum Code: int
     const F5004 = 5004; // 系统异常 {flag}：标签参数数据类型不是Array或者Object类型，编码或解码异常
     const F5005 = 5005; // 系统异常：验证签名异常
     const F5006 = 5006; // 系统异常 {flag}：redis 服务异常
+    const F5007 = 5007; // 系统异常 {param}：不匹配的参数
+    const F5008 = 5008; // 系统异常：加密失败
+    const F5009 = 5009; // 系统异常 {param}：解密失败
 
     // 其它统一的异常
     const F10001 = 10001; // 不支持的文件类型 {type}

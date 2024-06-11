@@ -12,27 +12,41 @@
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Crypto;
 use App\Enum\Code;
 use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
+use App\Services\AesService;
 use App\Services\ResponseService as Response;
+use App\Services\RsaService;
 use App\Services\SecretKeyService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Throwable;
 
-class EncryptDecryptData
+class CryptoData
 {
     public function handle(Request $request, Closure $next)
     {
         try {
             $aes = [];
             $cipher = $request->header('X-Cipher');
+            // 请求头中获取
+            $appId = $request->header('X-App-Id', '');
+            if (empty($appId)) {
+                throw new CustomizeException(Code::E100062, ['param' => 'appId']);
+            }
+            $appId = base64_decode($appId);
+            if (!$appId) {
+                throw new CustomizeException(Code::E100063, ['param' => 'appId']);
+            }
+            $cryptoType = strtoupper($request->header('X-Crypto', '')); // 签名方式
+
             if (!empty($cipher)) {
-                $aes = (new SecretKeyService)->getAesKeyByRequestAppId($request);
+                $crypto = $this->getCrypto($appId, $cryptoType, false);
                 if (strtolower($cipher) === 'cipher') {
                     // 获取解密请求数据, 优先获取ciphertext参数
                     $originalData = $request->input('ciphertext');
@@ -40,9 +54,9 @@ class EncryptDecryptData
                         $originalData = $request->getContent();
                     }
 
-                    if ($originalData !== null) {
+                    if ($originalData !== null && $originalData !== '') {
                         // 解密请求数据
-                        $decryptedData = aesDecrypt($originalData, $aes['key'], $aes['iv']);
+                        $decryptedData = $crypto->decrypt($originalData);
                         if ($decryptedData === false) {
                             Logger::error(LogChannel::DEV, '解密失败', [
                                 'aes' => $aes,
@@ -72,9 +86,9 @@ class EncryptDecryptData
 
                             // 判断数据是否为空，空数据跳过解密步骤
                             $originalData = $request->input($param);
-                            if ($originalData !== null) {
+                            if ($originalData !== null && $originalData !== '') {
                                 // 解密请求的数据
-                                $decryptedData = aesDecrypt($originalData, $aes['key'], $aes['iv']);
+                                $decryptedData = $crypto->decrypt($originalData);
                                 if ($decryptedData === false) {
                                     Logger::error(LogChannel::DEV, '解密失败', [
                                         'aes' => $aes,
@@ -108,10 +122,13 @@ class EncryptDecryptData
             $cipher = $response->headers->get("X-Cipher");
             $originalData = $response->getContent();
             if (!empty($cipher) && !empty($originalData)) {
-                $aes = $aes ?: (new SecretKeyService)->getAesKeyByRequestAppId($request);
+                $crypto = $this->getCrypto($appId, $cryptoType, true);
 
                 if (strtolower($cipher) === 'cipher') {
-                    $encryptedData = aesEncrypt($originalData, $aes['key'], $aes['iv']);
+                    $encryptedData = $crypto->encrypt($originalData);
+                    if ($encryptedData === false) {
+                        throw new CustomizeException(Code::F5009, ['param' => 'cipher']);
+                    }
                     // 设置加密后的数据为响应内容
                     $response->setContent($encryptedData);
                 } else {
@@ -131,21 +148,28 @@ class EncryptDecryptData
                                 // 判断数据是否存在该参数
                                 if (array_key_exists($param, $content['data'])) {
                                     $originalData = Arr::get($content['data'], $param);
-                                    // 对json数据处理进行编码在加密
-                                    if ($isJson) {
-                                        // 判断数据类型，Array或者Object类型的数据才需要json编码
-                                        if (!Arr::accessible($originalData)) {
-                                            Logger::error(LogChannel::DEV, $param . '加密失败,无须json编码', [
-                                                'param' => $param,
-                                                'X-Cipher' => $cipherParams,
-                                                'originalData' => $originalData,
-                                            ]);
-                                            throw new CustomizeException(Code::F5004, ['flag' => 'json_encode:' . $param]);
+                                    // 加密非空数据
+                                    if ($originalData !== '') {
+                                        // 对json数据处理进行编码在加密
+                                        if ($isJson) {
+                                            // 判断数据类型，Array或者Object类型的数据才需要json编码
+                                            if (!Arr::accessible($originalData)) {
+                                                Logger::error(LogChannel::DEV, $param . '加密失败,无须json编码', [
+                                                    'param' => $param,
+                                                    'X-Cipher' => $cipherParams,
+                                                    'originalData' => $originalData,
+                                                ]);
+                                                throw new CustomizeException(Code::F5004, ['flag' => 'json_encode:' . $param]);
+                                            }
+                                            $originalData = json_encode($originalData);
                                         }
-                                        $originalData = json_encode($originalData);
-                                    }
 
-                                    Arr::set($content['data'], $param, aesEncrypt($originalData, $aes['key'], $aes['iv']));
+                                        $encryptedData = $crypto->encrypt($originalData);
+                                        if ($encryptedData === false) {
+                                            throw new CustomizeException(Code::F5009, ['param' => $param]);
+                                        }
+                                        Arr::set($content['data'], $param, $encryptedData);
+                                    }
                                 }
                             }
 
@@ -165,6 +189,27 @@ class EncryptDecryptData
             ], $e);
             return Response::fail(Code::SYSTEM_ERR, null, HttpStatus::INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * @param string $appId
+     * @param string $cryptoType
+     * @param bool $isEncrypt
+     * @return Crypto
+     * @throws CustomizeException
+     */
+    public function getCrypto(string $appId, string $cryptoType, bool $isEncrypt = false): Crypto
+    {
+        /* @var $crypto Crypto */
+        if ($cryptoType == 'R') {
+            // 接口数据加密使用用户的公钥，解密使用服务器的私钥
+            $key = (new SecretKeyService)->getRsaKeyByRequestAppId($appId, $isEncrypt ? SecretKeyService::USER_PUBLIC_KEY : SecretKeyService::SERVER_PRIVATE_KEY);
+            $crypto = new RsaService($key);
+        } else {
+            $aes = (new SecretKeyService)->getAesKeyByRequestAppId($appId);
+            $crypto = new AesService($aes['key'], $aes['iv']);
+        }
+        return $crypto;
     }
 
 }

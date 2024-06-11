@@ -39,6 +39,9 @@ return [
     Code::F5004 => 'System Exception {flag}',
     Code::F5005 => 'System Exception',
     Code::F5006 => 'System Exception {flag}',
+    Code::F5007 => 'System Exception {param}',
+    Code::F5008 => 'System Exception',
+    Code::F5009 => 'System Exception {param}',
 
     // 其它统一的异常
     Code::F10001 => '不支持的文件类型 {type}',
