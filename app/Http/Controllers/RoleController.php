@@ -27,7 +27,7 @@ class RoleController extends Controller
     public function treeList(Request $request): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->roleTreeList($request);
+            $result = (new AuthorizeService)->roleTreeList();
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -60,7 +60,7 @@ class RoleController extends Controller
             }
 
             // 查询数据
-            $result = (new AuthorizeService)->roleList($request, $validator->validated());
+            $result = (new AuthorizeService)->roleList($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());

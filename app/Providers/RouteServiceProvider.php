@@ -28,6 +28,10 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('upload', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
         $this->routes(function () {
             // 定义正则表达式约束id
             Route::pattern('id', '[0-9]+');
@@ -36,6 +40,10 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('api')
                 ->prefix('admin')
                 ->group(base_path('routes/api.php'));
+
+            // 上传文件
+            Route::middleware('upload')
+                ->group(base_path('routes/upload.php'));
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));

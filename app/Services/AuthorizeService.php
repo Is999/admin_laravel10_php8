@@ -374,12 +374,11 @@ class AuthorizeService extends Service
 
     /**
      * 获取导航栏
-     * @param Request $request
      * @param int $uid
      * @return array
      * @throws RedisException
      */
-    public function getMenuNav(Request $request, int $uid): array
+    public function getMenuNav(int $uid): array
     {
         $nav = [];
 
@@ -428,11 +427,10 @@ class AuthorizeService extends Service
 
     /**
      * 菜单下拉框
-     * @param Request $request
      * @return array
      * @throws RedisException
      */
-    public function menuTreeList(Request $request): array
+    public function menuTreeList(): array
     {
         $nav = [];
 
@@ -525,7 +523,8 @@ class AuthorizeService extends Service
             $data = json_decode($data, true);
 
             // 获取用户角色
-            $roles = $this->getUserRoles($request->offsetGet('user.id'));
+            $admin = $request->offsetGet('user.id');
+            $roles = $this->getUserRoles($admin);
             $isSuperRole = false;
             if (in_array($this->getSuperRole(), $roles)) {
                 $isSuperRole = true;
@@ -557,11 +556,10 @@ class AuthorizeService extends Service
 
     /**
      * 用户角色id
-     * @param Request $request
      * @param int $id
      * @return array
      */
-    public function userRoles(Request $request, int $id): array
+    public function userRoles(int $id): array
     {
         // 获取账号角色
         return UserRolesAccess::where('user_id', $id)->pluck('role_id')->toArray();
@@ -569,11 +567,10 @@ class AuthorizeService extends Service
 
     /**
      * 角色管理 上级角色下拉列表
-     * @param Request $request
      * @return array
      * @throws RedisException
      */
-    public function roleTreeList(Request $request): array
+    public function roleTreeList(): array
     {
         // 从缓存中获取角色
         $roles = RedisService::getTable(RedisKeys::ROLE_TREE, true);
@@ -582,12 +579,11 @@ class AuthorizeService extends Service
 
     /**
      * 列表,搜索
-     * @param Request $request
      * @param array $input 查询字段
      * @return array
      * @throws RedisException
      */
-    public function roleList(Request $request, array $input = []): array
+    public function roleList(array $input = []): array
     {
         $status = Arr::get($input, 'status'); // 状态
         $title = Arr::get($input, 'title'); // 角色名称
@@ -639,14 +635,16 @@ class AuthorizeService extends Service
      * @param Request $request
      * @param array $input
      * @return bool
-     * @throws CustomizeException|RedisException
+     * @throws CustomizeException
+     * @throws RedisException
      */
     public function roleAdd(Request $request, array $input): bool
     {
         $pid = Arr::get($input, 'pid', 0);
+        $admin = $request->offsetGet('user.id');
 
         // 检查该用户是否有新增角色的权限
-        if (!($this->checkUserHasRole($request->offsetGet('user.id'), $pid) || $this->checkUserHasChildRole($request->offsetGet('user.id'), $pid))) {
+        if (!($this->checkUserHasRole($admin, $pid) || $this->checkUserHasChildRole($admin, $pid))) {
             throw new CustomizeException(Code::E100030);
         }
 
@@ -723,7 +721,8 @@ class AuthorizeService extends Service
      * @param int $id
      * @param array $input
      * @return bool
-     * @throws CustomizeException|RedisException
+     * @throws CustomizeException
+     * @throws RedisException
      */
     public function roleEdit(Request $request, int $id, array $input): bool
     {
@@ -732,8 +731,10 @@ class AuthorizeService extends Service
             throw new CustomizeException(Code::E100025);
         }
 
+        $admin = $request->offsetGet('user.id');
+
         // 检查该用户是否有编辑角色的权限
-        if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $id)) {
+        if (!$this->checkUserHasChildRole($admin, $id)) {
             throw new CustomizeException(Code::E100031);
         }
 
@@ -1025,6 +1026,8 @@ class AuthorizeService extends Service
      */
     public function permission(Request $request, int $id, bool $isPid): array
     {
+        $admin = $request->offsetGet('user.id');
+
         // 获取角色权限
         $rolePermissions = RedisService::getRolePermissions($id);
 
@@ -1040,7 +1043,7 @@ class AuthorizeService extends Service
             $isSuperRole = true;
         }
         // 当前用户是否是超级管理员
-        $userIsSuperRole = $this->checkUserIsSuperRole($request->offsetGet('user.id'));
+        $userIsSuperRole = $this->checkUserIsSuperRole($admin);
         // 超级管理员添加下级
         if ($isPid && $superRoleId == $id && $userIsSuperRole) {
             $isChecked = true;
@@ -1093,11 +1096,10 @@ class AuthorizeService extends Service
 
     /**
      * menu.menuPermissionUuid
-     * @param Request $request
      * @return array
      * @throws RedisException
      */
-    public function menuPermissionUuid(Request $request): array
+    public function menuPermissionUuid(): array
     {
         $permissions = Menus::pluck('permissions_uuid')->toArray();
         $data = RedisService::getTable(RedisKeys::PERMISSIONS_TREE, true);
@@ -1124,11 +1126,10 @@ class AuthorizeService extends Service
 
     /**
      * permission.parentPermissionTreeList
-     * @param Request $request
      * @return array
      * @throws RedisException
      */
-    public function permissionTreeList(Request $request): array
+    public function permissionTreeList(): array
     {
         $data = RedisService::getTable(RedisKeys::PERMISSIONS_TREE, true);
         return json_decode($data, true);
@@ -1136,12 +1137,11 @@ class AuthorizeService extends Service
 
     /**
      * permission.index
-     * @param Request $request
      * @param array $input
      * @return array
      * @throws RedisException
      */
-    public function permissionList(Request $request, array $input): array
+    public function permissionList(array $input): array
     {
         $uuid = Arr::get($input, 'uuid'); // 唯一标识
         $title = Arr::get($input, 'title'); // 权限名称
@@ -1247,12 +1247,11 @@ class AuthorizeService extends Service
 
     /**
      * 添加权限
-     * @param Request $request
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function permissionAdd(Request $request, array $input): bool
+    public function permissionAdd(array $input): bool
     {
         // uuid 唯一
         $uuid = Arr::get($input, 'uuid');
@@ -1327,13 +1326,12 @@ class AuthorizeService extends Service
 
     /**
      * permission.edit
-     * @param Request $request
      * @param int $id
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function permissionEdit(Request $request, int $id, array $input): bool
+    public function permissionEdit(int $id, array $input): bool
     {
         // 获取要编辑的权限
         $model = Permissions::find($id);
@@ -1403,12 +1401,11 @@ class AuthorizeService extends Service
 
     /**
      * permission.del
-     * @param Request $request
      * @param int $id
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function permissionDel(Request $request, int $id): bool
+    public function permissionDel(int $id): bool
     {
         $model = Permissions::find($id);
         if (!$model) {
@@ -1444,12 +1441,11 @@ class AuthorizeService extends Service
 
     /**
      * menu.index
-     * @param Request $request
      * @param array $input
      * @return array
      * @throws RedisException
      */
-    public function menuList(Request $request, array $input): array
+    public function menuList(array $input): array
     {
         // 查缓存
         if (Arr::get($input, 'cache', true)) {
@@ -1504,12 +1500,11 @@ class AuthorizeService extends Service
 
     /**
      * menu.add
-     * @param Request $request
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function menuAdd(Request $request, array $input): bool
+    public function menuAdd(array $input): bool
     {
         // 获取权限uuid
         $uuid = Arr::get($input, 'permissions_uuid');
@@ -1574,13 +1569,12 @@ class AuthorizeService extends Service
 
     /**
      * menu.edit
-     * @param Request $request
      * @param int $id
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function menuEdit(Request $request, int $id, array $input): bool
+    public function menuEdit(int $id, array $input): bool
     {
         // 获取要编辑的菜单
         $model = Menus::find($id);
@@ -1661,6 +1655,7 @@ class AuthorizeService extends Service
     public function userRoleList(Request $request, int $uid): array
     {
         $admin = $request->offsetGet('user.id');
+
         $list = [];
         DB::table((new UserRolesAccess)->getTable(), 'a')
             ->join((new Roles)->tableName('r'), 'a.role_id', 'r.id')
@@ -1684,6 +1679,8 @@ class AuthorizeService extends Service
      */
     public function userEditRoles(Request $request, int $uid, array $input): bool
     {
+        $admin = $request->offsetGet('user.id');
+
         $roleIds = Arr::get($input, 'roles');
         if (!$roleIds || !is_array($roleIds)) {
             throw new CustomizeException(Code::E100049);
@@ -1701,7 +1698,7 @@ class AuthorizeService extends Service
         // 验证是否有权限删除该记录
         if ($delArr) {
             foreach ($delArr as $id) {
-                if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $id)) {
+                if (!$this->checkUserHasChildRole($admin, $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100050, compact('title'));
                 }
@@ -1714,7 +1711,7 @@ class AuthorizeService extends Service
         // 验证是否有权限添加该记录
         if ($insertArr) {
             foreach ($insertArr as $id) {
-                if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $id)) {
+                if (!$this->checkUserHasChildRole($admin, $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100045, compact('title'));
                 }
@@ -1768,6 +1765,8 @@ class AuthorizeService extends Service
      */
     public function userAddRole(Request $request, int $uid, array $input): bool
     {
+        $admin = $request->offsetGet('user.id');
+
         $roleId = Arr::get($input, 'roleId', 0);
         $title = Roles::where([['id', $roleId], ['status', RoleStatus::ENABLED], ['is_delete', Delete::NO]])->value('title');
         if ($title == null) {
@@ -1778,7 +1777,7 @@ class AuthorizeService extends Service
             return true;
         }
 
-        if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $roleId)) {
+        if (!$this->checkUserHasChildRole($admin, $roleId)) {
             throw new CustomizeException(Code::E100045, compact('title'));
         }
 
@@ -1805,6 +1804,8 @@ class AuthorizeService extends Service
      */
     public function userDelRole(Request $request, int $uid, array $input): bool
     {
+        $admin = $request->offsetGet('user.id');
+
         $roleId = Arr::get($input, 'user_roles_id', 0);
 
         // 查找用户与角色关联记录
@@ -1814,7 +1815,7 @@ class AuthorizeService extends Service
         }
 
         // 验证是否有权限删除该记录
-        if (!$this->checkUserHasChildRole($request->offsetGet('user.id'), $model->role_id)) {
+        if (!$this->checkUserHasChildRole($admin, $model->role_id)) {
             throw new CustomizeException(Code::E100046);
         }
 

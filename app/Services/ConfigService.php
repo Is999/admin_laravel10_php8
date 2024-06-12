@@ -9,7 +9,6 @@ use App\Enum\RedisKeys;
 use App\Exceptions\CustomizeException;
 use App\Models\Config;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use RedisException;
 use Throwable;
@@ -19,11 +18,10 @@ class ConfigService extends Service
 
     /**
      * 列表
-     * @param Request $request
      * @param array $input
      * @return array
      */
-    public function list(Request $request, array $input): array
+    public function list(array $input): array
     {
         // 分页, 排序
         $orderByField = Arr::get($input, 'field', 'id'); // 排序字段
@@ -53,12 +51,11 @@ class ConfigService extends Service
     }
 
     /**
-     * @param Request $request
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function add(Request $request, array $input): bool
+    public function add(array $input): bool
     {
         $model = new Config;
         // 验证uuid 是否已经存在
@@ -85,13 +82,12 @@ class ConfigService extends Service
     }
 
     /**
-     * @param Request $request
      * @param int $id
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function edit(Request $request, int $id, array $input): bool
+    public function edit(int $id, array $input): bool
     {
         // 查找配置
         $model = Config::find($id);

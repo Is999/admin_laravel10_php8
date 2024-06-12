@@ -47,7 +47,7 @@ class UserLogController extends Controller
             $input = $validator->validated();
 
             // 查询数据
-            $result = (new UserLogService())->list($request, $input);
+            $result = (new UserLogService())->list($input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());

@@ -45,7 +45,7 @@ class ConfigController extends Controller
             }
 
             // 查询数据
-            $result = (new ConfigService)->list($request, $validator->validated());
+            $result = (new ConfigService)->list($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -89,7 +89,7 @@ class ConfigController extends Controller
             $input['value'] = $config->checkAndReformValue($input['type'], $input['value']);
 
             // 添加
-            $result = $config->add($request, $input);
+            $result = $config->add($input);
 
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
@@ -140,7 +140,7 @@ class ConfigController extends Controller
             $input['value'] = $config->checkAndReformValue($input['type'], $input['value']);
 
             // 编辑
-            $result = $config->edit($request, $id, $input);
+            $result = $config->edit($id, $input);
 
             if (!$result) {
                 throw new CustomizeException(Code::F2001);

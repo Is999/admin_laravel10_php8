@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\GoogleSecretController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +18,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    \Illuminate\Support\Facades\View::addExtension('html', 'php');
-    return \Illuminate\Support\Facades\View::file(public_path() . '/index.html');
+    View::addExtension('html', 'php');
+    return View::file(public_path() . '/index.html');
 
 });
 
@@ -24,3 +27,11 @@ Route::get('/', function () {
 Route::match(['GET', 'POST'], '/mfa/secret/{sign}', [GoogleSecretController::class, 'secret'])->name('user.secret');
 Route::post('/mfa/buildSecret', [GoogleSecretController::class, 'buildSecretKey'])->name('user.buildSecret');
 
+Route::get('/uploads/{file}', function (Request $request, string $file) {
+    $filePath = 'uploads/' . $file;
+    if (Storage::exists($filePath)) {
+        return response()->file(storage_path('app/' . $filePath));
+    } else {
+        abort(404);
+    }
+});

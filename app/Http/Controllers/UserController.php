@@ -74,7 +74,7 @@ class UserController extends Controller
 
             // 校验登录
             $userService = new UserService;
-            $user = $userService->userCheck($request, $name, $password);
+            $user = $userService->userCheck($name, $password);
 
             // 校验安全验证码
             // if (UserMfaStatus::DISABLED->value != intval($user->mfa_status)) {
@@ -380,7 +380,7 @@ class UserController extends Controller
     public function roles(Request $request, $id): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->userRoles($request, $id);
+            $result = (new AuthorizeService)->userRoles($id);
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -508,7 +508,7 @@ class UserController extends Controller
             }
 
             // 查询数据
-            $result = (new UserService)->list($request, $validator->validated());
+            $result = (new UserService)->list($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -582,7 +582,6 @@ class UserController extends Controller
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
             $res = (new UserService)->updatePassword(
-                $request,
                 $request->offsetGet('user.id'),
                 $request->input('passwordOld'),
                 $request->input('passwordNew')
@@ -621,7 +620,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
 
-            $result = (new UserService)->editAccount($request, $request->offsetGet('user.id'), $input);
+            $result = (new UserService)->editAccount($request->offsetGet('user.id'), $input);
             if (!$result) {
                 return Response::fail(Code::F2001);
             }
@@ -712,7 +711,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
             // 新增账号
-            $result = (new UserService)->addAccount($request, $input);
+            $result = (new UserService)->addAccount($input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -808,7 +807,7 @@ class UserController extends Controller
             }
 
             // 编辑账号
-            $result = (new UserService)->editAccount($request, $id, $input);
+            $result = (new UserService)->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -838,6 +837,46 @@ class UserController extends Controller
     public function updateMine(Request $request): JsonResponse
     {
         return $this->edit($request, $request->offsetGet('user.id'));
+    }
+
+    /**
+     * 更换头像(修改个人信息)
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        try {
+            // 验证参数
+            $validator = Validator::make($request->input()
+                , [
+                    'avatar' => 'required',
+                ]);
+            if ($validator->fails()) {
+                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
+            }
+
+            $input = $validator->validated();
+
+            $id = $request->offsetGet('user.id');
+
+            // 编辑账号
+            $result = (new UserService)->editAccount($id, $input);
+            if (!$result) {
+                throw new CustomizeException(Code::F2003);
+            }
+
+            // 记录操作日志
+            $this->addUserLog(__FUNCTION__, UserAction::EDIT_USER, 'user.id=' . $id, $input);
+
+            return Response::success([], Code::S1003);
+        } catch (CustomizeException $e) {
+            return Response::fail($e->getCode(), $e->getMessage());
+        } catch (Throwable $e) {
+            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+            $this->systemException(__METHOD__, $e);
+            return Response::fail(Code::SYSTEM_ERR);
+        }
     }
 
     /**
@@ -882,7 +921,7 @@ class UserController extends Controller
             (new AuthorizeService)->checkEditStatus($adminId, $id);
 
             $input = $validator->validated();
-            $result = (new UserService)->editAccount($request, $id, $input);
+            $result = (new UserService)->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -929,7 +968,7 @@ class UserController extends Controller
                 (new AuthorizeService)->checkEditStatus($adminId, $id);
             }
             $input = $validator->validated();
-            $result = (new UserService)->editAccount($request, $id, $input);
+            $result = (new UserService)->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('mfa_status') ? Code::F2004 : Code::F2005);
             }

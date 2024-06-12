@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enum\OrderBy;
 use App\Models\UserLog;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
 class UserLogService extends Service
@@ -13,11 +12,10 @@ class UserLogService extends Service
 
     /**
      * 列表
-     * @param Request $request
      * @param array $input
      * @return array
      */
-    public function list(Request $request, array $input): array
+    public function list(array $input): array
     {
         // 分页, 排序
         $orderByField = Arr::get($input, 'field', 'id'); // 排序字段

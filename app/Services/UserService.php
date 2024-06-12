@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enum\Code;
 use App\Enum\ConfigUuid;
+use App\Enum\FileStatus;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
 use App\Enum\RedisKeys;
@@ -17,7 +18,6 @@ use Earnp\GoogleAuthenticator\GoogleAuthenticator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -194,13 +194,12 @@ class UserService extends Service
 
     /**
      * 登录验证
-     * @param Request $request
      * @param string $name
      * @param string $password
      * @return User
      * @throws CustomizeException
      */
-    public function userCheck(Request $request, string $name, string $password): User
+    public function userCheck(string $name, string $password): User
     {
         $user = User::where('name', $name)->first();
         if (!$user) {
@@ -297,12 +296,11 @@ class UserService extends Service
 
     /**
      * 添加账号
-     * @param Request $request
      * @param array $input
      * @return array
      * @throws CustomizeException
      */
-    public function addAccount(Request $request, array $input): array
+    public function addAccount(array $input): array
     {
         // 身份验证器（基于时间的动态密码 (TOTP) 多重身份验证 (MFA)）秘钥：如 Google Authenticator、Microsoft Authenticator
         $mfa_secure_key = Arr::get($input, 'mfa_secure_key');
@@ -325,6 +323,11 @@ class UserService extends Service
         $status = Arr::get($input, 'status', UserStatus::ENABLED); // 状态
         $avatar = Arr::get($input, 'avatar', ''); // 状态
         $remark = Arr::get($input, 'remark', ''); // 状态
+
+        // 文件处理
+        if ($avatar) {
+            (new FilesService)->updateStatus($avatar, FileStatus::USING);
+        }
 
         // 添加数据
         $model = new User();
@@ -354,13 +357,12 @@ class UserService extends Service
 
     /**
      * 编辑账号
-     * @param Request $request
      * @param int $id
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function editAccount(Request $request, int $id, array $input): bool
+    public function editAccount(int $id, array $input): bool
     {
         $password = Arr::get($input, 'password'); // 密码
         $mfa_secure_key = Arr::get($input, 'mfa_secure_key'); // 密码
@@ -385,10 +387,17 @@ class UserService extends Service
             throw new CustomizeException(Code::E100068);
         }
 
+        // 文件处理
+        $avatar = Arr::get($input, 'avatar', $model->avatar);
+        if ($avatar && $model->avatar != $avatar) {
+            (new FilesService)->updateStatus($avatar, FileStatus::USING);
+        }
+
+        $model->avatar = $avatar; // 头像
         $model->status = Arr::get($input, 'status', $model->status); // 是否禁用
-        $model->avatar = Arr::get($input, 'avatar', $model->avatar); // 头像
         $model->remark = Arr::get($input, 'remark', $model->remark); // 备注
         $model->updated_at = date('Y-m-d H:i:s'); // 创建时间
+
 
         // 更新
         $res = $model->save();
@@ -403,14 +412,13 @@ class UserService extends Service
 
     /**
      * 修改密码
-     * @param Request $request
      * @param $id
      * @param $oldPassword
      * @param $newPassword
      * @return bool
      * @throws CustomizeException
      */
-    public function updatePassword(Request $request, $id, $oldPassword, $newPassword): bool
+    public function updatePassword($id, $oldPassword, $newPassword): bool
     {
         $user = User::find($id);
         if (!$user) {
@@ -447,11 +455,10 @@ class UserService extends Service
 
     /**
      * user.index
-     * @param Request $request
      * @param array $input
      * @return array
      */
-    public function list(Request $request, array $input): array
+    public function list(array $input): array
     {
         // 查询条件
         $email = Arr::get($input, 'email'); // email
@@ -495,25 +502,21 @@ class UserService extends Service
 
     /**
      * 绑定google安全秘钥
-     * @param Request $request
      * @param $id
      * @param $secureKey
      * @return bool
      * @throws RedisException
      */
-    public function buildMfaSecureKey(Request $request, $id, $secureKey): bool
+    public function buildMfaSecureKey($id, $secureKey): bool
     {
         $user = User::find($id);
         if (!$user) {
             return false;
         }
 
-        $ip = $request->getClientIp();
         $update = [
             'mfa_secure_key' => $secureKey,
             'mfa_status' => UserMfaStatus::ENABLED->value, // 每次重新绑定后默认启用
-            'last_login_ip' => $ip,
-            'last_login_ipaddr' => IpService::getIpAddr($ip)
         ];
 
         $res = $user->update($update);

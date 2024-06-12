@@ -53,7 +53,7 @@ class MenuController extends Controller
             }
 
             // 查询数据
-            $result = (new AuthorizeService)->menuList($request, $validator->validated());
+            $result = (new AuthorizeService)->menuList($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -104,7 +104,7 @@ class MenuController extends Controller
             $input = $validator->validated();
 
             // 新增权限
-            $result = (new AuthorizeService)->menuAdd($request, $input);
+            $result = (new AuthorizeService)->menuAdd($input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -163,7 +163,7 @@ class MenuController extends Controller
             $input = $validator->validated();
 
             // 编辑权限
-            $result = (new AuthorizeService)->menuEdit($request, $id, $input);
+            $result = (new AuthorizeService)->menuEdit($id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -204,7 +204,7 @@ class MenuController extends Controller
             $input = $validator->validated();
 
             // 编辑角色状态
-            $result = (new AuthorizeService)->menuEdit($request, $id, $input);
+            $result = (new AuthorizeService)->menuEdit($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2006 : Code::F2007);
             }
@@ -232,7 +232,7 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = (new AuthorizeService)->getMenuNav($request, $request->offsetGet('user.id'));
+            $result = (new AuthorizeService)->getMenuNav($request->offsetGet('user.id'));
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -250,7 +250,7 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = (new AuthorizeService)->menuTreeList($request);
+            $result = (new AuthorizeService)->menuTreeList();
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -268,7 +268,7 @@ class MenuController extends Controller
     {
         try {
             // 查询数据
-            $result = (new AuthorizeService)->menuPermissionUuid($request);
+            $result = (new AuthorizeService)->menuPermissionUuid();
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);

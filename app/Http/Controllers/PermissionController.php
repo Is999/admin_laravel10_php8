@@ -55,7 +55,7 @@ class PermissionController extends Controller
             }
 
             // 查询数据
-            $result = (new AuthorizeService)->permissionList($request, $validator->validated());
+            $result = (new AuthorizeService)->permissionList($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -98,7 +98,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 新增权限
-            $result = (new AuthorizeService)->permissionAdd($request, $input);
+            $result = (new AuthorizeService)->permissionAdd($input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -146,7 +146,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 编辑权限
-            $result = (new AuthorizeService)->permissionEdit($request, $id, $input);
+            $result = (new AuthorizeService)->permissionEdit($id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -187,7 +187,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 更新权限状态
-            $result = (new AuthorizeService)->permissionEdit($request, $id, $input);
+            $result = (new AuthorizeService)->permissionEdit($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -214,7 +214,7 @@ class PermissionController extends Controller
     {
         try {
             // 删除权限信息
-            $result = (new AuthorizeService)->permissionDel($request, $id);
+            $result = (new AuthorizeService)->permissionDel($id);
             if (!$result) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -239,7 +239,7 @@ class PermissionController extends Controller
     {
         try {
             // 查询数据
-            $result = (new AuthorizeService)->permissionTreeList($request);
+            $result = (new AuthorizeService)->permissionTreeList();
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);

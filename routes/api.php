@@ -6,7 +6,6 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SecretKeyController;
-use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserLogController;
 use Illuminate\Support\Facades\Route;
@@ -31,37 +30,29 @@ Route::prefix('api')->group(function () {
 // 须验证权限或登录Token
 Route::prefix('api')->middleware(['adminAuth'])->group(function () {
 
-    // 不验证权限的接口(只验证token, 该路由无须加入权限表)
+    // except.不验证权限的接口(只验证token, 该路由无须加入权限表)
     Route::name('except.')->group(function () {
-        // 上传文件
-        Route::controller(UploadController::class)->prefix('upload')->name('upload.')->group(function () {
-            Route::post('image', [UploadController::class, 'image'])->name('image'); // 上传图片 限制图片格式
-            Route::post('images', [UploadController::class, 'images'])->name('images'); // 批量上传图片 限制图片格式
-            Route::post('file', [UploadController::class, 'file'])->name('file'); // 上传文件
-            Route::post('files', [UploadController::class, 'files'])->name('files'); // 批量上传文件
-        });
-
         // 角色
-        Route::controller(RoleController::class)->prefix('role')->name('role.')->group(function () {
+        Route::prefix('role')->name('role.')->group(function () {
             Route::get('treeList', [RoleController::class, 'treeList'])->name('treeList'); // 新增角色|编辑角色 上级角色(下拉框);
             Route::get('permission/{id}/{isPid}', [RoleController::class, 'permission'])->name('permission')->whereIn('isPid', ['y', 'n']); // 角色权限
         });
 
         // 菜单
-        Route::controller(MenuController::class)->prefix('menu')->name('menu.')->group(function () {
+        Route::prefix('menu')->name('menu.')->group(function () {
             Route::get('nav', [MenuController::class, 'nav'])->name('nav'); // 菜单(左侧导航栏)
             Route::get('treeList', [MenuController::class, 'treeList'])->name('treeList'); // 新增菜单|编辑菜单 上级菜单(下拉框)
             Route::get('permissionUuidTreeList', [MenuController::class, 'permissionUuidTreeList'])->name('permissionUuidTreeList'); // 新增菜单|编辑菜单 权限标识(下拉框)
         });
 
         // 权限
-        Route::controller(PermissionController::class)->prefix('permission')->name('permission.')->group(function () {
+        Route::prefix('permission')->name('permission.')->group(function () {
             Route::get('treeList', [PermissionController::class, 'treeList'])->name('treeList'); // 权限下拉列表
             Route::get('maxUuid', [PermissionController::class, 'maxUuid'])->name('maxUuid'); // 权限下拉列表
         });
 
         // 个人信息
-        Route::controller(UserController::class)->prefix('user')->name('user.')->group(function () {
+        Route::prefix('user')->name('user.')->group(function () {
             Route::post('logout', [UserController::class, 'logout'])->name('logout'); // 登出
             Route::post('checkSecure', [UserController::class, 'checkSecure'])->name('checkSecure'); // 个人信息 校验安全码或密码（没有开启安全码校验则校验密码）
             Route::post('checkMfaSecure', [UserController::class, 'checkMfaSecure'])->name('checkMfaSecure'); // 个人信息 校验MFA动态密码并设置两步校验状态码
@@ -70,6 +61,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
             Route::post('updateMfaStatus', [UserController::class, 'updateMfaStatus'])->name('updateMfaStatus'); // 个人信息 安全设置 修改MFA校验状态
             Route::get('mine', [UserController::class, 'mine'])->name('mine'); // 个人信息
             Route::post('updateMine', [UserController::class, 'updateMine'])->name('updateMine'); // 个人信息 基本设置 更新基本信息
+            Route::post('updateAvatar', [UserController::class, 'updateAvatar'])->name('updateAvatar'); // 个人信息 基本设置 更换头像
             Route::get('permissions', [UserController::class, 'permissions'])->name('permissions'); // 当前登录用户 权限uuid控制 permission.uuid
             Route::get('roleTreeList', [UserController::class, 'roleTreeList'])->name('roleTreeList'); // 账号管理 查看账号校色 角色下拉框
             Route::get('roles/{id}', [UserController::class, 'roles'])->name('roles'); // 账号管理 获取账号{id}角色
@@ -77,13 +69,13 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         });
 
         // 操作日志
-        Route::controller(UserLogController::class)->prefix('userLog')->name('userLog.')->group(function () {
+        Route::prefix('userLog')->name('userLog.')->group(function () {
             Route::get('actionList', [UserLogController::class, 'actionList'])->name('actionList'); // 操作类型下拉框
         });
     });
 
     //角色管理
-    Route::controller(RoleController::class)->prefix('role')->name('role.')->group(function () {
+    Route::prefix('role')->name('role.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [RoleController::class, 'index'])->name('index'); // 列表,搜索
         Route::post('add', [RoleController::class, 'add'])->name('add'); // 添加
         Route::post('edit/{id}', [RoleController::class, 'edit'])->name('edit'); // 编辑
@@ -93,7 +85,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 权限管理
-    Route::controller(PermissionController::class)->prefix('permission')->name('permission.')->group(function () {
+    Route::prefix('permission')->name('permission.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [PermissionController::class, 'index'])->name('index'); // 列表,搜索
         Route::post('add', [PermissionController::class, 'add'])->name('add'); // 添加
         Route::post('edit/{id}', [PermissionController::class, 'edit'])->name('edit'); // 编辑
@@ -102,7 +94,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 菜单管理
-    Route::controller(MenuController::class)->prefix('menu')->name('menu.')->group(function () {
+    Route::prefix('menu')->name('menu.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [MenuController::class, 'index'])->name('index'); // 列表,搜索
         Route::post('add', [MenuController::class, 'add'])->name('add'); // 添加
         Route::post('edit/{id}', [MenuController::class, 'edit'])->name('edit'); // 编辑
@@ -110,7 +102,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 管理员
-    Route::controller(UserController::class)->prefix('user')->name('user.')->group(function () {
+    Route::prefix('user')->name('user.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [UserController::class, 'index'])->name('index'); // 账号管理 列表
         Route::get('roleList/{id}', [UserController::class, 'roleList'])->name('roleList'); // 用户角色
         Route::post('editRoles/{id}', [UserController::class, 'editRoles'])->name('editRoles'); // 给用户分配x角色
@@ -123,7 +115,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 参数配置
-    Route::controller(ConfigController::class)->prefix('config')->name('config.')->group(function () {
+    Route::prefix('config')->name('config.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [ConfigController::class, 'index'])->name('index'); // 参数配置列表
         Route::post('add', [ConfigController::class, 'add'])->name('add'); // 添加配置
         Route::post('edit/{id}', [ConfigController::class, 'edit'])->name('edit'); // 编辑配置
@@ -132,7 +124,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 缓存管理
-    Route::controller(CacheController::class)->prefix('cache')->name('cache.')->group(function () {
+    Route::prefix('cache')->name('cache.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [CacheController::class, 'index'])->name('index'); // 缓存列表
         Route::get('serverInfo', [CacheController::class, 'serverInfo'])->name('serverInfo'); // 服务器信息
         Route::get('keyInfo', [CacheController::class, 'keyInfo'])->name('keyInfo'); // 查看缓存key信息
@@ -143,12 +135,12 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     });
 
     // 操作日志
-    Route::controller(UserLogController::class)->prefix('userLog')->name('userLog.')->group(function () {
+    Route::prefix('userLog')->name('userLog.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [UserLogController::class, 'index'])->name('index'); // 缓存列表
     });
 
     // 秘钥管理
-    Route::controller(SecretKeyController::class)->prefix('secretKey')->name('secretKey.')->group(function () {
+    Route::prefix('secretKey')->name('secretKey.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [SecretKeyController::class, 'index'])->name('index'); // 秘钥管理列表
     });
 

@@ -83,7 +83,7 @@ class GoogleSecretController extends Controller
                 if (GoogleAuthenticator::CheckCode($input['google'], $input['onecode'])) {
                     $input['google'] = Crypt::encryptString($input['google']); // 加密存储
                     // 更新秘钥
-                    $userService->buildMfaSecureKey($request, $user->id, $input['google']);
+                    $userService->buildMfaSecureKey($user->id, $input['google']);
 
                     // 记录操作日志
                     $this->addUserLog(__FUNCTION__, UserAction::BUILD_MFA_SECURE_KEY, "name={$input['name']}", $input);
@@ -147,7 +147,7 @@ class GoogleSecretController extends Controller
             if (GoogleAuthenticator::CheckCode($input['google'], $input['onecode'])) {
                 $input['google'] = Crypt::encryptString($input['google']); // 加密存储
                 // 更新秘钥
-                (new UserService)->buildMfaSecureKey($request, $user->id, $input['google']);
+                (new UserService)->buildMfaSecureKey($user->id, $input['google']);
 
                 // 记录操作日志
                 $this->setUserLogByUid($user->id); // 设置日志用户id
