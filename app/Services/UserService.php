@@ -324,11 +324,6 @@ class UserService extends Service
         $avatar = Arr::get($input, 'avatar', ''); // 状态
         $remark = Arr::get($input, 'remark', ''); // 状态
 
-        // 文件处理
-        if ($avatar) {
-            (new FilesService)->updateStatus($avatar, FileStatus::USING);
-        }
-
         // 添加数据
         $model = new User();
         $model->name = $name;
@@ -350,6 +345,11 @@ class UserService extends Service
         $res = $model->save();
         if (!$res) {
             throw new CustomizeException(Code::F2000);
+        }
+
+        // 文件处理：头像图片启用
+        if ($avatar) {
+            (new FilesService)->updateStatus($avatar, FileStatus::USING);
         }
 
         return $model->toArray();
@@ -386,14 +386,8 @@ class UserService extends Service
         if($model->mfa_status == UserMfaStatus::ENABLED->value && empty($model->mfa_secure_key)) {
             throw new CustomizeException(Code::E100068);
         }
-
-        // 文件处理
-        $avatar = Arr::get($input, 'avatar', $model->avatar);
-        if ($avatar && $model->avatar != $avatar) {
-            (new FilesService)->updateStatus($avatar, FileStatus::USING);
-        }
-
-        $model->avatar = $avatar; // 头像
+        $old_avatar = $model->avatar;
+        $model->avatar = Arr::get($input, 'avatar', $model->avatar); // 头像
         $model->status = Arr::get($input, 'status', $model->status); // 是否禁用
         $model->remark = Arr::get($input, 'remark', $model->remark); // 备注
         $model->updated_at = date('Y-m-d H:i:s'); // 创建时间
@@ -405,6 +399,14 @@ class UserService extends Service
             if (RedisService::checkUserInfoExists($id)) {
                 $user = $model->toArray();
                 RedisService::setUserInfo($id, $user);
+            }
+
+            // 文件处理
+            if ($model->avatar && $model->avatar != $old_avatar) {
+                // 设置旧文件过期删除
+                (new FilesService)->updateStatus($old_avatar, FileStatus::USING);
+                // 启用新文件
+                (new FilesService)->updateStatus($model->avatar, FileStatus::USING);
             }
         }
         return $res;
