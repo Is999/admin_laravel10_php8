@@ -404,7 +404,7 @@ class UserService extends Service
             // 文件处理
             if ($model->avatar && $model->avatar != $old_avatar) {
                 // 设置旧文件过期删除
-                (new FilesService)->updateStatus($old_avatar, FileStatus::USING);
+                (new FilesService)->updateStatus($old_avatar, FileStatus::TOBEDELETED);
                 // 启用新文件
                 (new FilesService)->updateStatus($model->avatar, FileStatus::USING);
             }
