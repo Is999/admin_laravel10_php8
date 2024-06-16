@@ -95,7 +95,7 @@ class UserService extends Service
         // 验证IP
         if (true !== ConfigService::getCache(ConfigUuid::ADMIN_IP_WHITELIST_DISABLE)) {
             // 验证IP是否变更
-            if (true !== ConfigService::getCache(ConfigUuid::ADMIN_CHECK_CHANGE_IP) && $jwt->ip != $ip) {
+            if (false !== ConfigService::getCache(ConfigUuid::ADMIN_CHECK_CHANGE_IP) && $jwt->ip != $ip) {
                 throw new CustomizeException(Code::E100057);
             }
             // 验证IP变更后验证是否在白名单

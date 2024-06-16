@@ -5,7 +5,7 @@ namespace App\Enum;
 use ReflectionClass;
 
 /**
- *  role.status 字段状态
+ *  file.status 字段状态
  */
 enum FileStatus: int
 {

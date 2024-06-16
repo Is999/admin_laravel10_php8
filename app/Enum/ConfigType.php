@@ -2,8 +2,10 @@
 
 namespace App\Enum;
 
+use ReflectionClass;
+
 /**
- *  响应数据type字段状态
+ *  config 数据类型
  */
 enum ConfigType: int
 {
@@ -21,7 +23,7 @@ enum ConfigType: int
      */
     public static function toArray()
     {
-        $reflection = new \ReflectionClass(self::class);
+        $reflection = new ReflectionClass(self::class);
         return $reflection->getConstants();
     }
 

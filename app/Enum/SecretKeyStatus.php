@@ -5,7 +5,7 @@ namespace App\Enum;
 use ReflectionClass;
 
 /**
- *  role.status 字段状态
+ *  secret_key.status 字段状态
  */
 enum SecretKeyStatus: int
 {

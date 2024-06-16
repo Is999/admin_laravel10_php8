@@ -5,7 +5,7 @@ namespace App\Enum;
 use ReflectionClass;
 
 /**
- *  menus.status 字段状态
+ *  permission.status 字段状态
  */
 enum PermissionStatus: int
 {

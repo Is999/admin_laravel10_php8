@@ -4,8 +4,10 @@ namespace App\Http\Middleware;
 
 use App\Contracts\Signature;
 use App\Enum\Code;
+use App\Enum\ConfigUuid;
 use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
+use App\Enum\SignatureType;
 use App\Enum\SignRules;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
@@ -31,79 +33,78 @@ class SignatureData
     public function handle(Request $request, Closure $next)
     {
         try {
-            if (!ConfigService::getCache("SIGNATURE_DISABLE")) {
-                // 获取路由
-                $routeName = $request->route()->getName();
+            // 获取路由
+            $routeName = $request->route()->getName();
 
-                if (isset($this->must[$routeName])) {
-                    $requestId = $request->header('X-Request-Id', '');
-                    $appId = $request->header('X-App-Id', '');
-                    if (empty($appId)) {
-                        throw new CustomizeException(Code::E100062, ['param' => 'appId']);
-                    }
-                    $appId = base64_decode($appId);
-                    if (!$appId) {
-                        throw new CustomizeException(Code::E100063, ['param' => 'appId']);
-                    }
-                    $signatureType = strtoupper($request->header('X-Signature', '')); // 签名方式
-
-                    $signParams = $this->must[$routeName];
-                    $requestSign = isset($signParams['request']);
-                    $responseSign = isset($signParams['response']);
-
-                    if ($requestSign) {
-                        $input = $request->input();
-
-                        // 验证签名是否存在
-                        $sign = Arr::get($input, 'sign', '');
-                        if (empty($sign)) {
-                            if ($sign == '') {
-                                throw new CustomizeException(Code::E100062, ['param' => 'sign']);
-                            }
-                        }
-
-                        // 获取签名数据
-                        $signStr = $this->getSignStr($input, $signParams['request'], $requestId, $appId);
-
-                        // 验证签名
-                        $signature = $this->getSignature($appId, $signatureType, true);
-                        $checkResult = $signature->verify($signStr, $sign);
-                        if (!$checkResult) {
-                            Logger::error(LogChannel::DEV, '签名错误', [
-                                'signStr' => $signStr,
-                                'sign' => $sign,
-                                'checkResult' => $checkResult
-                            ]);
-                            throw new CustomizeException(Code::E100066);
-                        }
-
-
-                    }
-
-                    $response = $next($request);
-
-                    if ($responseSign) {
-                        // 对返回数据进行签名
-                        $content = $response->getContent();
-                        if ($content) {
-                            $content = json_decode($content, true);
-                            if ($content['success']) { // 成功的数据签名
-                                $signature = $this->getSignature($appId, $signatureType, false);
-                                $signStr = $this->getSignStr($content['data'], $signParams['response'], $requestId, $appId);
-                                $sign = $signature->sign($signStr);
-                                if (!$sign) {
-                                    throw new CustomizeException(Code::F5005);
-                                }
-                                $content['data']['sign'] = $sign;
-                                $response->setContent(json_encode($content));
-                            }
-                        }
-                    }
-                    return $response;
+            if (isset($this->must[$routeName])) {
+                $requestId = $request->header('X-Request-Id', '');
+                $appId = $request->header('X-App-Id', '');
+                if (empty($appId)) {
+                    throw new CustomizeException(Code::E100062, ['param' => 'appId']);
                 }
-            }
+                $appId = base64_decode($appId);
+                if (!$appId) {
+                    throw new CustomizeException(Code::E100063, ['param' => 'appId']);
+                }
+                $signatureType = strtoupper($request->header('X-Signature', SignatureType::RSA->value)); // 签名、验签方式
 
-            return $next($request);
+                $signParams = $this->must[$routeName];
+                $requestSign = isset($signParams['request']);
+                $responseSign = isset($signParams['response']);
+                if (true !== ConfigService::getCache(ConfigUuid::ADMIN_SIGNATURE_DISABLE) && $requestSign) {
+                    $input = $request->input();
+
+                    // 验证签名是否存在
+                    $sign = Arr::get($input, 'sign', '');
+                    if (empty($sign)) {
+                        if ($sign == '') {
+                            throw new CustomizeException(Code::E100062, ['param' => 'sign']);
+                        }
+                    }
+
+                    // 获取签名数据
+                    $signStr = $this->getSignStr($input, $signParams['request'], $requestId, $appId);
+
+                    // 验证签名
+                    $signature = $this->getSignature($appId, $signatureType, true);
+                    $checkResult = $signature->verify($signStr, $sign);
+                    if (!$checkResult) {
+                        Logger::error(LogChannel::DEV, '签名错误', [
+                            'signStr' => $signStr,
+                            'sign' => $sign,
+                            'checkResult' => $checkResult
+                        ]);
+                        throw new CustomizeException(Code::E100066);
+                    }
+                }
+
+                $response = $next($request);
+
+                // 设置响应头签名方式
+                $response->header('X-Signature', $signatureType);
+
+                if ($responseSign) {
+                    // 对返回数据进行签名
+                    $content = $response->getContent();
+                    if ($content) {
+                        $content = json_decode($content, true);
+                        if ($content['success']) { // 成功的数据签名
+                            $signature = $this->getSignature($appId, $signatureType, false);
+
+                            $signStr = $this->getSignStr($content['data'], $signParams['response'], $requestId, $appId);
+                            $sign = $signature->sign($signStr);
+                            if (!$sign) {
+                                throw new CustomizeException(Code::F5005);
+                            }
+                            $content['data']['sign'] = $sign;
+                            $response->setContent(json_encode($content));
+                        }
+                    }
+                }
+            } else {
+                $response = $next($request);
+            }
+            return $response;
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
@@ -115,9 +116,9 @@ class SignatureData
     }
 
     /**
-     * 获取签名方式
+     * 获取签名、验签方式
      * @param string $appId
-     * @param string $signatureType
+     * @param string $signatureType M: MD5签名、验签；A: AES签名、验签；R: RSA签名、验签
      * @param bool $isVerify true 验证签名， false 签名
      * @return Signature
      * @throws CustomizeException
@@ -125,14 +126,16 @@ class SignatureData
     public function getSignature(string $appId, string $signatureType, bool $isVerify = false): Signature
     {
         /* @var $signature Signature */
-        if ($signatureType == 'M') {
+        if ($signatureType == SignatureType::MD5->value) {
             $signature = new Md5SignatureService;
-        } elseif ($signatureType == 'A') {
+        } elseif ($signatureType == SignatureType::AES->value) {
             $aes = (new SecretKeyService)->getAesKeyByRequestAppId($appId);
             $signature = new AesService($aes['key'], $aes['iv']);
-        } else {
-            $key = (new SecretKeyService)->getRsaKeyByRequestAppId($appId, $isVerify ? SecretKeyService::USER_PUBLIC_KEY : SecretKeyService::SERVER_PRIVATE_KEY);
+        } elseif ($signatureType == SignatureType::RSA->value) {
+            $key = (new SecretKeyService)->getRsaKeyByRequestAppId($appId, $isVerify ? SecretKeyService::USER_PUBLIC_KEY : SecretKeyService::SERVER_PRIVATE_KEY); // 公钥验签，私钥签名
             $signature = new RsaService($key);
+        } else {
+            throw new CustomizeException(Code::F10005, ['type' => $signatureType]);
         }
         return $signature;
     }

@@ -5,7 +5,7 @@ namespace App\Enum;
 use ReflectionClass;
 
 /**
- *  user.is_enabled 字段状态
+ *  user.action 字段
  */
 enum UserAction: string
 {

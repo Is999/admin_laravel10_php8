@@ -14,6 +14,7 @@ namespace App\Http\Middleware;
 
 use App\Contracts\Crypto;
 use App\Enum\Code;
+use App\Enum\CryptoType;
 use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
 use App\Exceptions\CustomizeException;
@@ -43,7 +44,7 @@ class CryptoData
             if (!$appId) {
                 throw new CustomizeException(Code::E100063, ['param' => 'appId']);
             }
-            $cryptoType = strtoupper($request->header('X-Crypto', '')); // 签名方式
+            $cryptoType = strtoupper($request->header('X-Crypto', CryptoType::AES->value)); // 加密、解密方式
 
             if (!empty($cipher)) {
                 $crypto = $this->getCrypto($appId, $cryptoType, false);
@@ -117,6 +118,9 @@ class CryptoData
 
             // 执行下一个中间件
             $response = $next($request);
+
+            // 设置响应头加密方式
+            $response->header('X-Crypto', $cryptoType);
 
             // 响应数据加密：只对data下第一层数据加密
             $cipher = $response->headers->get("X-Cipher");
@@ -192,22 +196,25 @@ class CryptoData
     }
 
     /**
+     * 获取加密、解密方式
      * @param string $appId
-     * @param string $cryptoType
-     * @param bool $isEncrypt
+     * @param string $cryptoType A: AES加密、解密；R: RSA加密、解密
+     * @param bool $isEncrypt true 加密， false 解密
      * @return Crypto
      * @throws CustomizeException
      */
     public function getCrypto(string $appId, string $cryptoType, bool $isEncrypt = false): Crypto
     {
         /* @var $crypto Crypto */
-        if ($cryptoType == 'R') {
+        if ($cryptoType == CryptoType::RSA->value) {
             // 接口数据加密使用用户的公钥，解密使用服务器的私钥
             $key = (new SecretKeyService)->getRsaKeyByRequestAppId($appId, $isEncrypt ? SecretKeyService::USER_PUBLIC_KEY : SecretKeyService::SERVER_PRIVATE_KEY);
             $crypto = new RsaService($key);
-        } else {
+        } elseif ($cryptoType == CryptoType::AES->value) {
             $aes = (new SecretKeyService)->getAesKeyByRequestAppId($appId);
             $crypto = new AesService($aes['key'], $aes['iv']);
+        } else {
+            throw new CustomizeException(Code::F10004, ['type' => $cryptoType]);
         }
         return $crypto;
     }

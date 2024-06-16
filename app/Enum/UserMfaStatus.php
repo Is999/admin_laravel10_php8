@@ -5,7 +5,7 @@ namespace App\Enum;
 use ReflectionClass;
 
 /**
- *  user.is_enabled 字段状态
+ *  user.mfa_status 字段状态
  */
 enum UserMfaStatus: int
 {
