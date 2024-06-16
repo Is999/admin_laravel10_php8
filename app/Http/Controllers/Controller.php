@@ -15,6 +15,8 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Routing\Controller as BaseController;
+use Redis;
+use RedisException;
 use Throwable;
 
 class Controller extends BaseController
@@ -87,7 +89,7 @@ message;
      * redis 连接
      * @param string|null $name
      */
-    protected function redis(string $name = null): Connection|\Redis
+    protected function redis(string $name = null): Connection|Redis
     {
         return Service::redis($name);
     }
@@ -100,6 +102,7 @@ message;
      * @param string|int $describe
      * @param mixed $data
      * @return void
+     * @throws RedisException
      */
     public function addUserLog(string $method, UserAction $action, string|int $describe = '', mixed $data = ''): void
     {
