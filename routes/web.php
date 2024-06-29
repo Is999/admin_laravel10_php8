@@ -27,6 +27,7 @@ Route::get('/', function () {
 Route::match(['GET', 'POST'], '/mfa/secret/{sign}', [GoogleSecretController::class, 'secret'])->name('user.secret');
 Route::post('/mfa/buildSecret', [GoogleSecretController::class, 'buildSecretKey'])->name('user.buildSecret');
 
+// 访问 storage目录下 uploads目录中的文件
 Route::get('/uploads/{file}', function (Request $request, string $file) {
     $filePath = 'uploads/' . $file;
     if (Storage::exists($filePath)) {
