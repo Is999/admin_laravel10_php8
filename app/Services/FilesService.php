@@ -11,7 +11,26 @@ use Illuminate\Support\Facades\Storage;
 
 class FilesService extends Service
 {
-    public array $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']; // 允许的文件类型
+    public array $allowedTypes = [
+        'image/jpeg' => [
+            'png',
+            'jpg',
+            'jpeg',
+        ],
+        'image/png' => [
+            'png',
+            'jpg',
+            'jpeg',
+        ],
+        'image/gif' => [
+            'png',
+            'jpg',
+            'gif',
+        ],
+        'application/pdf' => [
+            'pdf'
+        ]
+    ]; // 允许的文件类型
 
     public function __construct(array $mimes = [])
     {
@@ -31,14 +50,14 @@ class FilesService extends Service
     public function upload(UploadedFile $file, string $path = 'uploads', int $maxSize = 1024 * 1024 * 10, bool $consistency = true): string
     {
         // 验证文件类型
-        $type = $file->getMimeType();
-        if (!in_array($type, $this->allowedTypes)) {
+        $type = strtolower($file->getMimeType());
+        if (!(array_key_exists($type, $this->allowedTypes) || in_array($type, $this->allowedTypes))) {
             throw new CustomizeException(code::F10001, ['type' => $type]);
         }
 
         // 验证扩展名和文件类型是否一致
-        $ext = $file->getClientOriginalExtension();
-        if ($consistency && (!$ext || stripos($type, $ext) === false)) {
+        $ext = strtolower($file->getClientOriginalExtension());
+        if ($consistency && (!$ext || !((array_key_exists($type, $this->allowedTypes) && in_array($ext, $this->allowedTypes[$type])) || stripos($type, $ext) !== false))) {
             throw new CustomizeException(code::F10002, ['type' => $type, 'ext' => $ext]);
         }
 

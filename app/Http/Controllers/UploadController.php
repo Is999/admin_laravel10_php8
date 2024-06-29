@@ -27,7 +27,23 @@ class UploadController extends Controller
                 $file = $request->file('file');
 
                 // 验证文件类型
-                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // 允许的图片类型
+                $allowedTypes = [
+                    'image/jpeg' => [
+                        'png',
+                        'jpg',
+                        'jpeg',
+                    ],
+                    'image/png' => [
+                        'png',
+                        'jpg',
+                        'jpeg',
+                    ],
+                    'image/gif' => [
+                        'png',
+                        'jpg',
+                        'gif',
+                    ],
+                ]; // 允许的图片类型
 
                 $uploadService = new FilesService($allowedTypes);
                 $path = $uploadService->upload($file);
@@ -63,7 +79,23 @@ class UploadController extends Controller
             if ($request->hasFile('files')) {
                 $files = $request->file('files');
                 // 验证文件类型
-                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // 允许的图片类型
+                $allowedTypes = [
+                    'image/jpeg' => [
+                        'png',
+                        'jpg',
+                        'jpeg',
+                    ],
+                    'image/png' => [
+                        'png',
+                        'jpg',
+                        'jpeg',
+                    ],
+                    'image/gif' => [
+                        'png',
+                        'jpg',
+                        'gif',
+                    ],
+                ]; // 允许的图片类型
                 $uploadService = new FilesService($allowedTypes);
                 $originals = [];
                 $paths = [];
