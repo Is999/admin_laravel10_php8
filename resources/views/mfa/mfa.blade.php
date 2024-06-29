@@ -257,10 +257,10 @@
         <div class="appdownloadcode">
             <ul>
                 <li>
-                    <img src="/images/mfa/ios-google.png" width="280" height="280"/><br/>Ios扫描下载
+                    <img src="/static/images/mfa/ios-google.png" width="280" height="280"/><br/>Ios扫描下载
                 </li>
                 <li>
-                    <img src="/images/mfa/android-google.png" width="280" height="280"/><br/>安卓扫描下载
+                    <img src="/static/images/mfa/android-google.png" width="280" height="280"/><br/>安卓扫描下载
                 </li>
             </ul>
         </div>
@@ -273,10 +273,10 @@
         <div class="appdownloadcode">
             <ul>
                 <li>
-                    <img src="/images/mfa/ios-microsoft.png" width="280" height="280"/><br/>Ios扫描下载
+                    <img src="/static/images/mfa/ios-microsoft.png" width="280" height="280"/><br/>Ios扫描下载
                 </li>
                 <li>
-                    <img src="/images/mfa/android-microsoft.png" width="280" height="280"/><br/>安卓扫描下载
+                    <img src="/static/images/mfa/android-microsoft.png" width="280" height="280"/><br/>安卓扫描下载
                 </li>
             </ul>
         </div>

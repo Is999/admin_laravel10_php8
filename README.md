@@ -7,14 +7,14 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 <p align="center">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/menu.png" alt="菜单管理">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/role.png" alt="角色管理">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/permission.png" alt="权限管理">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/user.png" alt="账号管理">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/config.png" alt="参数配置">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/cache.png" alt="缓存管理">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/userlog.png" alt="操作日志">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/images/adminVbenVue/setting.png" alt="个人设置">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/menu.png" alt="菜单管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/role.png" alt="角色管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/permission.png" alt="权限管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/user.png" alt="账号管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/config.png" alt="参数配置">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/cache.png" alt="缓存管理">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/userlog.png" alt="操作日志">
+<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/setting.png" alt="个人设置">
 </p>
 
 
@@ -27,7 +27,7 @@
    ./vendor/bin/sail up
    ```
 
-   
+2. 或使用dnmp https://github.com/Is999/dnmp.git   dev 分支有相关配置
 
 ## composer.json 添加引入的文件或包
 
