@@ -1,17 +1,17 @@
 /*
- Navicat Premium Data Transfer
+ Navicat Premium Dump SQL
 
- Source Server         : MySQL8
+ Source Server         : Mysql8
  Source Server Type    : MySQL
- Source Server Version : 80034
+ Source Server Version : 80034 (8.0.34)
  Source Host           : localhost:3306
  Source Schema         : admin
 
  Target Server Type    : MySQL
- Target Server Version : 80034
+ Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 20/05/2024 09:25:57
+ Date: 30/06/2024 18:24:55
 */
 
 SET NAMES utf8mb4;
@@ -36,6 +36,12 @@ CREATE TABLE `notice` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   PRIMARY KEY (`id`),
   KEY `title` (`title`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='信息通知';
+
+-- ----------------------------
+-- Records of notice
+-- ----------------------------
+BEGIN;
+COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

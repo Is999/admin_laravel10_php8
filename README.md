@@ -384,8 +384,9 @@
 
 14. 登录密码
 
-    账号：super999 密码：Super@123
+    账号：super999 密码：Super@123 身份验证器MFA秘钥： **JXI4KHCZYC7NJZPE**
     
-    账号：admin999 密码：Admin@123
+    账号：admin999 密码：Admin@123 身份验证器MFA秘钥：**HSVZSFSGGJGUF7YO**
 
 ​		
+

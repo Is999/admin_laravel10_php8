@@ -1,17 +1,17 @@
 /*
- Navicat Premium Data Transfer
+ Navicat Premium Dump SQL
 
- Source Server         : MySQL8
+ Source Server         : Mysql8
  Source Server Type    : MySQL
- Source Server Version : 80034
+ Source Server Version : 80034 (8.0.34)
  Source Host           : localhost:3306
  Source Schema         : admin
 
  Target Server Type    : MySQL
- Target Server Version : 80034
+ Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 28/02/2024 21:10:57
+ Date: 30/06/2024 18:25:20
 */
 
 SET NAMES utf8mb4;

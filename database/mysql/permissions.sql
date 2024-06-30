@@ -1,17 +1,17 @@
 /*
- Navicat Premium Data Transfer
+ Navicat Premium Dump SQL
 
- Source Server         : MySQL8
+ Source Server         : Mysql8
  Source Server Type    : MySQL
- Source Server Version : 80034
+ Source Server Version : 80034 (8.0.34)
  Source Host           : localhost:3306
  Source Schema         : admin
 
  Target Server Type    : MySQL
- Target Server Version : 80034
+ Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 17/05/2024 23:34:19
+ Date: 30/06/2024 18:05:00
 */
 
 SET NAMES utf8mb4;
@@ -36,7 +36,7 @@ CREATE TABLE `permissions` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uuid` (`uuid`) USING BTREE,
   KEY `title` (`title`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限';
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限';
 
 -- ----------------------------
 -- Records of permissions
@@ -50,7 +50,7 @@ INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (6, '100006', '保存', 'role.edit', 5, '1,2,5', 2, '编辑角色(修改)', 1, '2022-03-21 21:44:27', '2022-03-22 16:56:29');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (7, '100007', '删除', 'role.del', 2, '1,2', 3, '删除角色(按钮, 删除)', 1, '2022-03-22 12:13:51', '2022-03-22 16:56:49');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (8, '100008', '启用/禁用', 'role.editStatus', 2, '1,2', 2, '启用/禁用 角色(按钮,修改)', 1, '2022-03-22 12:10:36', '2022-03-22 17:21:23');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (9, '100009', '权限', 'role.permission', 2, '1,2', 6, '编辑角色权限(按钮,页面)', 1, '2022-03-22 11:22:18', '2022-03-22 16:57:21');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (9, '100009', '权限', 'role.permission', 2, '1,2', 0, '编辑角色权限(按钮,页面，查看)', 1, '2022-03-22 11:22:18', '2024-06-30 17:37:50');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (10, '100010', '保存', 'role.editPermission', 9, '1,2,9', 2, '编辑角色权限(修改)', 1, '2022-03-22 11:37:44', '2022-03-23 21:58:32');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (11, '100011', '权限管理', 'permission.index', 1, '1', 5, '权限管理(菜单,页面)', 1, '2022-03-22 16:05:41', '2022-05-20 15:36:30');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (12, '100012', '添加', '7', 11, '1,11', 7, '添加权限(按钮,页面)', 1, '2022-03-22 16:09:35', '2022-03-22 16:09:39');
@@ -68,30 +68,30 @@ INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (24, '100024', '添加', '7', 23, '1,23', 7, '添加管理员(按钮,页面)', 1, '2022-03-22 17:43:11', '2022-03-22 17:45:18');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (25, '100025', '保存', 'user.add', 24, '1,23,24', 1, '添加管理员(新增)', 1, '2022-03-22 17:46:40', '2022-03-22 17:46:33');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (26, '100026', '编辑', '7', 23, '1,23', 7, '编辑管理员(按钮,页面)', 1, '2022-03-22 16:14:05', '2022-03-22 16:14:08');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (27, '100027', '保存', 'user.edit', 26, '1,23,26', 7, '编辑管理员(修改)', 1, '2022-03-22 16:14:05', '2022-03-22 17:48:58');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (27, '100027', '保存', 'user.edit', 26, '1,23,26', 2, '编辑管理员(修改)', 1, '2022-03-22 16:14:05', '2024-06-30 17:49:19');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (28, '100028', '启用/禁用', 'user.editStatus', 23, '1,23', 2, '启用/禁用 管理员(按钮,修改)', 1, '2022-03-22 12:10:36', '2022-03-22 17:21:23');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (29, '100029', '用户角色', 'user.roleList', 23, '1,23', 6, '用户角色(弹框页面)', 1, '2022-04-08 18:48:16', '2022-04-08 18:52:44');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (30, '100030', '给用户分配角色', 'user.addRole', 29, '1,23,29', 7, '给用户分配角色(按钮,新增)', 1, '2022-04-08 18:51:41', '2022-04-08 21:42:38');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (29, '100029', '用户角色', 'user.roleList', 23, '1,23', 0, '用户角色(弹框页面)', 1, '2022-04-08 18:48:16', '2024-06-30 17:50:34');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (30, '100030', '给用户分配角色', 'user.addRole', 29, '1,23,29', 1, '给用户分配角色(按钮,新增)', 1, '2022-04-08 18:51:41', '2024-06-30 17:51:29');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (31, '100031', '修改密码', 'user.editPassword', 23, '1,23', 2, '修改密码(按钮,修改)', 1, '2022-04-08 19:00:14', '2022-04-08 19:01:46');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (32, '100032', '解除角色与用户的关系', 'user.delRole', 29, '1,23,29', 7, '解除角色与用户的关系(按钮,删除)', 1, '2022-04-08 18:51:41', '2022-04-08 21:41:52');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (33, '100033', '重置密码', 'user.resetPassword', 23, '1,23', 7, '重置用户的密码(按钮,修改)', 1, '2022-04-08 18:51:41', '2022-04-08 21:41:52');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (34, '100034', '启用 TOTP MFA (身份验证）', 'user.editMfaStatus', 23, '1,23', 7, '启用 TOTP MFA (身份验证）(按钮,修改)', 1, '2022-04-08 18:51:41', '2024-04-29 13:37:21');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (35, '100035', '编辑账号角色', 'user.editRoles', 23, '1,23', 1, '编辑账号角色/确认 (按钮, 新增, 删除)', 1, '2022-06-01 19:07:05', '2022-06-02 11:50:04');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (32, '100032', '解除角色与用户的关系', 'user.delRole', 29, '1,23,29', 3, '解除角色与用户的关系(按钮,删除)', 1, '2022-04-08 18:51:41', '2024-06-30 17:52:05');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (33, '100033', '重置密码', 'user.resetPassword', 23, '1,23', 2, '重置用户的密码(按钮,修改)', 1, '2022-04-08 18:51:41', '2024-06-30 17:52:41');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (34, '100034', '启用 TOTP MFA (身份验证）', 'user.editMfaStatus', 23, '1,23', 2, '启用 TOTP MFA (身份验证）(按钮,修改)', 1, '2022-04-08 18:51:41', '2024-06-30 17:54:49');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (35, '100035', '编辑账号角色', 'user.editRoles', 23, '1,23', 2, '编辑账号角色/确认 (按钮, 新增, 删除, 修改)', 1, '2022-06-01 19:07:05', '2024-06-30 17:56:29');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (36, '100036', '字典管理', 'config.index', 1, '1', 5, '字典管理(菜单,页面)', 1, '2022-07-04 11:47:39', '2022-07-04 11:47:39');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (37, '100037', '添加', '8', 36, '1,36', 7, '添加字典(按钮,页面)', 1, '2022-07-04 11:58:57', '2022-07-04 11:58:57');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (38, '100038', '保存', 'config.add', 37, '1,36,37', 1, '添加字典(新增)', 1, '2022-07-04 12:00:23', '2022-07-04 12:00:23');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (39, '100039', '编辑', '8', 36, '1,36', 7, '编辑字典(按钮,页面)', 1, '2022-07-04 12:02:02', '2022-07-04 12:02:02');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (40, '100040', '保存', 'config.edit', 39, '1,36,39', 2, '编辑字典(修改)', 1, '2022-07-04 12:04:30', '2022-07-04 12:04:30');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (41, '100041', '查看字典缓存', 'config.getCache', 36, '1,36', 7, '查看字典缓存(按钮, 查看)', 1, '2022-07-04 21:24:37', '2022-07-04 21:24:37');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (42, '100042', '刷新缓存', 'config.renew', 36, '1,36', 7, '刷新字典缓存(按钮)', 1, '2023-06-24 13:25:38', '2023-06-26 04:02:04');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (41, '100041', '查看字典缓存', 'config.getCache', 36, '1,36', 0, '查看字典缓存(按钮, 查看)', 1, '2022-07-04 21:24:37', '2024-06-30 17:58:36');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (42, '100042', '刷新缓存', 'config.renew', 36, '1,36', 2, '刷新字典缓存(按钮)', 1, '2023-06-24 13:25:38', '2024-06-30 17:57:24');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (43, '100043', '缓存管理', 'cache.index', 1, '1', 5, '缓存管理(菜单,页面)', 1, '2022-07-06 16:20:14', '2023-06-26 04:01:59');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (44, '100044', '查看缓存key信息', 'cache.keyInfo', 43, '1,43', 7, '查看缓存key信息(按钮, 查看)', 1, '2022-07-06 16:24:52', '2023-06-26 04:01:54');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (45, '100045', '刷新缓存', 'cache.renew', 43, '1,43', 7, '刷新缓存(按钮, 修改)', 1, '2022-07-06 16:26:57', '2023-06-26 04:01:50');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (46, '100046', '刷新全部缓存', 'cache.renewAll', 43, '1,43', 7, '刷新全部缓存(按钮, 修改)', 1, '2022-07-06 16:26:57', '2023-06-26 04:01:43');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (47, '100047', '服务器信息', 'cache.serverInfo', 43, '1,43', 7, '服务器信息(按钮, 查看)', 1, '2022-07-06 16:26:57', '2023-06-26 04:01:38');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (48, '100048', '搜索', '8', 43, '1,43', 7, '搜索(按钮, 页面)', 1, '2023-06-26 12:22:05', '2023-06-26 04:25:51');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (49, '100049', '搜索', 'cache.searchKey', 48, '1,43,48', 7, '搜索(按钮, 查看)', 1, '2023-06-26 12:28:06', '2023-06-26 04:56:45');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (50, '100050', '查看缓存key信息', 'cache.searchKeyInfo', 48, '1,43,48', 7, '查看缓存key信息(按钮, 查看)', 1, '2023-06-26 12:56:24', '2023-06-26 04:56:51');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (49, '100049', '搜索', 'cache.searchKey', 48, '1,43,48', 0, '搜索(按钮, 查看)', 1, '2023-06-26 12:28:06', '2024-06-30 18:02:09');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (50, '100050', '查看缓存key信息', 'cache.searchKeyInfo', 48, '1,43,48', 0, '查看缓存key信息(按钮, 查看)', 1, '2023-06-26 12:56:24', '2024-06-30 18:01:31');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (51, '100051', '生成绑定安全秘钥地址', 'user.buildMfaSecretKeyUrl', 26, '1,23,26', 7, '生成绑定安全秘钥地址(按钮，查看)', 1, '2023-06-26 23:01:59', '2024-04-29 12:52:33');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (52, '100052', '后台日志', 'userlog.index', 1, '1', 5, '后台日志(菜单，页面)', 1, '2023-06-26 13:30:06', '2024-05-17 22:59:01');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (53, '100053', '个人管理', '8', 0, '', 4, '个人信息管理(目录)', 1, '2022-06-15 15:32:57', '2023-06-30 10:52:14');
@@ -99,7 +99,18 @@ INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (55, '100055', '控制台', '4', 0, '', 4, '控制台(目录)', 1, '2022-03-21 21:06:17', '2023-06-30 10:54:25');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (56, '100056', '分析页', '', 55, '55', 5, '分析页(菜单, 页面)', 1, '2022-05-20 17:32:49', '2023-06-30 10:54:31');
 INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (57, '100057', '工作台', '', 55, '55', 5, '工作台(菜单,页面)', 1, '2022-05-20 17:36:35', '2023-06-30 10:54:39');
-INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (58, '100058', '启用/禁用', 'permission.editStatus', 11, '1,11', 7, '启用/禁用 权限(按钮)', 1, '2024-05-17 23:15:19', '2024-05-17 23:16:38');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (58, '100058', '启用/禁用', 'permission.editStatus', 11, '1,11', 2, '启用/禁用 权限(按钮, 修改)', 1, '2024-05-17 23:15:19', '2024-06-30 17:46:30');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (59, '100059', '秘钥管理', 'secretKey.index', 1, '1', 5, '秘钥管理列表（菜单，页面）', 1, '2024-06-30 16:54:55', '2024-06-30 16:54:55');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (60, '100060', '添加', '8', 59, '1,59', 7, '添加秘钥(按钮,页面)', 1, '2024-06-30 17:19:56', '2024-06-30 17:19:56');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (61, '100061', '保存', 'secretKey.add', 60, '1,59,60', 1, '添加秘钥(新增)', 1, '2024-06-30 17:21:32', '2024-06-30 17:21:32');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (62, '100062', '编辑', '8', 59, '1,59', 7, '编辑秘钥(按钮,页面)', 1, '2024-06-30 17:22:22', '2024-06-30 17:22:22');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (63, '100063', '保存', 'secretKey.edit', 62, '1,59,62', 2, '编辑秘钥(修改)', 1, '2024-06-30 17:23:20', '2024-06-30 17:23:20');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (64, '100064', '启用/禁用', 'secretKey.editStatus', 59, '1,59', 2, '启用/禁用秘钥(按钮,修改）', 1, '2024-06-30 17:25:41', '2024-06-30 18:00:28');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (65, '100065', '文件管理', 'files.index', 1, '1', 5, '文件管理列表(菜单，页面)', 1, '2024-06-30 17:27:20', '2024-06-30 17:32:57');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (66, '100066', '设置文件状态', 'files.editStatus', 65, '1,65', 2, '设置文件状态(按钮,修改）', 1, '2024-06-30 17:29:26', '2024-06-30 17:33:13');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (67, '100067', '设置文件过期', 'files.editExpire', 65, '1,65', 2, '设置文件过期(按钮,修改)', 1, '2024-06-30 17:32:37', '2024-06-30 17:32:37');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (68, '100068', '删除', 'files.del', 65, '1,65', 3, '删除文件(按钮，删除)', 1, '2024-06-30 17:34:08', '2024-06-30 17:34:08');
+INSERT INTO `permissions` (`id`, `uuid`, `title`, `module`, `pid`, `pids`, `type`, `describe`, `status`, `created_at`, `updated_at`) VALUES (69, '100069', '消息管理', 'notice.index', 1, '1', 5, '消息列表(菜单，页面)', 1, '2024-06-30 17:35:47', '2024-06-30 17:35:47');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
