@@ -217,11 +217,10 @@ class SecretKeyService extends Service
 
     /**
      * 秘钥管理列表
-     * @param Request $request
      * @param array $input
      * @return array
      */
-    public function list(Request $request, array $input): array
+    public function list(array $input): array
     {
         // 分页, 排序
         $orderByField = Arr::get($input, 'field', 'id'); // 排序字段
@@ -252,5 +251,69 @@ class SecretKeyService extends Service
             ->offset($pageSize * ($page - 1))->limit($pageSize)->get();
 
         return ['total' => $total, 'items' => $items];
+    }
+
+    /**
+     * config.add
+     * @param array $input
+     * @return bool
+     * @throws CustomizeException|RedisException
+     */
+    public function add(array $input): bool
+    {
+        $model = new SecretKey;
+        // 验证uuid 是否已经存在
+        if ($model->where('uuid', Arr::get($input, 'uuid'))->exists()) {
+            throw new CustomizeException(Code::E100054, $input);
+        }
+
+        $model->title = Arr::get($input, 'title', '');
+        $model->uuid = Arr::get($input, 'uuid', '');
+        $model->title = Arr::get($input, 'title', '');
+        $model->status = Arr::get($input, 'status', SecretKeyStatus::ENABLED);
+        $model->remark = Arr::get($input, 'remark', '');
+        $model->aes_key = Arr::get($input, 'aes_key', '');
+        $model->aes_key = $model->aes_key ? Crypt::encryptString($model->aes_key) : '';
+        $model->aes_iv = Arr::get($input, 'aes_iv', '');
+        $model->aes_iv = $model->aes_iv ? Crypt::encryptString($model->aes_iv) : '';
+        $model->rsa_public_key_user = Arr::get($input, 'rsa_public_key_user', '');
+        $model->rsa_public_key_server = Arr::get($input, 'rsa_public_key_server', '');
+        $model->rsa_private_key_server = Arr::get($input, 'rsa_private_key_server', '');
+        $model->created_at = date('Y-m-d H:i:s');
+        $model->updated_at = date('Y-m-d H:i:s');
+
+        $res = $model->save();
+        if ($res) {
+            // 刷新 参数配置 Hash
+            RedisService::initTable(RedisKeys::CONFIG_UUID. $model->uuid);
+        }
+        return $res;
+    }
+
+    /**
+     * config.edit
+     * @param int $id
+     * @param array $input
+     * @return bool
+     * @throws CustomizeException|RedisException
+     */
+    public function edit(int $id, array $input): bool
+    {
+        // 查找配置
+        $model = Config::find($id);
+        if (!$model) {
+            throw new CustomizeException(Code::E100055);
+        }
+
+        $model->value = Arr::get($input, 'value', $model->value);
+        $model->remark = Arr::get($input, 'remark', $model->remark);
+        $model->updated_at = date('Y-m-d H:i:s');
+
+        $res = $model->save();
+        if ($res) {
+            // 刷新 参数配置 Hash
+            RedisService::initTable(RedisKeys::CONFIG_UUID . $model->uuid);
+        }
+        return $res;
     }
 }

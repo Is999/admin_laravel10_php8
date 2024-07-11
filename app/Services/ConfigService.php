@@ -51,6 +51,7 @@ class ConfigService extends Service
     }
 
     /**
+     * config.add
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
@@ -82,6 +83,7 @@ class ConfigService extends Service
     }
 
     /**
+     * config.edit
      * @param int $id
      * @param array $input
      * @return bool

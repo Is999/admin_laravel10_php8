@@ -142,6 +142,9 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     // 秘钥管理
     Route::prefix('secretKey')->name('secretKey.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [SecretKeyController::class, 'index'])->name('index'); // 秘钥管理列表
+        Route::post('add', [SecretKeyController::class, 'add'])->name('add'); // 添加秘钥
+        Route::post('edit/{id}', [SecretKeyController::class, 'edit'])->name('edit'); // 编辑秘钥
+        Route::post('editStatus/{id}', [SecretKeyController::class, 'editStatus'])->name('editStatus');  // 编辑秘钥状态 启用/禁用
     });
 
 });

@@ -97,7 +97,8 @@ class RoleController extends Controller
             $input = $validator->validated();
 
             // 新增角色
-            $result = (new AuthorizeService)->roleAdd($request, $input);
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->roleAdd($admin, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -143,7 +144,8 @@ class RoleController extends Controller
             $input = $validator->validated();
 
             // 编辑角色信息
-            $result = (new AuthorizeService)->roleEdit($request, $id, $input);
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->roleEdit($admin, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -170,7 +172,8 @@ class RoleController extends Controller
     {
         try {
             // 删除角色信息
-            $result = (new AuthorizeService)->roleEdit($request, $id, ['is_delete' => Delete::YES]);
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->roleEdit($admin, $id, ['is_delete' => Delete::YES]);
             if (!$result) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -211,7 +214,8 @@ class RoleController extends Controller
             $input = $validator->validated();
 
             // 编辑角色状态
-            $result = (new AuthorizeService)->roleEdit($request, $id, $input);
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->roleEdit($admin, $id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -255,7 +259,8 @@ class RoleController extends Controller
 
             $input = $validator->validated();
             // 编辑角色权限
-            $result = (new AuthorizeService)->roleEdit($request, $id, $input);
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->roleEdit($admin, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -282,7 +287,8 @@ class RoleController extends Controller
     public function permission(Request $request, int $id, string $isPid): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->permission($request, $id, $isPid == 'y');
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->permission($admin, $id, $isPid == 'y');
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);

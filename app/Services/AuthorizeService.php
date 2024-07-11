@@ -337,7 +337,7 @@ class AuthorizeService extends Service
     {
         $data = [
             'superUserRole' => 0, // 是否是超级管理员
-            'roles' => [], // 角色
+            // 'roles' => [], // 角色
             'permissions' => [] // 权限
         ];
 
@@ -511,11 +511,11 @@ class AuthorizeService extends Service
 
     /**
      * 账号管理 编辑|新增角色下拉列表
-     * @param Request $request
+     * @param int $adminId 管理员ID
      * @return array
      * @throws RedisException
      */
-    public function userRoleTreeList(Request $request): array
+    public function userRoleTreeList(int $adminId): array
     {
         // 从缓存中获取角色
         $data = RedisService::getTable(RedisKeys::ROLE_TREE, true);
@@ -523,8 +523,7 @@ class AuthorizeService extends Service
             $data = json_decode($data, true);
 
             // 获取用户角色
-            $admin = $request->offsetGet('user.id');
-            $roles = $this->getUserRoles($admin);
+            $roles = $this->getUserRoles($adminId);
             $isSuperRole = false;
             if (in_array($this->getSuperRole(), $roles)) {
                 $isSuperRole = true;
@@ -632,19 +631,18 @@ class AuthorizeService extends Service
 
     /**
      * 添加角色
-     * @param Request $request
+     * @param int $adminId
      * @param array $input
      * @return bool
      * @throws CustomizeException
      * @throws RedisException
      */
-    public function roleAdd(Request $request, array $input): bool
+    public function roleAdd(int $adminId, array $input): bool
     {
         $pid = Arr::get($input, 'pid', 0);
-        $admin = $request->offsetGet('user.id');
 
         // 检查该用户是否有新增角色的权限
-        if (!($this->checkUserHasRole($admin, $pid) || $this->checkUserHasChildRole($admin, $pid))) {
+        if (!($this->checkUserHasRole($adminId, $pid) || $this->checkUserHasChildRole($adminId, $pid))) {
             throw new CustomizeException(Code::E100030);
         }
 
@@ -717,24 +715,22 @@ class AuthorizeService extends Service
     /**
      * role.edit
      * 需要刷新角色权限缓存:1.状态禁用, 2.重新赋值权限, 3.删除角色
-     * @param Request $request
+     * @param int $adminId
      * @param int $id
      * @param array $input
      * @return bool
      * @throws CustomizeException
      * @throws RedisException
      */
-    public function roleEdit(Request $request, int $id, array $input): bool
+    public function roleEdit(int $adminId, int $id, array $input): bool
     {
         // 超级管理员角色不能编辑
         if ($id == $this->getSuperRole()) {
             throw new CustomizeException(Code::E100025);
         }
 
-        $admin = $request->offsetGet('user.id');
-
         // 检查该用户是否有编辑角色的权限
-        if (!$this->checkUserHasChildRole($admin, $id)) {
+        if (!$this->checkUserHasChildRole($adminId, $id)) {
             throw new CustomizeException(Code::E100031);
         }
 
@@ -1018,18 +1014,16 @@ class AuthorizeService extends Service
 
     /**
      * role.permission
-     * @param Request $request
-     * @param int $id
+     * @param int $adminId 管理员id
+     * @param int $roleId 角色id
      * @param bool $isPid 验证上级是否有权限
      * @return array
      * @throws RedisException
      */
-    public function permission(Request $request, int $id, bool $isPid): array
+    public function permission(int $adminId, int $roleId, bool $isPid): array
     {
-        $admin = $request->offsetGet('user.id');
-
         // 获取角色权限
-        $rolePermissions = RedisService::getRolePermissions($id);
+        $rolePermissions = RedisService::getRolePermissions($roleId);
 
         // 是否可以编辑check box: false 不能选择，true 可以选择
         $isChecked = false;
@@ -1039,20 +1033,20 @@ class AuthorizeService extends Service
 
         // 获取角色是否超级管理员
         $isSuperRole = false;
-        if (!$isPid && $superRoleId == $id) {
+        if (!$isPid && $superRoleId == $roleId) {
             $isSuperRole = true;
         }
         // 当前用户是否是超级管理员
-        $userIsSuperRole = $this->checkUserIsSuperRole($admin);
+        $userIsSuperRole = $this->checkUserIsSuperRole($adminId);
         // 超级管理员添加下级
-        if ($isPid && $superRoleId == $id && $userIsSuperRole) {
+        if ($isPid && $superRoleId == $roleId && $userIsSuperRole) {
             $isChecked = true;
         }
 
         // 获取父级权限
         $parentRolePermissions = $isPid ? $rolePermissions : [];
         if (!$isPid && !$isChecked) {
-            $pid = Roles::where('id', $id)->value('pid');
+            $pid = Roles::where('id', $roleId)->value('pid');
             if ($pid == $this->getSuperRole()) {
                 $isChecked = true;
             } else {
@@ -1647,23 +1641,21 @@ class AuthorizeService extends Service
 
     /**
      * user.roleList
-     * @param Request $request
+     * @param int $adminId
      * @param int $uid
      * @return array
      * @throws RedisException
      */
-    public function userRoleList(Request $request, int $uid): array
+    public function userRoleList(int $adminId, int $uid): array
     {
-        $admin = $request->offsetGet('user.id');
-
         $list = [];
         DB::table((new UserRolesAccess)->getTable(), 'a')
             ->join((new Roles)->tableName('r'), 'a.role_id', 'r.id')
             ->where('a.user_id', $uid)
             ->select(['a.*', 'r.title'])
             ->orderBy('role_id')
-            ->lazy()->each(function ($role) use ($admin, &$list) {
-                $role->isUpdate = $this->checkUserHasChildRole($admin, $role->role_id);
+            ->lazy()->each(function ($role) use ($adminId, &$list) {
+                $role->isUpdate = $this->checkUserHasChildRole($adminId, $role->role_id);
                 $list[] = $role;
             });
         return $list;
@@ -1671,16 +1663,14 @@ class AuthorizeService extends Service
 
     /**
      * user.editRoles
-     * @param Request $request
+     * @param int $adminId
      * @param int $uid
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function userEditRoles(Request $request, int $uid, array $input): bool
+    public function userEditRoles(int $adminId, int $uid, array $input): bool
     {
-        $admin = $request->offsetGet('user.id');
-
         $roleIds = Arr::get($input, 'roles');
         if (!$roleIds || !is_array($roleIds)) {
             throw new CustomizeException(Code::E100049);
@@ -1698,7 +1688,7 @@ class AuthorizeService extends Service
         // 验证是否有权限删除该记录
         if ($delArr) {
             foreach ($delArr as $id) {
-                if (!$this->checkUserHasChildRole($admin, $id)) {
+                if (!$this->checkUserHasChildRole($adminId, $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100050, compact('title'));
                 }
@@ -1711,7 +1701,7 @@ class AuthorizeService extends Service
         // 验证是否有权限添加该记录
         if ($insertArr) {
             foreach ($insertArr as $id) {
-                if (!$this->checkUserHasChildRole($admin, $id)) {
+                if (!$this->checkUserHasChildRole($adminId, $id)) {
                     $title = Roles::where('id', $id)->value('title');
                     throw new CustomizeException(Code::E100045, compact('title'));
                 }
@@ -1757,16 +1747,14 @@ class AuthorizeService extends Service
 
     /**
      * user.addRole
-     * @param Request $request
+     * @param int $adminId
      * @param int $uid
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function userAddRole(Request $request, int $uid, array $input): bool
+    public function userAddRole(int $adminId, int $uid, array $input): bool
     {
-        $admin = $request->offsetGet('user.id');
-
         $roleId = Arr::get($input, 'roleId', 0);
         $title = Roles::where([['id', $roleId], ['status', RoleStatus::ENABLED], ['is_delete', Delete::NO]])->value('title');
         if ($title == null) {
@@ -1777,7 +1765,7 @@ class AuthorizeService extends Service
             return true;
         }
 
-        if (!$this->checkUserHasChildRole($admin, $roleId)) {
+        if (!$this->checkUserHasChildRole($adminId, $roleId)) {
             throw new CustomizeException(Code::E100045, compact('title'));
         }
 
@@ -1796,16 +1784,14 @@ class AuthorizeService extends Service
 
     /**
      * user.delRole
-     * @param Request $request
+     * @param int $adminId
      * @param int $uid
      * @param array $input
      * @return bool
      * @throws CustomizeException|RedisException
      */
-    public function userDelRole(Request $request, int $uid, array $input): bool
+    public function userDelRole(int $adminId, int $uid, array $input): bool
     {
-        $admin = $request->offsetGet('user.id');
-
         $roleId = Arr::get($input, 'user_roles_id', 0);
 
         // 查找用户与角色关联记录
@@ -1815,7 +1801,7 @@ class AuthorizeService extends Service
         }
 
         // 验证是否有权限删除该记录
-        if (!$this->checkUserHasChildRole($admin, $model->role_id)) {
+        if (!$this->checkUserHasChildRole($adminId, $model->role_id)) {
             throw new CustomizeException(Code::E100046);
         }
 

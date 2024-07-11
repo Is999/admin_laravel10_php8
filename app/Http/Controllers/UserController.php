@@ -235,7 +235,8 @@ class UserController extends Controller
     {
         try {
             // 获取用户角色信息列表
-            $list = (new AuthorizeService)->userRoleList($request, $id);
+            $admin = $request->offsetGet('user.id');
+            $list = (new AuthorizeService)->userRoleList($admin, $id);
             return Response::success($list);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -263,7 +264,8 @@ class UserController extends Controller
             }
 
             $input = $validator->validated();
-            $res = (new AuthorizeService)->userEditRoles($request, $id, $input);
+            $admin = $request->offsetGet('user.id');
+            $res = (new AuthorizeService)->userEditRoles($admin, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -301,7 +303,8 @@ class UserController extends Controller
 
             $input = $validator->validated();
 
-            $res = (new AuthorizeService)->userAddRole($request, $id, $input);
+            $admin = $request->offsetGet('user.id');
+            $res = (new AuthorizeService)->userAddRole($admin, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -337,7 +340,8 @@ class UserController extends Controller
             }
 
             $input = $validator->validated();
-            $res = (new AuthorizeService)->userDelRole($request, $id, $input);
+            $admin = $request->offsetGet('user.id');
+            $res = (new AuthorizeService)->userDelRole($admin, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -362,7 +366,8 @@ class UserController extends Controller
     public function roleTreeList(Request $request): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->userRoleTreeList($request);
+            $admin = $request->offsetGet('user.id');
+            $result = (new AuthorizeService)->userRoleTreeList($admin);
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
