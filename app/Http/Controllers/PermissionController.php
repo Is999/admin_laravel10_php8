@@ -10,7 +10,7 @@ use App\Enum\PermissionType;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
-use App\Services\AuthorizeService;
+use App\Services\PermissionService;
 use App\Services\ResponseService as Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,7 +55,7 @@ class PermissionController extends Controller
             }
 
             // 查询数据
-            $result = (new AuthorizeService)->permissionList($validator->validated());
+            $result = (new PermissionService)->permissionList($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -98,7 +98,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 新增权限
-            $result = (new AuthorizeService)->permissionAdd($input);
+            $result = (new PermissionService)->permissionAdd($input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -146,7 +146,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 编辑权限
-            $result = (new AuthorizeService)->permissionEdit($id, $input);
+            $result = (new PermissionService)->permissionEdit($id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -187,7 +187,7 @@ class PermissionController extends Controller
             $input = $validator->validated();
 
             // 更新权限状态
-            $result = (new AuthorizeService)->permissionEdit($id, $input);
+            $result = (new PermissionService)->permissionEdit($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -214,7 +214,7 @@ class PermissionController extends Controller
     {
         try {
             // 删除权限信息
-            $result = (new AuthorizeService)->permissionDel($id);
+            $result = (new PermissionService)->permissionDel($id);
             if (!$result) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -239,7 +239,7 @@ class PermissionController extends Controller
     {
         try {
             // 查询数据
-            $result = (new AuthorizeService)->permissionTreeList();
+            $result = (new PermissionService)->permissionTreeList();
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -257,7 +257,7 @@ class PermissionController extends Controller
     {
         try {
             // 查询数据
-            return Response::success(['uuid' => (new AuthorizeService)->getMaxUuid()]);
+            return Response::success(['uuid' => (new PermissionService)->getMaxUuid()]);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);

@@ -4,14 +4,17 @@ namespace App\Services;
 
 use App\Enum\Code;
 use App\Enum\ConfigUuid;
+use App\Enum\Delete;
 use App\Enum\FileStatus;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
 use App\Enum\RedisKeys;
+use App\Enum\RoleStatus;
 use App\Enum\UserMfaStatus;
 use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\UserRolesAccess;
 use Earnp\GoogleAuthenticator\GoogleAuthenticator;
@@ -20,6 +23,7 @@ use Firebase\JWT\Key;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use RedisException;
@@ -28,6 +32,157 @@ use Throwable;
 
 class UserService extends Service
 {
+    /**
+     * 存储token
+     * @param int $uid
+     * @param string $value
+     * @return bool
+     * @throws RedisException
+     */
+    public function setTokenCache(int $uid, string $value): bool
+    {
+        return self::redis()->setex(RedisKeys::ADMIN_TOKEN . $uid, 3600, $value);
+    }
+
+    /**
+     * 获取token
+     * @param int $uid
+     * @return mixed false|mixed|string
+     * @throws RedisException
+     */
+    public function getTokenCache(int $uid): mixed
+    {
+        return self::redis()->get(RedisKeys::ADMIN_TOKEN . $uid);
+    }
+
+    /**
+     * 更新Token 过期时间
+     * @param int $uid
+     * @param int $ttl
+     * @return bool
+     * @throws RedisException
+     */
+    public function renewTokenCache(int $uid, int $ttl = 3600): bool
+    {
+        return self::redis()->expire(RedisKeys::ADMIN_TOKEN . $uid, $ttl);
+    }
+
+    /**
+     * 删除token
+     * @param int $uid
+     * @return int
+     * @throws RedisException
+     */
+    public static function delTokenCache(int $uid): int
+    {
+        return self::redis()->del(RedisKeys::ADMIN_TOKEN . $uid);
+    }
+
+    /**
+     * 存储用户信息
+     * @param int $uid
+     * @param array $userInfo
+     * @return bool
+     * @throws RedisException
+     */
+    public function setUserInfoCache(int $uid, array $userInfo): bool
+    {
+        $res = self::redis()->hMSet(RedisKeys::ADMIN_USERINFO . $uid, $userInfo);
+        if ($res) {
+            self::redis()->expire(RedisKeys::ADMIN_USERINFO . $uid, 3600 * 8);
+        }
+        return $res;
+    }
+
+    /**
+     * 获取用户信息
+     * @param int $uid
+     * @param array $fields
+     * @return array
+     * @throws RedisException
+     */
+    public function getUserInfoCache(int $uid, array $fields = []): array
+    {
+        if (empty($fields)) {
+            return self::redis()->hGetAll(RedisKeys::ADMIN_USERINFO . $uid);
+        }
+        return self::redis()->hMGet(RedisKeys::ADMIN_USERINFO . $uid, $fields);
+    }
+
+    /**
+     * 是否存在用户信息
+     * @param int $uid
+     * @return bool|int
+     * @throws RedisException
+     */
+    public function checkUserInfoCacheExists(int $uid): bool|int
+    {
+        return self::redis()->exists(RedisKeys::ADMIN_USERINFO . $uid);
+    }
+
+
+    /**
+     * 删除用户信息
+     * @param int $uid
+     * @return int
+     * @throws RedisException
+     */
+    public function delUserInfoCache(int $uid): int
+    {
+        return self::redis()->del(RedisKeys::ADMIN_USERINFO . $uid);
+    }
+
+    /**
+     * 存储用户角色信息
+     * @param int $uid
+     * @param array $roles
+     * @return bool
+     * @throws RedisException
+     */
+    public function setUserRoleCache(int $uid, array $roles): bool
+    {
+        $key = RedisKeys::ADMIN_USER_ROLES . $uid;
+        $res = self::redis()->sAddArray($key, $roles);
+        if ($res) {
+            self::redis()->expire($key, 3600 * 24);
+        }
+        return $res;
+    }
+
+    /**
+     * 获取用户角色信息
+     * @param int $uid
+     * @return array
+     * @throws RedisException
+     */
+    public static function getUserRoleCache(int $uid): array
+    {
+        return self::redis()->sMembers(RedisKeys::ADMIN_USER_ROLES . $uid);
+    }
+
+    /**
+     * 是否存在用户角色信息
+     * @param int $uid
+     * @return bool|int
+     * @throws RedisException
+     */
+    public function checkUserRoleCacheExists(int $uid): bool|int
+    {
+        return self::redis()->exists(RedisKeys::ADMIN_USER_ROLES . $uid);
+    }
+
+    /**
+     * 删除用户角色信息
+     * @param int $uid
+     * @return int
+     * @throws RedisException
+     */
+    public static function delUserRoleCache(int $uid): int
+    {
+        return self::redis()->del(RedisKeys::ADMIN_USER_ROLES . $uid);
+    }
+
+
     /**
      * 生成token
      * @param User $user
@@ -47,7 +202,7 @@ class UserService extends Service
             ];
 
             $token = JWT::encode($tokenArr, env('APP_KEY'), 'HS256');
-            RedisService::setToken($user->id, $token); //token 保存redis服务器
+            $this->setTokenCache($user->id, $token); //token 保存redis服务器
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, '生成token异常', [
                 'id' => $user->id,
@@ -108,12 +263,12 @@ class UserService extends Service
         }
 
         // 验证服务器现有的token
-        $temp_token = RedisService::getToken($uid);
+        $temp_token = $this->getTokenCache($uid);
         if ($temp_token != $token) {
             throw new CustomizeException(Code::E100018);
         }
 
-        RedisService::renewToken($uid); //更新token过期时间
+        $this->renewTokenCache($uid); //更新token过期时间
 
         return $uid;
     }
@@ -176,6 +331,150 @@ class UserService extends Service
     }
 
     /**
+     * 验证用户是否是超级管理员
+     * @param int $uid
+     * @return bool
+     * @throws RedisException
+     */
+    public function checkUserIsSuperRole(int $uid): bool
+    {
+        // 获取用户的角色
+        $roles = $this->getUserRole($uid);
+
+        // 判断用户是否拥有超级管理员权限
+        if (in_array(Role::getSuperRole(), $roles)) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * 验证用户【uid】是否有该角色
+     * @param int $uid
+     * @param int $roleId
+     * @return bool
+     * @throws RedisException
+     */
+    public function checkUserHasRole(int $uid, int $roleId): bool
+    {
+        // 获取用户的角色
+        $roles = $this->getUserRole($uid);
+
+        // 判断用户是否拥有超级管理员权限或者roleId
+        if (in_array(Role::getSuperRole(), $roles) || in_array($roleId, $roles)) {
+            return true;
+        }
+
+        // 未匹配到权限
+        return false;
+    }
+
+    /**
+     * 校验当前管理是否可以更改用户状态
+     * @param int $adminId 管理员id
+     * @param int $uid 用户id
+     * @return void
+     * @throws CustomizeException|RedisException
+     */
+    public function checkEditStatus(int $adminId, int $uid): void
+    {
+        // 判断用户是否拥有超级管理员权限
+        if (!$this->checkUserIsSuperRole($adminId)) {
+            // 不能修改非下线角色
+            $roles = $this->getUserRole($uid);
+            if ($roles) {
+                foreach ($roles as $role) {
+                    $isEdit = $this->checkUserHasChildRole($adminId, $role);
+                    if (!$isEdit) {
+                        $title = Role::where('id', $role)->value('title');
+                        throw new CustomizeException(Code::E100060, ['role' => $title]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 验证角色【roleId】是否是用户【uid】所拥有角色的子角色
+     * @param int $uid
+     * @param int $roleId
+     * @return bool
+     * @throws RedisException
+     */
+    public function checkUserHasChildRole(int $uid, int $roleId): bool
+    {
+        // 获取用户的角色
+        $roles = $this->getUserRole($uid);
+
+        // 判断用户是否拥有超级管理员权限
+        if (in_array(Role::getSuperRole(), $roles)) {
+            return true;
+        }
+
+        // 查角色族谱是否拥有该用户拥有的角色id
+        $pids = Role::where('id', $roleId)->value('pids');
+        if ($pids) {
+            $pids = explode(',', $pids);
+            foreach ($roles as $role) {
+                if (in_array($role, $pids)) {
+                    return true;
+                }
+            }
+        }
+
+        // 未匹配到权限
+        return false;
+    }
+
+    /**
+     * 获取用户权限uuid
+     * @param int $uid
+     * @return array
+     * @throws RedisException
+     */
+    public function getUserPermissionUuid(int $uid): array
+    {
+        $data = [
+            'superUserRole' => 0, // 是否是超级管理员
+            // 'roles' => [], // 角色
+            'permissions' => [] // 权限
+        ];
+
+        // 获取用户的角色
+        $roles = $this->getUserRole($uid);
+
+        $data['roles'] = $roles;
+
+        // 判断用户是否拥有超级管理员权限
+        if (in_array(Role::getSuperRole(), $roles)) {
+            $data['superUserRole'] = 1;
+            return $data;
+        }
+
+        $permissions = [];
+        $rolesService = new RoleService;
+        // 非超级管理员权限
+        foreach ($roles as $roleId) {
+            // 获取角色状态
+            if ($rolesService->getRoleStatus($roleId) != RoleStatus::ENABLED->value) {
+                continue;
+            }
+
+            // 获取角色权限id
+            $permissions = array_merge($permissions, $rolesService->getRolePermission($roleId));
+        }
+
+        // 去重, 并获取uuid
+        if ($permissions) {
+            $data['permissions'] = (new PermissionService)->getPermissionUuid(array_unique($permissions, SORT_NUMERIC));
+        }
+
+        return $data;
+    }
+
+    /**
      * 获取用户信息
      * @param int $uid
      * @param array $fields
@@ -184,10 +483,10 @@ class UserService extends Service
      */
     public function getUserInfo(int $uid, array $fields = []): array
     {
-        $user = RedisService::getUserInfo($uid, $fields);
+        $user = $this->getUserInfoCache($uid, $fields);
         if (empty($user)) {
             $user = User::find($uid)->toArray();
-            RedisService::setUserInfo($uid, $user);
+            $this->setUserInfoCache($uid, $user);
         }
         return $user;
     }
@@ -229,10 +528,10 @@ class UserService extends Service
     public function cacheUserInfo(User $user): void
     {
         // 缓存用户信息
-        RedisService::setUserInfo($user->id, $user->toArray());
+        $this->setUserInfoCache($user->id, $user->toArray());
 
         // 更新用户角色缓存
-        (new AuthorizeService)->getUserRoles($user->id, true);
+        $this->getUserRole($user->id, true);
     }
 
     /**
@@ -307,7 +606,7 @@ class UserService extends Service
         $mfa_status = Arr::get($input, 'mfa_status', UserMfaStatus::DISABLED->value); // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
 
         // 验证是否可以启用MFA校验
-        if($mfa_status == UserMfaStatus::ENABLED->value && empty($mfa_secure_key)) {
+        if ($mfa_status == UserMfaStatus::ENABLED->value && empty($mfa_secure_key)) {
             throw new CustomizeException(Code::E100068);
         }
 
@@ -349,7 +648,7 @@ class UserService extends Service
 
         // 文件处理：头像图片启用
         if ($avatar) {
-            (new FilesService)->updateStatus($avatar, FileStatus::USING);
+            (new FileService)->updateStatus($avatar, FileStatus::USING);
         }
 
         return $model->toArray();
@@ -383,7 +682,7 @@ class UserService extends Service
         $model->mfa_status = $mfa_status === null ? $model->mfa_status : $mfa_status; // 启用 TOTP MFA (两步验证 2FA)：0 不启用，1 启用
 
         // 验证是否可以启用MFA校验
-        if($model->mfa_status == UserMfaStatus::ENABLED->value && empty($model->mfa_secure_key)) {
+        if ($model->mfa_status == UserMfaStatus::ENABLED->value && empty($model->mfa_secure_key)) {
             throw new CustomizeException(Code::E100068);
         }
         $old_avatar = $model->avatar;
@@ -396,19 +695,19 @@ class UserService extends Service
         // 更新
         $res = $model->save();
         if ($res) {
-            if (RedisService::checkUserInfoExists($id)) {
+            if ($this->checkUserInfoCacheExists($id)) {
                 $user = $model->toArray();
-                RedisService::setUserInfo($id, $user);
+                $this->setUserInfoCache($id, $user);
             }
 
             // 文件处理
             if ($model->avatar && $model->avatar != $old_avatar) {
-                if($old_avatar){
+                if ($old_avatar) {
                     // 设置旧文件过期删除
-                    (new FilesService)->updateStatus($old_avatar, FileStatus::TOBEDELETED);
+                    (new FileService)->updateStatus($old_avatar, FileStatus::TOBEDELETED);
                 }
                 // 启用新文件
-                (new FilesService)->updateStatus($model->avatar, FileStatus::USING);
+                (new FileService)->updateStatus($model->avatar, FileStatus::USING);
             }
         }
         return $res;
@@ -447,13 +746,13 @@ class UserService extends Service
     public function clearUserInfo(int $uid): bool
     {
         // 清楚用户token
-        RedisService::delToken($uid);
+        $this->delTokenCache($uid);
 
         // 清楚用户信息缓存
-        RedisService::delUserInfo($uid);
+        $this->delUserInfoCache($uid);
 
         // 清楚用户角色缓存
-        RedisService::delUserRoles($uid);
+        $this->delUserRoleCache($uid);
         return true;
     }
 
@@ -574,4 +873,267 @@ class UserService extends Service
         return '';
     }
 
+    /**
+     * user.roleList
+     * @param int $adminId
+     * @param int $uid
+     * @return array
+     * @throws RedisException
+     */
+    public function userRoleList(int $adminId, int $uid): array
+    {
+        $list = [];
+        DB::table((new UserRolesAccess)->getTable(), 'a')
+            ->join((new Role)->tableName('r'), 'a.role_id', 'r.id')
+            ->where('a.user_id', $uid)
+            ->select(['a.*', 'r.title'])
+            ->orderBy('role_id')
+            ->lazy()->each(function ($role) use ($adminId, &$list) {
+                $role->isUpdate = $this->checkUserHasChildRole($adminId, $role->role_id);
+                $list[] = $role;
+            });
+        return $list;
+    }
+
+    /**
+     * user.editRole
+     * @param int $adminId
+     * @param int $uid
+     * @param array $input
+     * @return bool
+     * @throws CustomizeException|RedisException
+     */
+    public function userEditRole(int $adminId, int $uid, array $input): bool
+    {
+        $roleIds = Arr::get($input, 'roles');
+        if (!$roleIds || !is_array($roleIds)) {
+            throw new CustomizeException(Code::E100049);
+        }
+        // 过滤出正常的角色
+        $idArr = Role::where([['status', RoleStatus::ENABLED], ['is_delete', Delete::NO]])->whereIn('id', $roleIds)->pluck('id')->toArray();
+        if (!$idArr) {
+            throw new CustomizeException(Code::E100044);
+        }
+
+        $idArr2 = UserRolesAccess::where([['user_id', $uid]])->pluck('role_id')->toArray();
+
+        // 计算要删除的数据
+        $delArr = array_diff($idArr2, $idArr);
+        // 验证是否有权限删除该记录
+        if ($delArr) {
+            foreach ($delArr as $id) {
+                if (!$this->checkUserHasChildRole($adminId, $id)) {
+                    $title = Role::where('id', $id)->value('title');
+                    throw new CustomizeException(Code::E100050, compact('title'));
+                }
+            }
+
+        }
+
+        // 计算要新增的数据
+        $insertArr = array_diff($idArr, $idArr2);
+        // 验证是否有权限添加该记录
+        if ($insertArr) {
+            foreach ($insertArr as $id) {
+                if (!$this->checkUserHasChildRole($adminId, $id)) {
+                    $title = Role::where('id', $id)->value('title');
+                    throw new CustomizeException(Code::E100045, compact('title'));
+                }
+            }
+        }
+
+        // 验证完毕 数据入库
+        DB::beginTransaction();
+        try {
+            // 删除记录
+            if ($delArr) {
+                $res = DB::table((new UserRolesAccess)->tableName())->where('user_id', $uid)->whereIn('role_id', $delArr)->delete();
+                if (!$res) {
+                    throw new CustomizeException(Code::E100051);
+                }
+            }
+
+            // 新增数据
+            if ($insertArr) {
+                $insertData = [];
+                foreach ($insertArr as $id) {
+                    $insertData[] = ['user_id' => $uid, 'role_id' => $id, 'created_at' => date('Y-m-d H:i:s')];
+                }
+                $res = DB::table((new UserRolesAccess)->tableName())->insert($insertData);
+                if (!$res) {
+                    throw new CustomizeException(Code::E100052);
+                }
+            }
+
+            // 刷新角色缓存(删除后获取角色缓存数据时自动刷新)
+            $this->delUserRoleCache($uid);
+
+            // 提交事务
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Logger::error(LogChannel::DEV, __METHOD__, compact('uid', 'delArr', 'insertArr', $e));
+            throw new CustomizeException($e->getCode(), $e->getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * user.addRole
+     * @param int $adminId
+     * @param int $uid
+     * @param array $input
+     * @return bool
+     * @throws CustomizeException|RedisException
+     */
+    public function userAddRole(int $adminId, int $uid, array $input): bool
+    {
+        $roleId = Arr::get($input, 'roleId', 0);
+        $title = Role::where([['id', $roleId], ['status', RoleStatus::ENABLED], ['is_delete', Delete::NO]])->value('title');
+        if ($title == null) {
+            throw new CustomizeException(Code::E100044);
+        }
+
+        if (UserRolesAccess::where([['role_id', $roleId], ['user_id', $uid]])->exists()) {
+            return true;
+        }
+
+        if (!$this->checkUserHasChildRole($adminId, $roleId)) {
+            throw new CustomizeException(Code::E100045, compact('title'));
+        }
+
+        $model = new UserRolesAccess;
+        $model->user_id = $uid;
+        $model->role_id = $roleId;
+        $model->created_at = date('Y-m-d H:i:s'); // 创建时间
+
+        $res = $model->save();
+        if ($res) {
+            // 刷新角色缓存(删除后获取角色缓存数据时自动刷新)
+            $this->delUserRoleCache($uid);
+        }
+        return $res;
+    }
+
+    /**
+     * user.delRole
+     * @param int $adminId
+     * @param int $uid
+     * @param array $input
+     * @return bool
+     * @throws CustomizeException|RedisException
+     */
+    public function userDelRole(int $adminId, int $uid, array $input): bool
+    {
+        $roleId = Arr::get($input, 'user_roles_id', 0);
+
+        // 查找用户与角色关联记录
+        $model = UserRolesAccess::find($roleId);
+        if (!$model) {
+            return true;
+        }
+
+        // 验证是否有权限删除该记录
+        if (!$this->checkUserHasChildRole($adminId, $model->role_id)) {
+            throw new CustomizeException(Code::E100046);
+        }
+
+        // 删除用户和角色关系
+        $res = $model->delete();
+        if ($res) {
+            // 刷新角色缓存(删除后获取角色缓存数据时自动刷新)
+            $this->delUserRoleCache($uid);
+        }
+        return $res;
+    }
+
+    /**
+     * 用户角色id
+     * @param int $id
+     * @return array
+     */
+    public function userRole(int $id): array
+    {
+        // 获取账号角色
+        return UserRolesAccess::where('user_id', $id)->pluck('role_id')->toArray();
+    }
+
+    /**
+     * 账号管理 编辑|新增角色下拉列表
+     * @param int $uid 管理员ID
+     * @return array
+     * @throws RedisException
+     */
+    public function userRoleTreeList(int $uid): array
+    {
+        // 从缓存中获取角色
+        $data = RedisService::getTable(RedisKeys::ROLE_TREE, true);
+        if ($data) {
+            $data = json_decode($data, true);
+
+            // 获取用户角色
+            $roles = $this->getUserRole($uid);
+            $isSuperRole = false;
+            if (in_array(Role::getSuperRole(), $roles)) {
+                $isSuperRole = true;
+            }
+
+            // 过滤禁用的角色
+            self::arrayWalkRecursive($data, function (&$arr, $key, $item) use ($isSuperRole, &$roles) {
+                if ($item['status'] != RoleStatus::ENABLED->value || $item['is_delete'] != Delete::NO->value) {
+                    unset($arr[$key]);
+                } else {
+                    // 将子级角色添加到角色列表中
+                    if (isset($item['children']) && in_array($item['pid'], $roles) && !in_array($item['id'], $roles)) {
+                        $roles[] = $item['id'];
+                    }
+
+                    $disabled = $isSuperRole || in_array($item['pid'], $roles);
+
+                    $arr[$key]['name'] = $item['title']; // 前端框架title被包装了无法获取额外加个name字段
+                    $arr[$key]['disabled'] = !$disabled; // 禁止编辑
+                    $arr[$key]['disableCheckbox'] = !$disabled; // 上级有得角色才可以编辑
+                    $arr[$key]['selectable'] = $disabled; // 上级有得权限才可以编辑
+                }
+            }, 'children');
+
+            return $data;
+        }
+        return [];
+    }
+
+
+    /**
+     * 获取用户角色 更新
+     * @param int $uid
+     * @param bool $renew
+     * @return array
+     * @throws RedisException
+     */
+    public function getUserRole(int $uid, bool $renew = false): array
+    {
+        // 从缓存中获取用户角色
+        $roles = $renew ? [] : $this->getUserRoleCache($uid);
+
+        // 刷新缓存
+        if (empty($roles) && ($renew || !$this->checkUserRoleCacheExists($uid))) {
+            // 查询数据表, 获取 role_id 集合
+            $roles = DB::table((new UserRolesAccess)->tableName('u'))->join((new Role())->tableName('r'), 'u.role_id', '=', 'r.id')
+                ->where('u.user_id', $uid)
+                ->where('r.status', RoleStatus::ENABLED)
+                ->where('r.is_delete', Delete::NO)
+                ->orderBy('r.id')
+                ->pluck('r.id')
+                ->toArray();
+
+            // 删除缓存
+            if ($renew) $this->delUserRoleCache($uid);
+
+            // 写入缓存
+            $this->setUserRoleCache($uid, $roles);
+        }
+
+        return $roles;
+    }
 }

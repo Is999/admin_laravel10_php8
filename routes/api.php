@@ -64,7 +64,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
             Route::post('updateAvatar', [UserController::class, 'updateAvatar'])->name('updateAvatar'); // 个人信息 基本设置 更换头像
             Route::get('permissions', [UserController::class, 'permissions'])->name('permissions'); // 当前登录用户 权限uuid控制 permission.uuid
             Route::get('roleTreeList', [UserController::class, 'roleTreeList'])->name('roleTreeList'); // 账号管理 查看账号校色 角色下拉框
-            Route::get('roles/{id}', [UserController::class, 'roles'])->name('roles'); // 账号管理 获取账号{id}角色
+            Route::get('role/{id}', [UserController::class, 'role'])->name('role'); // 账号管理 获取账号{id}角色
             Route::get('buildMfaSecretKeyUrl/{id}', [UserController::class, 'buildMfaSecretKeyUrl'])->name('buildMfaSecretKeyUrl'); // 获取绑定安全秘钥的地址
         });
 
@@ -105,7 +105,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
     Route::prefix('user')->name('user.')->group(function () {
         Route::match(['GET', 'POST'], 'index', [UserController::class, 'index'])->name('index'); // 账号管理 列表
         Route::get('roleList/{id}', [UserController::class, 'roleList'])->name('roleList'); // 用户角色
-        Route::post('editRoles/{id}', [UserController::class, 'editRoles'])->name('editRoles'); // 给用户分配x角色
+        Route::post('editRole/{id}', [UserController::class, 'editRole'])->name('editRole'); // 给用户分配x角色
         Route::post('addRole/{id}', [UserController::class, 'addRole'])->name('addRole'); // 给用户分配角色
         Route::post('delRole/{id}', [UserController::class, 'delRole'])->name('delRole'); // 解除角色与用户的关系
         Route::post('add', [UserController::class, 'add'])->name('add'); // 添加账号

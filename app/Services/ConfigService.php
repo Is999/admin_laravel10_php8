@@ -64,7 +64,6 @@ class ConfigService extends Service
             throw new CustomizeException(Code::E100054, $input);
         }
 
-        $model->title = Arr::get($input, 'title', '');
         $model->uuid = Arr::get($input, 'uuid', '');
         $model->title = Arr::get($input, 'title', '');
         $model->type = Arr::get($input, 'type', ConfigType::STRING_TYPE);
@@ -74,12 +73,7 @@ class ConfigService extends Service
         $model->created_at = date('Y-m-d H:i:s');
         $model->updated_at = date('Y-m-d H:i:s');
 
-        $res = $model->save();
-        if ($res) {
-            // 刷新 参数配置 Hash
-            RedisService::initTable(RedisKeys::CONFIG_UUID. $model->uuid);
-        }
-        return $res;
+        return $model->save();
     }
 
     /**

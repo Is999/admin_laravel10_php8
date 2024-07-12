@@ -15,7 +15,7 @@ use App\Enum\FileStatus;
  * @property string         $created_at timestamp                               default CURRENT_TIMESTAMP not null comment '创建时间，文件【创建/上传】时间',
  * @property string         $updated_at timestamp                               default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '修改时间，文件修改时间'
  */
-class Files extends Model
+class File extends Model
 {
     /**
      * 与模型关联的数据表.

@@ -11,11 +11,14 @@ use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\SecretKey;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use OpenSSLAsymmetricKey;
+use RedisException;
 
+/**
+ *
+ */
 class SecretKeyService extends Service
 {
     const AES = 'AES';
@@ -28,7 +31,7 @@ class SecretKeyService extends Service
      * AES key
      * @param string $appId
      * @return array
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function getAesKeyByRequestAppId(string $appId): array
     {
@@ -66,7 +69,7 @@ class SecretKeyService extends Service
      * @param string $appId
      * @param string $keyType
      * @return OpenSSLAsymmetricKey
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function getRsaKeyByRequestAppId(string $appId, string $keyType): OpenSSLAsymmetricKey
     {
@@ -133,7 +136,7 @@ class SecretKeyService extends Service
      * @param string $appId
      * @param string $type
      * @return array
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function getSecretKey(string $appId, string $type): array
     {
@@ -155,6 +158,12 @@ class SecretKeyService extends Service
         return $keys;
     }
 
+    /**
+     * @param string $uuid
+     * @param bool $renew
+     * @return array
+     * @throws RedisException
+     */
     public function aesKey(string $uuid, bool $renew = true): array
     {
         // 获取缓存
@@ -179,6 +188,12 @@ class SecretKeyService extends Service
         return RedisService::hGetAllTable($key, $renew);
     }
 
+    /**
+     * @param string $uuid
+     * @param bool $renew
+     * @return array
+     * @throws RedisException
+     */
     public function rsaKey(string $uuid, bool $renew = true): array
     {
         // 获取缓存
@@ -257,7 +272,7 @@ class SecretKeyService extends Service
      * config.add
      * @param array $input
      * @return bool
-     * @throws CustomizeException|RedisException
+     * @throws CustomizeException
      */
     public function add(array $input): bool
     {
@@ -273,21 +288,14 @@ class SecretKeyService extends Service
         $model->status = Arr::get($input, 'status', SecretKeyStatus::ENABLED);
         $model->remark = Arr::get($input, 'remark', '');
         $model->aes_key = Arr::get($input, 'aes_key', '');
-        $model->aes_key = $model->aes_key ? Crypt::encryptString($model->aes_key) : '';
         $model->aes_iv = Arr::get($input, 'aes_iv', '');
-        $model->aes_iv = $model->aes_iv ? Crypt::encryptString($model->aes_iv) : '';
         $model->rsa_public_key_user = Arr::get($input, 'rsa_public_key_user', '');
         $model->rsa_public_key_server = Arr::get($input, 'rsa_public_key_server', '');
         $model->rsa_private_key_server = Arr::get($input, 'rsa_private_key_server', '');
         $model->created_at = date('Y-m-d H:i:s');
         $model->updated_at = date('Y-m-d H:i:s');
 
-        $res = $model->save();
-        if ($res) {
-            // 刷新 参数配置 Hash
-            RedisService::initTable(RedisKeys::CONFIG_UUID. $model->uuid);
-        }
-        return $res;
+        return $model->save();
     }
 
     /**

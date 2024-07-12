@@ -11,17 +11,18 @@
  Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 30/06/2024 18:25:20
+ Date: 13/07/2024 00:40:20
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for roles
+-- Table structure for role
 -- ----------------------------
-DROP TABLE IF EXISTS `roles`;
-CREATE TABLE `roles` (
+DROP TABLE IF EXISTS `role`;
+CREATE TABLE `role`
+(
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
   `title` char(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '角色名称',
   `pid` int unsigned NOT NULL DEFAULT '0' COMMENT '父级ID',
@@ -38,11 +39,17 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色';
 
 -- ----------------------------
--- Records of roles
+-- Records of role
 -- ----------------------------
 BEGIN;
-INSERT INTO `roles` (`id`, `title`, `pid`, `pids`, `status`, `permissions_id`, `describe`, `is_delete`, `created_at`, `updated_at`) VALUES (1, '超级管理员', 0, '', 1, '', '超级管理员', 0, '2022-03-21 12:32:16', '2023-06-26 03:11:01');
-INSERT INTO `roles` (`id`, `title`, `pid`, `pids`, `status`, `permissions_id`, `describe`, `is_delete`, `created_at`, `updated_at`) VALUES (2, '管理员', 1, '1', 1, '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57', '管理员', 0, '2022-03-21 12:34:47', '2023-06-30 11:06:15');
+INSERT INTO `role` (`id`, `title`, `pid`, `pids`, `status`, `permissions_id`, `describe`, `is_delete`, `created_at`,
+                    `updated_at`)
+VALUES (1, '超级管理员', 0, '', 1, '', '超级管理员', 0, '2022-03-21 12:32:16', '2023-06-26 03:11:01');
+INSERT INTO `role` (`id`, `title`, `pid`, `pids`, `status`, `permissions_id`, `describe`, `is_delete`, `created_at`,
+                    `updated_at`)
+VALUES (2, '管理员', 1, '1', 1,
+        '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57',
+        '管理员', 0, '2022-03-21 12:34:47', '2023-06-30 11:06:15');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -31,7 +31,7 @@ class Config extends Model
      * @param array $index
      * @return array
      */
-    public function configsUuidHash(array $key = [], array $index = []): array
+    public function configUuidHash(array $key = [], array $index = []): array
     {
         // 查询数据
         $list = self::when($key, function (Builder $query, $uuid) {

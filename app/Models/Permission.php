@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enum\PermissionStatus;
 use App\Enum\PermissionType;
-use App\Services\PermissionsService;
+use App\Services\PermissionService;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string               $created_at timestamp        default CURRENT_TIMESTAMP not null comment '创建时间',
  * @property string               $updated_at timestamp        default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '修改时间',
  */
-class Permissions extends Model
+class Permission extends Model
 {
     // 表名
     protected $table = 'permissions';
@@ -64,7 +64,7 @@ class Permissions extends Model
      * @param array $index
      * @return array
      */
-    public function permissionsModuleHash(array $key = [], array $index = []): array
+    public function permissionModuleHash(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
         // 查询数据
@@ -89,7 +89,7 @@ class Permissions extends Model
      * @param array $index
      * @return array
      */
-    public function permissionsUuidHash(array $key = [], array $index = []): array
+    public function permissionUuidHash(array $key = [], array $index = []): array
     {
         $key = array_merge($key, $index);
         // 查询数据
@@ -114,7 +114,7 @@ class Permissions extends Model
      * @param array $index
      * @return array
      */
-    public function permissionsTreeString(array $key = [], array $index = []): array
+    public function permissionTreeString(array $key = [], array $index = []): array
     {
         // $key = array_merge($key, $index);
 
@@ -126,7 +126,7 @@ class Permissions extends Model
                 'id', 'uuid', 'title', 'module', 'pid', 'pids', 'type', 'status', 'describe', 'created_at', 'updated_at'
             ])->toArray();
 
-        (new PermissionsService())->permissionsToTree($permissions);
+        (new PermissionService)->permissionToTree($permissions);
         return $permissions;
     }
 }

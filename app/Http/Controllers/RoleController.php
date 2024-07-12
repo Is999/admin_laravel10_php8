@@ -9,8 +9,8 @@ use App\Enum\RoleStatus;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
-use App\Services\AuthorizeService;
 use App\Services\ResponseService as Response;
+use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -27,7 +27,7 @@ class RoleController extends Controller
     public function treeList(Request $request): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->roleTreeList();
+            $result = (new RoleService)->roleTreeList();
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -60,7 +60,7 @@ class RoleController extends Controller
             }
 
             // 查询数据
-            $result = (new AuthorizeService)->roleList($validator->validated());
+            $result = (new RoleService)->roleList($validator->validated());
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -98,7 +98,7 @@ class RoleController extends Controller
 
             // 新增角色
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->roleAdd($admin, $input);
+            $result = (new RoleService)->roleAdd($admin, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -145,7 +145,7 @@ class RoleController extends Controller
 
             // 编辑角色信息
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->roleEdit($admin, $id, $input);
+            $result = (new RoleService)->roleEdit($admin, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2001);
             }
@@ -173,7 +173,7 @@ class RoleController extends Controller
         try {
             // 删除角色信息
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->roleEdit($admin, $id, ['is_delete' => Delete::YES]);
+            $result = (new RoleService)->roleEdit($admin, $id, ['is_delete' => Delete::YES]);
             if (!$result) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -215,7 +215,7 @@ class RoleController extends Controller
 
             // 编辑角色状态
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->roleEdit($admin, $id, $input);
+            $result = (new RoleService)->roleEdit($admin, $id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -260,7 +260,7 @@ class RoleController extends Controller
             $input = $validator->validated();
             // 编辑角色权限
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->roleEdit($admin, $id, $input);
+            $result = (new RoleService)->roleEdit($admin, $id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -288,7 +288,7 @@ class RoleController extends Controller
     {
         try {
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->permission($admin, $id, $isPid == 'y');
+            $result = (new RoleService)->rolePermission($admin, $id, $isPid == 'y');
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);

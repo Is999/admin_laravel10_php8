@@ -14,290 +14,6 @@ class RedisService extends Service
 {
     const TABLE_CONFIG_FILE = 'tablecache'; // config目录下的配置文件
 
-
-    /**
-     * 存储token
-     * @param int $uid
-     * @param string $value
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setToken(int $uid, string $value): bool
-    {
-        return self::set(RedisKeys::ADMIN_TOKEN . $uid, $value, 3600);
-    }
-
-    /**
-     * 获取token
-     * @param int $uid
-     * @return mixed false|mixed|string
-     * @throws RedisException
-     */
-    public static function getToken(int $uid): mixed
-    {
-        return self::redis()->get(RedisKeys::ADMIN_TOKEN . $uid);
-    }
-
-    /**
-     * 更新Token 过期时间
-     * @param int $uid
-     * @param int $ttl
-     * @return bool
-     * @throws RedisException
-     */
-    public static function renewToken(int $uid, int $ttl = 3600): bool
-    {
-        return self::redis()->expire(RedisKeys::ADMIN_TOKEN . $uid, $ttl);
-    }
-
-    /**
-     * 删除token
-     * @param int $uid
-     * @return int
-     * @throws RedisException
-     */
-    public static function delToken(int $uid): int
-    {
-        return self::redis()->del(RedisKeys::ADMIN_TOKEN . $uid);
-    }
-
-    /**
-     * 存储用户信息
-     * @param int $uid
-     * @param array $userInfo
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setUserInfo(int $uid, array $userInfo): bool
-    {
-        $res = self::redis()->hMSet(RedisKeys::ADMIN_USERINFO . $uid, $userInfo);
-        if ($res) {
-            self::redis()->expire(RedisKeys::ADMIN_USERINFO . $uid, 3600 * 8);
-        }
-        return $res;
-    }
-
-    /**
-     * 获取用户信息
-     * @param int $uid
-     * @param array $fields
-     * @return array
-     * @throws RedisException
-     */
-    public static function getUserInfo(int $uid, array $fields = []): array
-    {
-        if (empty($fields)) {
-            return self::redis()->hGetAll(RedisKeys::ADMIN_USERINFO . $uid);
-        }
-        return self::redis()->hMGet(RedisKeys::ADMIN_USERINFO . $uid, $fields);
-    }
-
-    /**
-     * 是否存在用户信息
-     * @param int $uid
-     * @return bool|int
-     * @throws RedisException
-     */
-    public static function checkUserInfoExists(int $uid): bool|int
-    {
-        return self::redis()->exists(RedisKeys::ADMIN_USERINFO . $uid);
-    }
-
-
-    /**
-     * 删除用户信息
-     * @param int $uid
-     * @return int
-     * @throws RedisException
-     */
-    public static function delUserInfo(int $uid): int
-    {
-        return self::redis()->del(RedisKeys::ADMIN_USERINFO . $uid);
-    }
-
-    /**
-     * 存储用户角色信息
-     * @param int $uid
-     * @param array $roles
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setUserRoles(int $uid, array $roles): bool
-    {
-        $key = RedisKeys::ADMIN_USER_ROLES . $uid;
-        $res = self::redis()->sAddArray($key, $roles);
-        if ($res) {
-            self::redis()->expire($key, 3600 * 24);
-        }
-        return $res;
-    }
-
-    /**
-     * 获取用户角色信息
-     * @param int $uid
-     * @return array
-     * @throws RedisException
-     */
-    public static function getUserRoles(int $uid): array
-    {
-        return self::redis()->sMembers(RedisKeys::ADMIN_USER_ROLES . $uid);
-    }
-
-    /**
-     * 是否存在用户角色信息
-     * @param int $uid
-     * @return bool|int
-     * @throws RedisException
-     */
-    public static function checkUserRolesExists(int $uid): bool|int
-    {
-        return self::redis()->exists(RedisKeys::ADMIN_USER_ROLES . $uid);
-    }
-
-    /**
-     * 删除用户角色信息
-     * @param int $uid
-     * @return int
-     * @throws RedisException
-     */
-    public static function delUserRoles(int $uid): int
-    {
-        return self::redis()->del(RedisKeys::ADMIN_USER_ROLES . $uid);
-    }
-
-    /**
-     * 存储角色权限信息
-     * @param int $id
-     * @param array $permissions
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setRolePermissions(int $id, array $permissions): bool
-    {
-        return self::loadSet(RedisKeys::ROLES_PERMISSIONS . $id, $permissions);
-    }
-
-    /**
-     * 获取角色权限信息
-     * @param int $id
-     * @return array
-     * @throws RedisException
-     */
-    public static function getRolePermissions(int $id): array
-    {
-        return self::sMembersTable(RedisKeys::ROLES_PERMISSIONS . $id, true);
-    }
-
-    /**
-     * 删除角色信息
-     * @param int $id
-     * @return int
-     * @throws RedisException
-     */
-    public static function delRolePermissions(int $id): int
-    {
-        return self::redis()->del(RedisKeys::ROLES_PERMISSIONS . $id);
-    }
-
-    /**
-     * 存储角色status信息
-     * @param array $roles
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setRolesStatus(array $roles): bool
-    {
-        return self::loadHash(RedisKeys::ROLES_STATUS, $roles);
-    }
-
-    /**
-     * 获取权限module信息
-     * @param string $roleId
-     * @return mixed
-     * @throws RedisException
-     */
-    public static function getRoleStatus(string $roleId): mixed
-    {
-        return self::hGetTable(RedisKeys::ROLES_STATUS, $roleId);
-    }
-
-    /**
-     * 删除权限module信息
-     * @param array $roleIds
-     * @return int
-     * @throws RedisException
-     */
-    public static function delRolesStatus(array $roleIds): int
-    {
-        return self::redis()->hDel(RedisKeys::ROLES_STATUS, ...$roleIds);
-    }
-
-    /**
-     * 存储权限module信息
-     * @param array $permissions
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setPermissionsModule(array $permissions): bool
-    {
-        return self::loadHash(RedisKeys::PERMISSIONS_MODULE, $permissions);
-    }
-
-    /**
-     * 获取权限module信息
-     * @param array $permissionIds
-     * @return array
-     * @throws RedisException
-     */
-    public static function getPermissionsModule(array $permissionIds): array
-    {
-        return self::hMGetTable(RedisKeys::PERMISSIONS_MODULE, $permissionIds, true);
-    }
-
-    /**
-     * 删除权限module信息
-     * @param int $permissionIds
-     * @return int
-     * @throws RedisException
-     */
-    public static function delPermissionsModule(int $permissionIds): int
-    {
-        return self::redis()->hDel(RedisKeys::PERMISSIONS_MODULE, $permissionIds);
-    }
-
-    /**
-     * 存储权限uuid信息
-     * @param array $permissions
-     * @return bool
-     * @throws RedisException
-     */
-    public static function setPermissionsUuid(array $permissions): bool
-    {
-        return self::loadHash(RedisKeys::PERMISSIONS_UUID, $permissions);
-    }
-
-    /**
-     * 获取权限uuid信息
-     * @param array $permissionIds
-     * @return array
-     * @throws RedisException
-     */
-    public static function getPermissionsUuid(array $permissionIds): array
-    {
-        return self::hMGetTable(RedisKeys::PERMISSIONS_UUID, $permissionIds, true);
-    }
-
-    /**
-     * 删除权限uuid信息
-     * @param int $permissionIds
-     * @return int
-     * @throws RedisException
-     */
-    public static function delPermissionsUuid(int $permissionIds): int
-    {
-        return self::redis()->hDel(RedisKeys::PERMISSIONS_UUID, $permissionIds);
-    }
-
     /**
      * 缓存Hash类型数据
      * @param string $key
@@ -306,7 +22,7 @@ class RedisService extends Service
      * @return bool
      * @throws RedisException
      */
-    private static function loadHash(string $key, array $data, int $expire = 0): bool
+    public static function loadHash(string $key, array $data, int $expire = 0): bool
     {
         // 将对应的键存入队列中
         $res = self::redis()->hMSet($key, $data);
@@ -327,7 +43,7 @@ class RedisService extends Service
      * @return bool|int
      * @throws RedisException
      */
-    private static function loadList(string $key, array $data, int $expire = 0): bool|int
+    public static function loadList(string $key, array $data, int $expire = 0): bool|int
     {
         // 将对应的键存入队列中
         $res = self::redis()->rPush($key, ...$data);
@@ -348,7 +64,7 @@ class RedisService extends Service
      * @return bool|int
      * @throws RedisException
      */
-    private static function loadSet(string $key, array $data, int $expire = 0): bool|int
+    public static function loadSet(string $key, array $data, int $expire = 0): bool|int
     {
         // 将对应的键存入队列中 分隔符
         $res = self::redis()->sAddArray($key, $data);
@@ -369,7 +85,7 @@ class RedisService extends Service
      * @return bool|int
      * @throws RedisException
      */
-    private static function loadSortedSet(string $key, array $data, int $expire = 0): bool|int
+    public static function loadSortedSet(string $key, array $data, int $expire = 0): bool|int
     {
         // 将对应的键存入队列中 分隔符
         $res = self::redis()->zAdd($key, ...$data);
@@ -390,7 +106,7 @@ class RedisService extends Service
      * @return bool
      * @throws RedisException
      */
-    private static function loadString(string $key, mixed $value, int $expire = 0): bool
+    public static function loadString(string $key, mixed $value, int $expire = 0): bool
     {
         // 设置随机过期时间或永不过期
         $expire = $expire ? $expire + rand(0, 3600 * 24) : 0;
@@ -614,7 +330,7 @@ class RedisService extends Service
      * @param array $config
      * @return bool
      */
-    private static function checkTableConfig(string $key, array $config): bool
+    public static function checkTableConfig(string $key, array $config): bool
     {
         // 判断key type 等必要参数
         if (!isset($config['key']) || !isset($config['type'])) {
@@ -960,5 +676,16 @@ class RedisService extends Service
             return self::redis()->setex($key, $timeout, $value);
         }
         return self::redis()->set($key, $value);
+    }
+
+    /**
+     * 获取缓存
+     * @param string $key
+     * @return mixed
+     * @throws RedisException
+     */
+    public static function get(string $key): mixed
+    {
+        return self::redis()->get($key);
     }
 }

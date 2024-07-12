@@ -3,9 +3,9 @@
 use App\Enum\RedisKeys;
 use App\Enum\RedisType;
 use App\Models\Config;
-use App\Models\Menus;
-use App\Models\Permissions;
-use App\Models\Roles;
+use App\Models\Menu;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\SecretKey;
 
 return [
@@ -17,57 +17,57 @@ return [
     // expires 过期时间 0 永久缓存, 否则过期时间=设置时间+随机时间(0-3600*24)
 
     // 角色状态
-    'roles_status' => [
+    'role_status' => [
         'title' => '角色状态',
-        'key' => RedisKeys::ROLES_STATUS,
-        'class' => Roles::class,
-        'method' => 'rolesStatusHash',
+        'key' => RedisKeys::ROLE_STATUS,
+        'class' => Role::class,
+        'method' => 'roleStatusHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],
     // 角色权限
-    'roles_permissions' => [
+    'role_permission' => [
         'title' => '角色权限',
         'combine' => ['id'],
-        'key' => RedisKeys::ROLES_PERMISSIONS,
-        'class' => Roles::class,
-        'method' => 'rolesPermissionsSet',
+        'key' => RedisKeys::ROLE_PERMISSION,
+        'class' => Role::class,
+        'method' => 'rolePermissionSet',
         'type' => RedisType::Set,
         'expires' => 0
     ],
     // 权限module
-    'permissions_module' => [
+    'permission_module' => [
         'title' => '权限module',
-        'key' => RedisKeys::PERMISSIONS_MODULE,
-        'class' => Permissions::class,
-        'method' => 'permissionsModuleHash',
+        'key' => RedisKeys::PERMISSION_MODULE,
+        'class' => Permission::class,
+        'method' => 'permissionModuleHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],
     // 权限uuid
-    'permissions_uuid' => [
+    'permission_uuid' => [
         'title' => '权限uuid',
-        'key' => RedisKeys::PERMISSIONS_UUID,
-        'class' => Permissions::class,
-        'method' => 'permissionsUuidHash',
+        'key' => RedisKeys::PERMISSION_UUID,
+        'class' => Permission::class,
+        'method' => 'permissionUuidHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],
     // 前端菜单树数据
-    'menus_tree' => [
+    'menu_tree' => [
         'title' => '菜单树',
-        'key' => RedisKeys::MENUS_TREE,
-        'class' => Menus::class,
-        'method' => 'menusTreeString',
+        'key' => RedisKeys::MENU_TREE,
+        'class' => Menu::class,
+        'method' => 'menuTreeString',
         'type' => RedisType::String,
         'expires' => 0
     ],
     // 权限下拉框树数据
-    'permissions_tree' => [
+    'permission_tree' => [
         'title' => '权限树',
-        'key' => RedisKeys::PERMISSIONS_TREE,
-        'class' => Permissions::class,
-        'method' => 'permissionsTreeString',
+        'key' => RedisKeys::PERMISSION_TREE,
+        'class' => Permission::class,
+        'method' => 'permissionTreeString',
         'type' => RedisType::String,
         'expires' => 0
     ],
@@ -75,7 +75,7 @@ return [
     'role_tree' => [
         'title' => '角色树',
         'key' => RedisKeys::ROLE_TREE,
-        'class' => Roles::class,
+        'class' => Role::class,
         'method' => 'roleTreeString',
         'type' => RedisType::String,
         'expires' => 0
@@ -86,7 +86,7 @@ return [
         'combine' => ['uuid'],
         'key' => RedisKeys::CONFIG_UUID,
         'class' => Config::class,
-        'method' => 'configsUuidHash',
+        'method' => 'configUuidHash',
         'type' => RedisType::Hash,
         'expires' => 0
     ],

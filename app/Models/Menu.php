@@ -15,7 +15,7 @@ namespace App\Models;
 
 use App\Enum\MenuShortcut;
 use App\Enum\MenuStatus;
-use App\Services\MenusService;
+use App\Services\MenuService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string           $created_at timestamp                               default CURRENT_TIMESTAMP not null comment '创建时间，文件【创建/上传】时间',
  * @property string           $updated_at timestamp                               default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '修改时间，文件修改时间'
 */
- class Menus extends Model
+class Menu extends Model
 {
     // 表名
     protected $table = 'menus';
@@ -85,7 +85,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
      * @param array $index
      * @return array
      */
-    public function menusTreeString(array $key = [], array $index = []): array
+    public function menuTreeString(array $key = [], array $index = []): array
     {
         // $key = array_merge($key, $index);
 
@@ -99,7 +99,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
                 'id', 'permissions_uuid', 'title', 'title_lang', 'status', 'pid', 'pids', 'component', 'path', 'type', 'icon', 'sort', 'is_shortcut', 'describe', 'created_at', 'updated_at'
             ])->toArray();
 
-        (new MenusService)->menusToTree($menus);
+        (new MenuService)->menusToTree($menus);
         return $menus;
     }
 }

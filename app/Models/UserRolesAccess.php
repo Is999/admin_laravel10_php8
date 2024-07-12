@@ -39,6 +39,6 @@ class UserRolesAccess extends Model
      */
     public function role(): HasOne
     {
-        return $this->hasOne(Roles::class, 'id', 'role_id');
+        return $this->hasOne(Role::class, 'id', 'role_id');
     }
 }

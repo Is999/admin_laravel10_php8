@@ -9,7 +9,6 @@ use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\User;
-use App\Services\RedisService;
 use App\Services\ResponseService as Response;
 use App\Services\UserService;
 use Earnp\GoogleAuthenticator\GoogleAuthenticator;
@@ -52,7 +51,7 @@ class GoogleSecretController extends Controller
             if (!$createSecret) {
                 // $createSecret = GoogleAuthenticator::CreateSecret();
                 $createSecret = self::CreateSecret('Admin-' . $user->real_name);
-                RedisService::set(RedisKeys::ADMIN_MFA_SECRET . $sign->id, json_encode($createSecret), 300);
+                $this->redis()->setex(RedisKeys::ADMIN_MFA_SECRET . $sign->id, 300, json_encode($createSecret));
             }
             $ttl = $this->redis()->ttl(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
 

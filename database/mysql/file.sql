@@ -11,17 +11,18 @@
  Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 30/06/2024 18:23:38
+ Date: 13/07/2024 00:38:26
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for files
+-- Table structure for file
 -- ----------------------------
-DROP TABLE IF EXISTS `files`;
-CREATE TABLE `files` (
+DROP TABLE IF EXISTS `file`;
+CREATE TABLE `file`
+(
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
   `name` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '' COMMENT '文件名',
   `type` varchar(60) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '' COMMENT '文件类型',
@@ -36,7 +37,7 @@ CREATE TABLE `files` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='文件信息';
 
 -- ----------------------------
--- Records of files
+-- Records of file
 -- ----------------------------
 BEGIN;
 COMMIT;

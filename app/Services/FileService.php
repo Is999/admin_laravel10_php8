@@ -5,11 +5,11 @@ namespace App\Services;
 use App\Enum\Code;
 use App\Enum\FileStatus;
 use App\Exceptions\CustomizeException;
-use App\Models\Files;
+use App\Models\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-class FilesService extends Service
+class FileService extends Service
 {
     public array $allowedTypes = [
         'image/jpeg' => [
@@ -85,7 +85,7 @@ class FilesService extends Service
         $newPath = str_starts_with($newPath, '/') ? $newPath : '/' . $newPath;
 
         // 存储文件地址到数据库
-        $model = new Files();
+        $model = new File();
         $model->name = $newPath;
         $model->type = $type;
         $model->size = $size;
@@ -113,7 +113,7 @@ class FilesService extends Service
             throw new CustomizeException(Code::F5000, ['flag' => $name]);
         }
 
-        $model = Files::where('name', $name)->first();
+        $model = File::where('name', $name)->first();
         if (!$model) {
             throw new CustomizeException(Code::E100069, ['file' => $name]);
         }

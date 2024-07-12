@@ -13,7 +13,6 @@ use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\User;
-use App\Services\AuthorizeService;
 use App\Services\ConfigService;
 use App\Services\IpService;
 use App\Services\ResponseService as Response;
@@ -216,7 +215,7 @@ class UserController extends Controller
     {
         try {
             // 获取该管理员权限uuid
-            $list = (new AuthorizeService)->getUserPermissionUuid($request->offsetGet('user.id'));
+            $list = (new UserService)->getUserPermissionUuid($request->offsetGet('user.id'));
             return Response::success($list);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -236,7 +235,7 @@ class UserController extends Controller
         try {
             // 获取用户角色信息列表
             $admin = $request->offsetGet('user.id');
-            $list = (new AuthorizeService)->userRoleList($admin, $id);
+            $list = (new UserService)->userRoleList($admin, $id);
             return Response::success($list);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -251,7 +250,7 @@ class UserController extends Controller
      * @param $id
      * @return JsonResponse
      */
-    public function editRoles(Request $request, $id): JsonResponse
+    public function editRole(Request $request, $id): JsonResponse
     {
         try {
             // 验证参数
@@ -265,7 +264,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
             $admin = $request->offsetGet('user.id');
-            $res = (new AuthorizeService)->userEditRoles($admin, $id, $input);
+            $res = (new UserService)->userEditRole($admin, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -304,7 +303,7 @@ class UserController extends Controller
             $input = $validator->validated();
 
             $admin = $request->offsetGet('user.id');
-            $res = (new AuthorizeService)->userAddRole($admin, $id, $input);
+            $res = (new UserService)->userAddRole($admin, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2000);
             }
@@ -341,7 +340,7 @@ class UserController extends Controller
 
             $input = $validator->validated();
             $admin = $request->offsetGet('user.id');
-            $res = (new AuthorizeService)->userDelRole($admin, $id, $input);
+            $res = (new UserService)->userDelRole($admin, $id, $input);
             if (!$res) {
                 throw new CustomizeException(Code::F2002);
             }
@@ -367,7 +366,7 @@ class UserController extends Controller
     {
         try {
             $admin = $request->offsetGet('user.id');
-            $result = (new AuthorizeService)->userRoleTreeList($admin);
+            $result = (new UserService)->userRoleTreeList($admin);
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -382,10 +381,10 @@ class UserController extends Controller
      * @param $id
      * @return JsonResponse
      */
-    public function roles(Request $request, $id): JsonResponse
+    public function role(Request $request, $id): JsonResponse
     {
         try {
-            $result = (new AuthorizeService)->userRoles($id);
+            $result = (new UserService)->userRole($id);
             return Response::success($result);
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
@@ -797,7 +796,7 @@ class UserController extends Controller
             }
 
             $input = $validator->validated();
-
+            $userService = new UserService;
             // 校验是否可以编辑状态
             if (Arr::get($input, 'status') !== null) {
                 $adminId = $request->offsetGet('user.id');
@@ -807,12 +806,12 @@ class UserController extends Controller
                 }
 
                 if ($id != $adminId) {
-                    (new AuthorizeService)->checkEditStatus($adminId, $id);
+                    $userService->checkEditStatus($adminId, $id);
                 }
             }
 
             // 编辑账号
-            $result = (new UserService)->editAccount($id, $input);
+            $result = $userService->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
@@ -922,11 +921,12 @@ class UserController extends Controller
                 throw new CustomizeException(Code::E100059, ['param' => '状态']);
             }
 
+            $userService = new UserService;
             // 非下级角色状态不能修改
-            (new AuthorizeService)->checkEditStatus($adminId, $id);
+            $userService->checkEditStatus($adminId, $id);
 
             $input = $validator->validated();
-            $result = (new UserService)->editAccount($id, $input);
+            $result = $userService->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
             }
@@ -967,13 +967,13 @@ class UserController extends Controller
             }
 
             $adminId = $request->offsetGet('user.id');
-
+            $userService = new UserService;
             if ($id != $adminId) {
                 // 非下级角色状态不能修改
-                (new AuthorizeService)->checkEditStatus($adminId, $id);
+                $userService->checkEditStatus($adminId, $id);
             }
             $input = $validator->validated();
-            $result = (new UserService)->editAccount($id, $input);
+            $result = $userService->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('mfa_status') ? Code::F2004 : Code::F2005);
             }

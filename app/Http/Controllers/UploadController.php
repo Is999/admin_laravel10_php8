@@ -7,8 +7,8 @@ use App\Enum\LogChannel;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
+use App\Services\FileService;
 use App\Services\ResponseService as Response;
-use App\Services\FilesService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -45,7 +45,7 @@ class UploadController extends Controller
                     ],
                 ]; // 允许的图片类型
 
-                $uploadService = new FilesService($allowedTypes);
+                $uploadService = new FileService($allowedTypes);
                 $path = $uploadService->upload($file);
 
                 // 记录操作日志
@@ -96,7 +96,7 @@ class UploadController extends Controller
                         'gif',
                     ],
                 ]; // 允许的图片类型
-                $uploadService = new FilesService($allowedTypes);
+                $uploadService = new FileService($allowedTypes);
                 $originals = [];
                 $paths = [];
                 foreach ($files as $file) {
@@ -134,7 +134,7 @@ class UploadController extends Controller
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
 
-                $uploadService = new FilesService;
+                $uploadService = new FileService;
                 $path = $uploadService->upload($file);
 
                 // 记录操作日志
@@ -166,7 +166,7 @@ class UploadController extends Controller
         try {
             if ($request->hasFile('files')) {
                 $files = $request->file('files');
-                $uploadService = new FilesService;
+                $uploadService = new FileService;
                 $originals = [];
                 $paths = [];
                 foreach ($files as $file) {
