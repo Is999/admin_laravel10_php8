@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Permission extends Model
 {
     // 表名
-    protected $table = 'permissions';
+    protected $table = 'permission';
 
     /**
      * 上级权限

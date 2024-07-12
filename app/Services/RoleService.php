@@ -12,7 +12,7 @@ use App\Exceptions\CustomizeException;
 use App\Models\Menu;
 use App\Models\Permission;
 use App\Models\Role;
-use App\Models\UserRolesAccess;
+use App\Models\UserRoleAccess;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use RedisException;
@@ -557,7 +557,7 @@ class RoleService extends Service
     private function delUserRolesAccess(int $roleId): void
     {
         // 删除用户和角色关系
-        $uids = UserRolesAccess::where('role_id', $roleId)->pluck('user_id')->toArray();
+        $uids = UserRoleAccess::where('role_id', $roleId)->pluck('user_id')->toArray();
         if ($uids) {
             $userService = new UserService;
             // 删除用户角色缓存
@@ -566,7 +566,7 @@ class RoleService extends Service
             }
 
             // 删除表中数据
-            $res = UserRolesAccess::where('role_id', $roleId)->delete();
+            $res = UserRoleAccess::where('role_id', $roleId)->delete();
             if (!$res) {
                 throw new CustomizeException(Code::E100027);
             }

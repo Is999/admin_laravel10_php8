@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Menu extends Model
 {
     // 表名
-    protected $table = 'menus';
+    protected $table = 'menu';
 
     // 可批量分配的属性
     protected $fillable = ['permissions_uuid', 'title', 'title_lang', 'status', 'pid', 'pids', 'component', 'path', 'type', 'icon', 'sort', 'is_shortcut', 'describe'];

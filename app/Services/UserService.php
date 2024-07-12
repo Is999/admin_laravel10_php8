@@ -16,7 +16,7 @@ use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\UserRolesAccess;
+use App\Models\UserRoleAccess;
 use Earnp\GoogleAuthenticator\GoogleAuthenticator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -776,15 +776,15 @@ class UserService extends Service
         $pageSize = Arr::get($input, 'pageSize', 10); // 每页条数
 
         // 查询
-        $query = User::when($email, function (Builder $query) use ($email) { // email
+        $query = User::from((new User)->getTable(), 'u')->when($email, function (Builder $query) use ($email) { // email
             return $query->where('email', $email);
         })->when($name, function (Builder $query) use ($name) { // name
             return $query->where('name', $name);
         })->when($status !== null, function (Builder $query) use ($status) { // status
             return $query->where('status', $status);
         })->when($role !== null, function (Builder $query) use ($role) { // role
-            return $query->join((new UserRolesAccess)->tableName('role'), 'users.id', '=', 'role.user_id')
-                ->where('role.role_id', $role);
+            return $query->join((new UserRoleAccess)->tableName('r'), 'u.id', '=', 'r.user_id')
+                ->where('r.role_id', $role);
         });
 
         // 总数
@@ -792,11 +792,7 @@ class UserService extends Service
         $items = [];
         if ($total) {
             // 排序,分页
-            $items = $query->select([
-                'users.id', 'users.name', 'users.real_name', 'users.email', 'users.phone', 'users.mfa_secure_key', 'users.mfa_status', 'users.status'
-                , 'users.avatar', 'users.remark', 'users.last_login_time', 'users.last_login_ip'
-                , 'users.last_login_ipaddr', 'users.created_at', 'users.updated_at'
-            ])->orderBy($orderByField, $orderByType)
+            $items = $query->select('u.*')->orderBy($orderByField, $orderByType)
                 ->offset($pageSize * ($page - 1))->limit($pageSize)->get();
         }
 
@@ -883,7 +879,7 @@ class UserService extends Service
     public function userRoleList(int $adminId, int $uid): array
     {
         $list = [];
-        DB::table((new UserRolesAccess)->getTable(), 'a')
+        DB::table((new UserRoleAccess)->getTable(), 'a')
             ->join((new Role)->tableName('r'), 'a.role_id', 'r.id')
             ->where('a.user_id', $uid)
             ->select(['a.*', 'r.title'])
@@ -915,7 +911,7 @@ class UserService extends Service
             throw new CustomizeException(Code::E100044);
         }
 
-        $idArr2 = UserRolesAccess::where([['user_id', $uid]])->pluck('role_id')->toArray();
+        $idArr2 = UserRoleAccess::where([['user_id', $uid]])->pluck('role_id')->toArray();
 
         // 计算要删除的数据
         $delArr = array_diff($idArr2, $idArr);
@@ -947,7 +943,7 @@ class UserService extends Service
         try {
             // 删除记录
             if ($delArr) {
-                $res = DB::table((new UserRolesAccess)->tableName())->where('user_id', $uid)->whereIn('role_id', $delArr)->delete();
+                $res = DB::table((new UserRoleAccess)->tableName())->where('user_id', $uid)->whereIn('role_id', $delArr)->delete();
                 if (!$res) {
                     throw new CustomizeException(Code::E100051);
                 }
@@ -959,7 +955,7 @@ class UserService extends Service
                 foreach ($insertArr as $id) {
                     $insertData[] = ['user_id' => $uid, 'role_id' => $id, 'created_at' => date('Y-m-d H:i:s')];
                 }
-                $res = DB::table((new UserRolesAccess)->tableName())->insert($insertData);
+                $res = DB::table((new UserRoleAccess)->tableName())->insert($insertData);
                 if (!$res) {
                     throw new CustomizeException(Code::E100052);
                 }
@@ -995,7 +991,7 @@ class UserService extends Service
             throw new CustomizeException(Code::E100044);
         }
 
-        if (UserRolesAccess::where([['role_id', $roleId], ['user_id', $uid]])->exists()) {
+        if (UserRoleAccess::where([['role_id', $roleId], ['user_id', $uid]])->exists()) {
             return true;
         }
 
@@ -1003,7 +999,7 @@ class UserService extends Service
             throw new CustomizeException(Code::E100045, compact('title'));
         }
 
-        $model = new UserRolesAccess;
+        $model = new UserRoleAccess;
         $model->user_id = $uid;
         $model->role_id = $roleId;
         $model->created_at = date('Y-m-d H:i:s'); // 创建时间
@@ -1029,7 +1025,7 @@ class UserService extends Service
         $roleId = Arr::get($input, 'user_roles_id', 0);
 
         // 查找用户与角色关联记录
-        $model = UserRolesAccess::find($roleId);
+        $model = UserRoleAccess::find($roleId);
         if (!$model) {
             return true;
         }
@@ -1056,7 +1052,7 @@ class UserService extends Service
     public function userRole(int $id): array
     {
         // 获取账号角色
-        return UserRolesAccess::where('user_id', $id)->pluck('role_id')->toArray();
+        return UserRoleAccess::where('user_id', $id)->pluck('role_id')->toArray();
     }
 
     /**
@@ -1119,7 +1115,7 @@ class UserService extends Service
         // 刷新缓存
         if (empty($roles) && ($renew || !$this->checkUserRoleCacheExists($uid))) {
             // 查询数据表, 获取 role_id 集合
-            $roles = DB::table((new UserRolesAccess)->tableName('u'))->join((new Role())->tableName('r'), 'u.role_id', '=', 'r.id')
+            $roles = DB::table((new UserRoleAccess)->tableName('u'))->join((new Role())->tableName('r'), 'u.role_id', '=', 'r.id')
                 ->where('u.user_id', $uid)
                 ->where('r.status', RoleStatus::ENABLED)
                 ->where('r.is_delete', Delete::NO)

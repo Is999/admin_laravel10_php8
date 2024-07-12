@@ -10,14 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int    $role_id    int unsigned                        not null comment '角色id',
  * @property string $created_at timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
  */
-class UserRolesAccess extends Model
+class UserRoleAccess extends Model
 {
     /**
      * 与模型关联的数据表.
      *
      * @var string
      */
-    protected $table = 'user_roles_access';
+    protected $table = 'user_role_access';
 
     /**
      * 指示模型是否主动维护时间戳。

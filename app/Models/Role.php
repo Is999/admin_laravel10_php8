@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Role extends Model
 {
     // 表名
-    protected $table = 'roles';
+    protected $table = 'role';
 
 
     private static int $SUPER_ROLE = 1; // 超级管理员角色id

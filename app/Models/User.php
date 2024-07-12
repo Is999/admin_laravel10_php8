@@ -36,7 +36,7 @@ class User extends Model
      *
      * @var string
      */
-    protected $table = 'users';
+    protected $table = 'user';
 
     /**
      * The attributes that are mass assignable.
@@ -75,7 +75,7 @@ class User extends Model
      */
     public function roles(): HasMany
     {
-        return $this->hasMany(UserRolesAccess::class, 'user_id', 'id');
+        return $this->hasMany(UserRoleAccess::class, 'user_id', 'id');
     }
 
 }
