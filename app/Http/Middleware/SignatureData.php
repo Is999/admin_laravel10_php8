@@ -20,6 +20,7 @@ use App\Services\SecretKeyService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use RedisException;
 use Throwable;
 
 class SignatureData
@@ -121,7 +122,7 @@ class SignatureData
      * @param string $signatureType M: MD5签名、验签；A: AES签名、验签；R: RSA签名、验签
      * @param bool $isVerify true 验证签名， false 签名
      * @return Signature
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function getSignature(string $appId, string $signatureType, bool $isVerify = false): Signature
     {

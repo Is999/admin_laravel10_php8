@@ -26,6 +26,7 @@ use App\Services\SecretKeyService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use RedisException;
 use Throwable;
 
 class CryptoData
@@ -201,7 +202,7 @@ class CryptoData
      * @param string $cryptoType A: AES加密、解密；R: RSA加密、解密
      * @param bool $isEncrypt true 加密， false 解密
      * @return Crypto
-     * @throws CustomizeException
+     * @throws CustomizeException|RedisException
      */
     public function getCrypto(string $appId, string $cryptoType, bool $isEncrypt = false): Crypto
     {

@@ -184,7 +184,6 @@ class GoogleSecretController extends Controller
         $google = new GoogleSecretAuthenticator();
         $secret = $google->createSecret();//创建一个Secret
         $qrCodeUrl = 'otpauth://totp/' . urlencode($name) . '?secret=' . $secret;//二维码中填充的内容
-        $googlesecret = array('secret' => $secret, 'codeurl' => $qrCodeUrl);
-        return $googlesecret;
+        return array('secret' => $secret, 'codeurl' => $qrCodeUrl);
     }
 }

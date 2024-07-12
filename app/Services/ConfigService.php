@@ -54,7 +54,7 @@ class ConfigService extends Service
      * config.add
      * @param array $input
      * @return bool
-     * @throws CustomizeException|RedisException
+     * @throws CustomizeException
      */
     public function add(array $input): bool
     {
