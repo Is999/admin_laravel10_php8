@@ -42,7 +42,13 @@ CREATE TABLE `secret_key` (
 -- Records of secret_key
 -- ----------------------------
 BEGIN;
-INSERT INTO `secret_key` (`id`, `uuid`, `title`, `aes_key`, `aes_iv`, `rsa_public_key_user`, `rsa_public_key_server`, `rsa_private_key_server`, `status`, `remark`, `created_at`, `updated_at`) VALUES (1, 'YWRtaW4wMDAx', '管理后台前端应用', 'eyJpdiI6Ikh2T3JON1ozSUhYU1lJcnVkMHlQRHc9PSIsInZhbHVlIjoiQm84c0p3cTIrdjNiR1dsOFdKbE8wUnErYU02L1Y4UWt4S0FheW5yVmFkdlV1OXBlZkwrc0J4amdKWEhIYkJsWiIsIm1hYyI6IjMyMTFjYmU2NTllZWNjMDdjOWVjNDA2ZmU1YTFiNTliYjFlOWMxNjJhYzIzYTBhMDRkNGYxODgyYWZjNGZkMDciLCJ0YWciOiIifQ==', 'eyJpdiI6IjdoS1RXd05tRWg3cTEzdXowMEFpdnc9PSIsInZhbHVlIjoiQkhtSDB4R0o4ZGhvY3krZThHRVZTcWN1UVpiZjRBbVRXekpaYjZSWGpGVT0iLCJtYWMiOiI2NjdhNjJiOTk1NjdiYTU4NGU3MGRjODMyYmViNmFjNDM2YTlkNjM4MWE2MmVmNzNiMmIyYTIyMGE0MjM4ZTE5IiwidGFnIjoiIn0=', '/app/public/admin/pem/public_user_YWRtaW4wMDAx.pem', '/app/public/admin/pem/public.pem', '/app/public/admin/pem/private.pem', 1, '管理后台前端应用', '2024-04-22 18:54:52', '2024-06-30 18:07:49');
+INSERT INTO `secret_key` (`id`, `uuid`, `title`, `aes_key`, `aes_iv`, `rsa_public_key_user`, `rsa_public_key_server`,
+                          `rsa_private_key_server`, `status`, `remark`, `created_at`, `updated_at`)
+VALUES (1, 'YWRtaW4wMDAx', '管理后台前端应用',
+        'eyJpdiI6Ikh2T3JON1ozSUhYU1lJcnVkMHlQRHc9PSIsInZhbHVlIjoiQm84c0p3cTIrdjNiR1dsOFdKbE8wUnErYU02L1Y4UWt4S0FheW5yVmFkdlV1OXBlZkwrc0J4amdKWEhIYkJsWiIsIm1hYyI6IjMyMTFjYmU2NTllZWNjMDdjOWVjNDA2ZmU1YTFiNTliYjFlOWMxNjJhYzIzYTBhMDRkNGYxODgyYWZjNGZkMDciLCJ0YWciOiIifQ==',
+        'eyJpdiI6IjdoS1RXd05tRWg3cTEzdXowMEFpdnc9PSIsInZhbHVlIjoiQkhtSDB4R0o4ZGhvY3krZThHRVZTcWN1UVpiZjRBbVRXekpaYjZSWGpGVT0iLCJtYWMiOiI2NjdhNjJiOTk1NjdiYTU4NGU3MGRjODMyYmViNmFjNDM2YTlkNjM4MWE2MmVmNzNiMmIyYTIyMGE0MjM4ZTE5IiwidGFnIjoiIn0=',
+        '/app/pem/public_user_YWRtaW4wMDAx.pem', '/app/pem/public.pem', '/app/pem/private.pem', 1, '管理后台前端应用',
+        '2024-04-22 18:54:52', '2024-06-30 18:07:49');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

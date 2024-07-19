@@ -17,8 +17,7 @@
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/setting.png" alt="个人设置">
 </p>
 
-## 搭建Docker环境使用 [Laravel Sail](https://learnku.com/docs/laravel/8.5/sail/10428) 或 *
-*[dnmp](https://github.com/Is999/dnmp)**
+## 搭建Docker环境使用 [Laravel Sail](https://learnku.com/docs/laravel/8.5/sail/10428) 或 [dnmp](https://github.com/Is999/dnmp)
 
 1. 进入项目根目录执行下面命令或使用 dnmp 搭建本地环境请参考2
 
@@ -46,6 +45,24 @@
 4. 数据库使用Mysql,
    表数据导入到数据库：https://github.com/Is999/laravel-admin/blob/master/database/mysql/admin_db_all_table.sql
 
+
+4. 加密、解密、签名、验签（可参考登录接口）
+
+
+1. 签名、验签 /app/Http/Middleware/SignatureData.php
+2. 加密、解密 /app/Http/Middleware/CryptoData.php
+
+   ```sh
+   # 管理后台前端应用(secret_key表第一条记录) YWRtaW4wMDAx 测试PEM秘钥文件，可自己重新生成秘钥
+   
+   # 创建目录
+   mkdir ./storage/app/pem 
+   
+   # 复制测试文件
+   cp ./tests/Temp/pem/private.pem ./storage/app/pem/
+   cp ./tests/Temp/pem/public.pem ./storage/app/pem/
+   cp ./tests/Temp/pem/public_user_YWRtaW4wMDAx.pem ./storage/app/pem/
+   ```
 
 5. 根据自身的相关环境修改Laravel配置 .env, 到这里就可以正常运行项目了！
 
