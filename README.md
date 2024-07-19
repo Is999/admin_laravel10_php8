@@ -17,17 +17,51 @@
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/setting.png" alt="个人设置">
 </p>
 
+## 搭建Docker环境使用 [Laravel Sail](https://learnku.com/docs/laravel/8.5/sail/10428) 或 *
+*[dnmp](https://github.com/Is999/dnmp)**
 
-
-## 启动laravel [Laravel Sail](https://learnku.com/docs/laravel/8.5/sail/10428)
-
-1. 进入项目根目录执行下面命令
+1. 进入项目根目录执行下面命令或使用 dnmp 搭建本地环境请参考2
 
    ```bash
    ./vendor/bin/sail up
    ```
 
-2. 或使用dnmp https://github.com/Is999/dnmp.git   dev 分支有相关配置
+
+2. 使用dnmp https://github.com/Is999/dnmp/tree/laravel-admin  laravel-admin 分支有相关配置
+
+    1. Nginx 参考配置 https://github.com/Is999/dnmp/blob/laravel-admin/services/nginx/conf.d/admin.conf
+
+    2. 本地hosts 配置：127.0.0.1 www.admin.cc
+
+    3. 项目存放路径 .env 参数 SOURCE_DIR，可修改该路径。laravel-admin 分支配置的默认路径【SOURCE_DIR=../www】dnmp同级目录下的www下面。
+
+
+3. 安装Laravel vendor依赖包, 进入项目根目录执行下面命令
+
+   ```sh
+    composer install
+   ```
+
+
+4. 数据库使用Mysql,
+   表数据导入到数据库：https://github.com/Is999/laravel-admin/blob/master/database/mysql/admin_db_all_table.sql
+
+
+5. 根据自身的相关环境修改Laravel配置 .env, 到这里就可以正常运行项目了！
+
+   ```sh
+   cp .env.example .env # 复制环境变量文件
+   ```
+
+
+6. 前端页面使用Vue项目 https://github.com/Is999/vue-vben-admin
+
+
+7. 登录密码
+
+   账号：super999 密码：Super@123 身份验证器MFA秘钥： **JXI4KHCZYC7NJZPE**
+
+   账号：admin999 密码：Admin@123 身份验证器MFA秘钥：**HSVZSFSGGJGUF7YO**
 
 ## composer.json 添加引入的文件或包
 
@@ -71,18 +105,17 @@
    php artisan vendor:publish
    ```
 
-   
 
-4. 引入 lgvpay 包
+4. 引入 xxx 包
 
-   - 在项目根目录下创建 libs, 并添加要引入的 lgvpay 包
+    - 在项目根目录下创建 libs, 并添加要引入的 xxx 包
    - composer.jon 文件里找到autoload.psr-4添加自动加载
 
    ```json
    {
      "autoload": {
              "psr-4": {
-                 "Lgvpay\\Api\\Client\\": "libs/lgvpay/api-client/src/"
+                 引入。。。。
              }
          }
      }
@@ -347,7 +380,7 @@
 
   6. 文档参考：https://laravelacademy.org/books/laravel-queue-action
 
-10. Laravel 命令参考
+13. Laravel 命令参考
 
     ```
     php artisan cache:clear：清除应用程序缓存
@@ -379,14 +412,6 @@
     php artisan tinker：进入与当前应用环境绑定的 REPL 环境，相当于 Rails 框架的 rails console 命令
     php artisan workbench 组织名/包名：这将在应用根目录产生一个名为 workbench 的文件夹，然后按 组织名/包名 的形式生成一个符合 Composer 标准的包结构，并自动安装必要的依赖【需要首先完善好 app/config/workbench.php 文件的内容】
     ```
-
-    
-
-14. 登录密码
-
-    账号：super999 密码：Super@123 身份验证器MFA秘钥： **JXI4KHCZYC7NJZPE**
-    
-    账号：admin999 密码：Admin@123 身份验证器MFA秘钥：**HSVZSFSGGJGUF7YO**
 
 ​		
 
