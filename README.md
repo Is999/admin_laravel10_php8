@@ -14,7 +14,6 @@
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/config.png" alt="参数配置">
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/cache.png" alt="缓存管理">
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/userlog.png" alt="操作日志">
-<img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/setting.png" alt="个人设置">
 </p>
 
 ## 搭建Docker环境 [dnmp](https://github.com/Is999/dnmp)
