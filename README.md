@@ -1,11 +1,6 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/menu.png" alt="菜单管理">
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/role.png" alt="角色管理">
@@ -17,52 +12,46 @@
 <img src="https://raw.githubusercontent.com/Is999/admin_laravel10/master/public/static/images/adminVbenVue/setting.png" alt="个人设置">
 </p>
 
-## 搭建Docker环境使用 [Laravel Sail](https://learnku.com/docs/laravel/8.5/sail/10428) 或 [dnmp](https://github.com/Is999/dnmp)
+## 搭建Docker环境 [dnmp](https://github.com/Is999/dnmp)
 
-1. 进入项目根目录执行下面命令或使用 dnmp 搭建本地环境请参考2
+1. 使用dnmp https://github.com/Is999/dnmp/tree/laravel-admin  laravel-admin 分支有相关配置
 
-   ```bash
-   ./vendor/bin/sail up
-   ```
-
-
-2. 使用dnmp https://github.com/Is999/dnmp/tree/laravel-admin  laravel-admin 分支有相关配置
-
-    1. Nginx 参考配置 https://github.com/Is999/dnmp/blob/laravel-admin/services/nginx/conf.d/admin.conf
+    1. Nginx 参考配置： https://github.com/Is999/dnmp/blob/laravel-admin/services/nginx/conf.d/admin.conf
 
     2. 本地hosts 配置：127.0.0.1 www.admin.cc
 
     3. 项目存放路径 .env 参数 SOURCE_DIR，可修改该路径。laravel-admin 分支配置的默认路径【SOURCE_DIR=../www】dnmp同级目录下的www下面。
 
 
-3. 安装Laravel vendor依赖包, 进入项目根目录执行下面命令
+2. 安装Laravel vendor依赖包, 进入项目根目录执行下面命令
 
    ```sh
     composer install
    ```
 
 
-4. 数据库使用Mysql,
+3. 数据库使用Mysql,
    表数据导入到数据库：https://github.com/Is999/laravel-admin/blob/master/database/mysql/admin_db_all_table.sql
 
 
 4. 加密、解密、签名、验签（可参考登录接口）
 
+    1. 签名、验签 /app/Http/Middleware/SignatureData.php
 
-1. 签名、验签 /app/Http/Middleware/SignatureData.php
-2. 加密、解密 /app/Http/Middleware/CryptoData.php
+    4. 加密、解密 /app/Http/Middleware/CryptoData.php
 
-   ```sh
-   # 管理后台前端应用(secret_key表第一条记录) YWRtaW4wMDAx 测试PEM秘钥文件，可自己重新生成秘钥
-   
-   # 创建目录
-   mkdir ./storage/app/pem 
-   
-   # 复制测试文件
-   cp ./tests/Temp/pem/private.pem ./storage/app/pem/
-   cp ./tests/Temp/pem/public.pem ./storage/app/pem/
-   cp ./tests/Temp/pem/public_user_YWRtaW4wMDAx.pem ./storage/app/pem/
-   ```
+     ```sh
+     # 管理后台前端应用(secret_key表第一条记录) YWRtaW4wMDAx 测试PEM秘钥文件，可自己重新生成秘钥
+      
+     # 创建目录
+     mkdir ./storage/app/pem 
+      
+     # 复制测试文件
+     cp ./tests/Temp/pem/private.pem ./storage/app/pem/
+     cp ./tests/Temp/pem/public.pem ./storage/app/pem/
+     cp ./tests/Temp/pem/public_user_YWRtaW4wMDAx.pem ./storage/app/pem/
+     ```
+
 
 5. 根据自身的相关环境修改Laravel配置 .env, 到这里就可以正常运行项目了！
 
@@ -71,16 +60,20 @@
    ```
 
 
-6. 前端页面使用Vue项目 https://github.com/Is999/vue-vben-admin
+6. 前端页面使用Vue项目： https://github.com/Is999/vue-vben-admin
 
 
-7. 登录密码
+7. 登录密码，谷歌、微软身份验证器
 
    账号：super999 密码：Super@123 身份验证器MFA秘钥： **JXI4KHCZYC7NJZPE**
 
    账号：admin999 密码：Admin@123 身份验证器MFA秘钥：**HSVZSFSGGJGUF7YO**
 
-## composer.json 添加引入的文件或包
+------
+
+## 其它事项记录：
+
+### 添加引入的文件或三方包
 
 1. 引入自定义帮助函数 app/Helpers/function.php
 
@@ -103,6 +96,7 @@
    composer dump-autoload
    ```
 
+
 2. 安装包
 
    ```shell
@@ -115,6 +109,7 @@
    # 安装验证码
    composer require mews/captcha
    ```
+
 
 3. 安装包安装完成后，生成对应的配置文件
 
@@ -150,59 +145,63 @@
 
    ```php
    'providers' => [
-   		Lgvpay\Api\Client\ApiProvider::class, //添加 Lgvpay
+   		Lgvpay\Api\Client\ApiProvider::class, 
    ]
    ```
 
-## logger 日志
+### logger 日志
 
  App\Logging\Logger 日志类
 
 1. 系统日志(默认通道)
 
+
 2. DB sql日志（sqlLog通道） 需要配置 config/logging.php 配置sqlLog 通道 记录sql日志, .env文件 DB_LOG 控制是否记录日志
+
 
 3. DEV日志（devLog通道） config/logging.php 配置devLog 通道 开发人员专用日志通道
 
+
 4. 网关日志（gatewayLog通道）记录请求日志
+
 
 5. 配置 config/logging.php
 
    ```php
-       'channels' => [
-          // sql日志
-           'sqlLog' => [
-               'driver' => 'daily',
-               'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
-               'path' => storage_path('logs/sql-log.log'),
-               'level' => env('LOG_LEVEL', 'info'),
-               'days' => 10,
-           ],
-   
-           // 开发调试日志
-           'devLog' => [
-               'driver' => 'daily',
-               'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
-               'path' => storage_path('logs/dev-log.log'),
-               'level' => env('LOG_LEVEL', 'debug'),
-               'formatter_with' => [
-                   'dateFormat' => 'Y-m-d H:i:s.u',
-               ],
-               'days' => 30,
-           ],
-   
-           // 网关日志
-           'gatewayLog' => [
-               'driver' => 'daily',
-               'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
-               'path' => storage_path('logs/gateway-log.log'),
-               'level' => env('LOG_LEVEL', 'debug'),
-               'formatter_with' => [
-                   'dateFormat' => 'Y-m-d H:i:s.u',
-               ],
-               'days' => 30,
-           ],
+   'channels' => [
+      // sql日志
+       'sqlLog' => [
+           'driver' => 'daily',
+           'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+           'path' => storage_path('logs/sql-log.log'),
+           'level' => env('LOG_LEVEL', 'info'),
+           'days' => 10,
        ],
+   
+       // 开发调试日志
+       'devLog' => [
+           'driver' => 'daily',
+           'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+           'path' => storage_path('logs/dev-log.log'),
+           'level' => env('LOG_LEVEL', 'debug'),
+           'formatter_with' => [
+               'dateFormat' => 'Y-m-d H:i:s.u',
+           ],
+           'days' => 30,
+       ],
+   
+       // 网关日志
+       'gatewayLog' => [
+           'driver' => 'daily',
+           'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+           'path' => storage_path('logs/gateway-log.log'),
+           'level' => env('LOG_LEVEL', 'debug'),
+           'formatter_with' => [
+               'dateFormat' => 'Y-m-d H:i:s.u',
+           ],
+           'days' => 30,
+       ],
+   ],
    ```
 
    
@@ -223,34 +222,35 @@
        ];
    ```
 
+
 7. DB日志监控
 
    - 添加以下代码到 App\Providers\AppServiceProvider::boot 方法中,  并配置.env DB_LOG 参数
 
    ```php
-    				//sql 日志
-           try {
-               if (Env::get('DB_LOG') == true) {
-                   DB::listen(function ($query) {
-                       $sql = $query->sql;
-                       foreach ($query->bindings as $key => $value) {
-                           if ($value instanceof \DateTime) {
-                               $value = $value->format('Y-m-d H:i:s');
-                           }
-                           $rkey = is_numeric($key) ? '?' : ':' . $key;
-                           $sql = Str::replaceFirst($rkey, "'{$value}'", $sql);
-                       }
-   
-                       if ($query->time > 2000) { //添加慢日志
-                           Logger::warning(LogChannel::SQL, sprintf('[%s] %s', $query->time, $sql));
-                           return;
-                       }
-                       Logger::info(LogChannel::SQL, sprintf('[%s] %s', $query->time, $sql));
-                   });
+   //sql 日志
+   try {
+       if (Env::get('DB_LOG') == true) {
+           DB::listen(function ($query) {
+               $sql = $query->sql;
+               foreach ($query->bindings as $key => $value) {
+                   if ($value instanceof \DateTime) {
+                       $value = $value->format('Y-m-d H:i:s');
+                   }
+                   $rkey = is_numeric($key) ? '?' : ':' . $key;
+                   $sql = Str::replaceFirst($rkey, "'{$value}'", $sql);
                }
-           } catch (\Exception $e) {
-               Logger::error(LogChannel::DEFAULT,'sql log 写入失败', [], $e);
-           }
+   
+               if ($query->time > 2000) { //添加慢日志
+                   Logger::warning(LogChannel::SQL, sprintf('[%s] %s', $query->time, $sql));
+                   return;
+               }
+               Logger::info(LogChannel::SQL, sprintf('[%s] %s', $query->time, $sql));
+           });
+       }
+   } catch (\Exception $e) {
+       Logger::error(LogChannel::DEFAULT,'sql log 写入失败', [], $e);
+   }
    ```
 
    
@@ -275,131 +275,136 @@
     
    ```
 
+### 发送异步消息
+
+1. 配置消息队列驱动
+
+   ```sh
+   -- queue参数：
+   -- ⇂ queue:batches-table  
+   -- ⇂ queue:clear  
+   -- ⇂ queue:failed  
+   -- ⇂ queue:failed-table  
+   -- ⇂ queue:flush  
+   -- ⇂ queue:forget  
+   -- ⇂ queue:listen  
+   -- ⇂ queue:monitor  
+   -- ⇂ queue:prune-batches  
+   -- ⇂ queue:prune-failed  
+   -- ⇂ queue:restart  
+   -- ⇂ queue:retry  
+   -- ⇂ queue:retry-batch  
+   -- ⇂ queue:table  
+   -- ⇂ queue:work 
    
+   
+   php artisan queue:table
+   
+   -- 使用redis 跳过 
+   php artisan migrate
+   ```
 
-9. 发送异步消息
 
-   1. ### 配置消息队列驱动
+2. 配置 .env 将消息队列驱动配置为 `database`
 
-      ```sh
-      -- queue参数：
-      -- ⇂ queue:batches-table  
-      -- ⇂ queue:clear  
-      -- ⇂ queue:failed  
-      -- ⇂ queue:failed-table  
-      -- ⇂ queue:flush  
-      -- ⇂ queue:forget  
-      -- ⇂ queue:listen  
-      -- ⇂ queue:monitor  
-      -- ⇂ queue:prune-batches  
-      -- ⇂ queue:prune-failed  
-      -- ⇂ queue:restart  
-      -- ⇂ queue:retry  
-      -- ⇂ queue:retry-batch  
-      -- ⇂ queue:table  
-      -- ⇂ queue:work 
-      
-      
-      php artisan queue:table
-      
-      -- 使用redis 跳过 
-      php artisan migrate
-      ```
+   ```ini
+   QUEUE_CONNECTION=database
+   ```
 
-      
 
-   2. 配置 .env 将消息队列驱动配置为 `database`
+3. 启动消息队列应用进程
 
-      ```ini
-      QUEUE_CONNECTION=database
-      ```
+   ```
+   -- 运行队列
+   php artisan queue:work
+   
+   -- 本地开发可以使用
+   php artisan queue:listen
+   
+   -- 指定连接 & 队列
+   php artisan queue:work redis --queue=emails
+   
+   -- 进程睡眠时间
+   php artisan queue:work --sleep=3
+   
+   -- 队列优先级
+   php artisan queue:work --queue=high,low
+   
+   -- queue:restart 命令优雅地重新启动所有进程
+   php artisan queue:restart
+   ```
 
-      
+   如果系统很繁忙，一个队列处理进程忙不过来，可以启动多个进程并行处理，以便充分利用系统资源（多核 CPU），加快队列处理速度
 
-   3. 启动消息队列应用进程
 
-      ```
-      -- 运行队列
-      php artisan queue:work
-      
-      -- 本地开发可以使用
-      php artisan queue:listen
-      
-      -- 指定连接 & 队列
-      php artisan queue:work redis --queue=emails
-      
-      -- 进程睡眠时间
-      php artisan queue:work --sleep=3
-      
-      -- 队列优先级
-      php artisan queue:work --queue=high,low
-      
-      -- queue:restart 命令优雅地重新启动所有进程
-      php artisan queue:restart
-      ```
+4. 创建消息队列文件实现异步
 
-      如果系统很繁忙，一个队列处理进程忙不过来，可以启动多个进程并行处理，以便充分利用系统资源（多核 CPU），加快队列处理速度
+    1. 使用命令创建文件
 
-  4. 创建消息队列文件实现异步
+       ```sh
+       -- php artisan make:job 文件名
+       php artisan make:job SendVerificationMessage
+       ```
 
-     ```sh
-     -- php artisan make:job 文件名
-     php artisan make:job SendVerificationMessage
-     ```
+     2. 文件
 
-     ```php
-     <?php
-     
-     namespace App\Jobs;
-     
-     use App\Models\User;
-     use Illuminate\Bus\Queueable;
-     use Illuminate\Contracts\Queue\ShouldBeUnique;
-     use Illuminate\Contracts\Queue\ShouldQueue;
-     use Illuminate\Foundation\Bus\Dispatchable;
-     use Illuminate\Queue\InteractsWithQueue;
-     use Illuminate\Queue\SerializesModels;
-     use Illuminate\Support\Facades\Mail;
-     
-     class SendVerificationMessage implements ShouldQueue
-     {
-         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-     
-         public $user;
-       	public $mail;
-     
-         /**
-          * Create a new job instance.
-          */
-         public function __construct(User $user, $mail)
-         {
-             $this->user=$user;
-             $this->mail=$mail;
-         }
-     
-         /**
-          * Execute the job.
-          */
-         public function handle(): void
-         {
-             Mail::to($this->user)->send($this->mail);
-         }
-     }
-     ```
+        ```php
+        <?php
+        
+        namespace App\Jobs;
+        
+        use App\Models\User;
+        use Illuminate\Bus\Queueable;
+        use Illuminate\Contracts\Queue\ShouldBeUnique;
+        use Illuminate\Contracts\Queue\ShouldQueue;
+        use Illuminate\Foundation\Bus\Dispatchable;
+        use Illuminate\Queue\InteractsWithQueue;
+        use Illuminate\Queue\SerializesModels;
+        use Illuminate\Support\Facades\Mail;
+        
+        class SendVerificationMessage implements ShouldQueue
+        {
+            use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+        
+            public $user;
+           public $mail;
+        
+            /**
+             * Create a new job instance.
+             */
+            public function __construct(User $user, $mail)
+            {
+                $this->user=$user;
+                $this->mail=$mail;
+            }
+        
+            /**
+             * Execute the job.
+             */
+            public function handle(): void
+            {
+                Mail::to($this->user)->send($this->mail);
+            }
+        }
+        ```
 
-     
+        
 
-  5. 调用示例
+     3. 调用示例
 
-     ```php
-     SendVerificationMessage::dispatch($user, $mail);
-     ```
+        ```
+          SendVerificationMessage::dispatch($user, $mail);
+        ```
 
-  6. 文档参考：https://laravelacademy.org/books/laravel-queue-action
+### 文档和命令
 
-13. Laravel 命令参考
+1. 文档参考：https://laravelacademy.org/books/laravel-queue-action
 
-    ```
+
+2. Laravel 命令参考
+
+    ```sh
+    
     php artisan cache:clear：清除应用程序缓存
     php artisan command:make 命令名：在 app/commands 目录下生成一个名为 命令名.php 的自定义命令文件
     php artisan controller:make 控制器名：在 app/controllers 目录下生成一个名为 控制器名.php 的控制器文件
@@ -411,9 +416,7 @@
     php artisan migrate:reset：回滚所有的数据迁移
     php artisan migrate:rollback：回滚最近一次数据迁移
     php artisan session:table：生成一个用于 session 的数据迁移文件
-    ```
-
-    ```
+    
     php artisan：显示详细的命令行帮助信息，同 php artisan list
     php artisan –help：显示帮助命令的使用格式，同 php artisan help
     php artisan –version：显示当前使用的 Laravel 版本
