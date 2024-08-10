@@ -30,8 +30,8 @@ Route::prefix('api')->group(function () {
 // 须验证权限或登录Token
 Route::prefix('api')->middleware(['adminAuth'])->group(function () {
 
-    // except.不验证权限的接口(只验证token, 该路由无须加入权限表)
-    Route::name('except.')->group(function () {
+    // ignore.不验证权限的接口(只验证token, 该路由无须加入权限表)
+    Route::name('ignore.')->group(function () {
         // 角色
         Route::prefix('role')->name('role.')->group(function () {
             Route::get('treeList', [RoleController::class, 'treeList'])->name('treeList'); // 新增角色|编辑角色 上级角色(下拉框);
