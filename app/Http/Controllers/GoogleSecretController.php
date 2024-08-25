@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enum\Code;
 use App\Enum\LogChannel;
-use App\Enum\RedisKeys;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
@@ -46,14 +45,14 @@ class GoogleSecretController extends Controller
             }
 
             // 创建谷歌验证码
-            $createSecret = $this->redis()->get(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
+            $createSecret = $userService->getCacheMfaSecret($sign->id);
             $createSecret = json_decode($createSecret, true);
             if (!$createSecret) {
                 // $createSecret = GoogleAuthenticator::CreateSecret();
                 $createSecret = self::CreateSecret('Admin-' . $user->real_name);
-                $this->redis()->setex(RedisKeys::ADMIN_MFA_SECRET . $sign->id, 300, json_encode($createSecret));
+                $userService->setCacheMfaSecret($sign->id, json_encode($createSecret));
             }
-            $ttl = $this->redis()->ttl(RedisKeys::ADMIN_MFA_SECRET . $sign->id);
+            $ttl = $userService->getMfaSecretTtl($sign->id);
 
             if ($request->isMethod('post')) {
                 // 验证参数
@@ -86,9 +85,6 @@ class GoogleSecretController extends Controller
 
                     // 记录操作日志
                     $this->addUserLog(__FUNCTION__, UserAction::BUILD_MFA_SECURE_KEY, "name={$input['name']}", $input);
-
-                    // 绑定成功删除缓存
-                    $this->redis()->del(RedisKeys::ADMIN_MFA_SECRET . $user->id);
 
                     // 登录认证场景：认证成功，执行认证操作
                     return back()->with('exist_mfa', true)->with('msg', '绑定成功, 可以去您的应用程序中使用了！')->onlyInput();
@@ -146,7 +142,8 @@ class GoogleSecretController extends Controller
             if (GoogleAuthenticator::CheckCode($input['google'], $input['onecode'])) {
                 $input['google'] = Crypt::encryptString($input['google']); // 加密存储
                 // 更新秘钥
-                (new UserService)->buildMfaSecureKey($user->id, $input['google']);
+                $userService = new UserService;
+                $userService->buildMfaSecureKey($user->id, $input['google']);
 
                 // 记录操作日志
                 $this->setUserLogByUid($user->id); // 设置日志用户id
@@ -154,9 +151,6 @@ class GoogleSecretController extends Controller
 
                 // 登录认证场景：认证成功，执行认证操作
                 //return Redirect('/')->with('msg', '绑定成功, 请去登录页面登录！')->onlyInput();
-
-                // 绑定成功删除缓存
-                $this->redis()->del(RedisKeys::ADMIN_MFA_SECRET . $user->id);
 
                 return back()->with('exist_mfa', true)->with('msg', '绑定成功, 可以去您的应用程序中使用了！')->onlyInput();
 

@@ -5,9 +5,21 @@ namespace App\Services;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
+use RedisException;
 
 class Service
 {
+    /**
+     * 应用，多应用信息存储区分前缀
+     */
+    public static string $APP_NAME = '';
+
+    public function __construct()
+    {
+        self::$APP_NAME = Str::slug(env('APP_NAME', 'laravel'), '_') . '_';
+    }
+
     /**
      * 获取一个Redis对象
      * @param string|null $name
@@ -16,6 +28,33 @@ class Service
     public static function redis(string $name = null): Connection|\Redis
     {
         return Redis::connection($name);
+    }
+
+    /**
+     * 将字符串值value关联到key并设置过期时间
+     * @param string $key
+     * @param mixed $value
+     * @param int $timeout 时间秒
+     * @return bool
+     * @throws RedisException
+     */
+    public static function set(string $key, mixed $value, int $timeout = 0): bool
+    {
+        if ($timeout > 0) {
+            return self::redis()->setex($key, $timeout, $value);
+        }
+        return self::redis()->set($key, $value);
+    }
+
+    /**
+     * 获取缓存
+     * @param string $key
+     * @return mixed
+     * @throws RedisException
+     */
+    public static function get(string $key): mixed
+    {
+        return self::redis()->get($key);
     }
 
     /**

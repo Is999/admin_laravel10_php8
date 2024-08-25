@@ -13,6 +13,7 @@ class AesService extends Service implements Signature, Crypto
 
     public function __construct(string $key, string $iv, string $cipher_algo = 'AES-256-CBC')
     {
+        parent::__construct();
         $this->key = $key;
         $this->iv = $iv;
         $this->cipher_algo = $cipher_algo;

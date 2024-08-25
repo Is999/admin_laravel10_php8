@@ -11,6 +11,7 @@ use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Services\RedisService;
 use App\Services\ResponseService as Response;
+use App\Services\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -126,7 +127,7 @@ class CacheController extends Controller
     public function serverInfo(Request $request): JsonResponse
     {
         try {
-            $redis = $this->redis();
+            $redis = Service::redis();
             $result = $redis->info();
 
             return Response::success((array)$result);
@@ -156,7 +157,7 @@ class CacheController extends Controller
 
             $input = $validator->validated();
             $key = $input['key'];
-            $redis = $this->redis();
+            $redis = Service::redis();
             $type = $redis->type($input['key']);
             $total = 1;
             $value = null;
@@ -220,7 +221,7 @@ class CacheController extends Controller
         $keyArr = array();
         $iterator = null;
         do {
-            $keys = $this->redis()->scan($iterator, ['match' => $pattern, 'count' => $count]);
+            $keys = Service::redis()->scan($iterator, ['match' => $pattern, 'count' => $count]);
             if (is_array($keys)) {
                 $iterator = $keys[0]; // 更新迭代游标
                 if (!empty($keys[1])) {

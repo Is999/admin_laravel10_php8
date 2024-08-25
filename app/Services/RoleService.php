@@ -476,7 +476,7 @@ class RoleService extends Service
      */
     public static function delRolePermissionsCache(int $id): int
     {
-        return self::redis()->del(RedisKeys::ROLE_PERMISSION . $id);
+        return RedisService::redis()->del(RedisKeys::ROLE_PERMISSION . $id);
     }
 
     /**
@@ -546,7 +546,7 @@ class RoleService extends Service
      */
     public static function delRoleStatusCache(array $roleIds): int
     {
-        return self::redis()->hDel(RedisKeys::ROLE_STATUS, ...$roleIds);
+        return RedisService::redis()->hDel(RedisKeys::ROLE_STATUS, ...$roleIds);
     }
 
     /**

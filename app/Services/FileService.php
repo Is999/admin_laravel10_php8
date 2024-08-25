@@ -34,6 +34,7 @@ class FileService extends Service
 
     public function __construct(array $mimes = [])
     {
+        parent::__construct();
         if (!empty($mimes)) {
             $this->allowedTypes = $mimes;
         }

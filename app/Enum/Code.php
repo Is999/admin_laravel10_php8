@@ -11,9 +11,10 @@ enum Code: int
     const SUCCESS = 0; // 成功
     const FAIL = 1; // 失败
     const SYSTEM_ERR = 2; // 系统异常
-    const DB_ERR = 3; // 系统异常
+    const DB_ERR = 3; // 系统异常(SQL)
     const UNAUTHORIZED = 4; // 未经授权
     const INVALID_AUTHORIZATION = 5; // 授权无效
+    const CHECK_MFA_CODE = 6; // 校验MFA设备验证码
 
     // 常用成功信息
     const S1000 = 1000; // 添加成功

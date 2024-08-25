@@ -20,6 +20,7 @@ class RsaService extends Service implements Signature, Crypto
      */
     public function __construct(OpenSSLAsymmetricKey $key, string|int $algorithm = OPENSSL_ALGO_SHA256)
     {
+        parent::__construct();
         $this->key = $key;
         $this->algorithm = $algorithm;
     }

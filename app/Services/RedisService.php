@@ -661,31 +661,4 @@ class RedisService extends Service
 
         return $keyArr;
     }
-
-    /**
-     * 将字符串值value关联到key并设置过期时间
-     * @param string $key
-     * @param mixed $value
-     * @param int $timeout 时间秒
-     * @return bool
-     * @throws RedisException
-     */
-    public static function set(string $key, mixed $value, int $timeout = 0): bool
-    {
-        if ($timeout > 0) {
-            return self::redis()->setex($key, $timeout, $value);
-        }
-        return self::redis()->set($key, $value);
-    }
-
-    /**
-     * 获取缓存
-     * @param string $key
-     * @return mixed
-     * @throws RedisException
-     */
-    public static function get(string $key): mixed
-    {
-        return self::redis()->get($key);
-    }
 }

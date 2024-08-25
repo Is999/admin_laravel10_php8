@@ -43,6 +43,10 @@ INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (2, 'ADMIN_IP_WHITELIST', '后台IP白名单', 4, '[\"8.8.8.8\",\"127.0.0.1\"]', '[\"8.8.8.8\",\"127.0.0.1\"]', '后台IP白名单: 多个IP以英文逗号分割', '2023-06-21 09:23:25', '2024-06-30 01:10:15');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (3, 'ADMIN_CHECK_CHANGE_IP', '验证IP是否变更', 3, '1', '0', '[生产建议配置：0 验证] 验证IP是否变更：0 验证； 1 不验证', '2023-06-21 10:18:11', '2024-06-30 18:06:14');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (4, 'ADMIN_SIGNATURE_DISABLE', '禁用签名', 3, '1', '0', '[生产建议配置：0 启用] 禁用签名：0 启用；1 禁用', '2024-04-22 12:04:47', '2024-06-30 18:06:23');
+INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`)
+VALUES (5, 'MFA_CHECK_ENABLE', '强校验MFA设备验证码', 3, '0', '1',
+        '[生产建议配置：1 强启用] 强启用MFA设备（身份验证器）登录校验：1 强启用校验（用户设置MFA状态失效）；0 非强启用（默认使用用户设置的MFA状态）',
+        '2024-08-25 12:47:13', '2024-08-25 12:47:13');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

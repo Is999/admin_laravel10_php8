@@ -10,6 +10,7 @@ return [
     Code::DB_ERR => 'System Exception',
     Code::UNAUTHORIZED => 'Unauthorized',
     Code::INVALID_AUTHORIZATION => 'Invalid Authorization',
+    Code::CHECK_MFA_CODE => '校验MFA设备验证码',
 
     // 常用成功消息
     Code::S1000 => 'Added Successfully',

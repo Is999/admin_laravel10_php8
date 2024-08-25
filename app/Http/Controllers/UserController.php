@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\CheckMfaScenarios;
 use App\Enum\Code;
 use App\Enum\ConfigUuid;
 use App\Enum\LogChannel;
 use App\Enum\OrderBy;
-use App\Enum\RedisKeys;
 use App\Enum\UserAction;
 use App\Enum\UserMfaStatus;
 use App\Enum\UserStatus;
@@ -45,7 +45,6 @@ class UserController extends Controller
                     'password' => 'required',
                     'key' => 'required|string',
                     'captcha' => 'required', // 验证码
-                    // 'secureCode' => 'required|string|size:6' // 安全码
                 ]);
 
             if ($validator->fails()) {
@@ -75,21 +74,6 @@ class UserController extends Controller
             $userService = new UserService;
             $user = $userService->userCheck($name, $password);
 
-            // 校验安全验证码
-            // if (UserMfaStatus::DISABLED->value != intval($user->mfa_status)) {
-            //     if ($user->mfa_secure_key) {
-            //         $secureCode = $input['secureCode'] ?? '';
-            //         if (!GoogleAuthenticator::CheckCode(Crypt::decryptString($user->mfa_secure_key), $secureCode)) {
-            //             throw new CustomizeException(Code::E100048);
-            //         }
-            //     }
-            // }
-
-            $userInfo = [];
-            $userInfo['exist_mfa'] = (bool)$user->mfa_secure_key;
-            $sign = $userService->generateSign(['id' => $user->id, 'name' => $user->name]);
-            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
-
             // 更新登录信息
             $update = [
                 'last_login_time' => Carbon::now(),
@@ -109,9 +93,12 @@ class UserController extends Controller
             $this->addUserLog(__FUNCTION__, UserAction::LOGIN);
 
             // 过滤敏感字段
-            $userInfo = array_merge($userInfo, Arr::except($user->toArray(), ['password', 'mfa_secure_key']));
+            $userInfo = Arr::except($user->toArray(), ['password', 'mfa_secure_key']);
 
-            // return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)]);
+            // MFA设备信息
+            $userInfo = array_merge($userInfo, $userService->getUserMfaInfo($user->id, CheckMfaScenarios::LOGIN->value));
+
+            //return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)]);
             // 返回加密数据
             return Response::success(['user' => $userInfo, 'token' => $userService->generateToken($user)])->header('X-Cipher', base64_encode(json_encode(['json:user'])));
         } catch (CustomizeException $e) {
@@ -444,7 +431,6 @@ class UserController extends Controller
         }
     }
 
-
     /**
      * 校验MFA动态密码
      * @param Request $request
@@ -457,23 +443,36 @@ class UserController extends Controller
             $validator = Validator::make($request->input()
                 , [
                     'secure' => 'required',
+                    'scenarios' => [ // 校验MFA设备应用场景
+                        'required',
+                        new Enum(CheckMfaScenarios::class),
+                    ]
                 ]);
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
+            $input = $validator->validated();
 
             $adminId = $request->offsetGet('user.id');
             $userService = new UserService;
             // 校验安全码
-            $isOk = $userService->checkMfaSecure($adminId, $validator->validated()['secure']);
+            $isOk = $userService->checkMfaSecure($adminId, $input['secure']);
 
             $twoStep = [];
-            // 存储两步校验码时间30分钟
+
             if ($isOk) {
-                $twoStep = $userService::setTwoStepCode(RedisKeys::ADMIN_USER_TWO_STEP, $adminId);
+                // 登录场景, 设置检验标识
+                if (CheckMfaScenarios::LOGIN->value == $input['scenarios']) {
+                    $userService->setLoginCheckMfaFlag($adminId);
+                }
+
+                // 存储两步校验码时间30分钟
+                $twoStep = $userService->setTwoStepCode($adminId, $input['scenarios']);
             }
-            $info = $userService->getUserInfo($adminId);
-            return Response::success(['isOk' => $isOk, 'twoStep' => $twoStep, 'exist_mfa' => (bool)$info['mfa_secure_key'], 'mfa_status' => $info['mfa_status']]);
+
+            $info = $userService->getUserMfaInfo($adminId, $input['scenarios']);
+
+            return Response::success(array_merge($info, ['isOk' => $isOk, 'twoStep' => $twoStep]));
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
         } catch (Throwable $e) {
@@ -537,9 +536,7 @@ class UserController extends Controller
             $user = $userService->getUserInfo($request->offsetGet('user.id'));
             $userInfo = Arr::except($user, ['password', 'mfa_secure_key']);
 
-            $sign = $userService->generateSign(['id' => $user['id'], 'name' => $user['name']]);
-            $userInfo['exist_mfa'] = (bool)$user['mfa_secure_key'];
-            $userInfo['build_mfa_url'] = "/mfa/secret/$sign";
+            $userInfo = array_merge($userInfo, $userService->getUserMfaInfo($user['id'], CheckMfaScenarios::LOGIN->value));
 
             return Response::success($userInfo);
         } catch (Throwable $e) {

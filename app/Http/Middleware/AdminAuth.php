@@ -2,15 +2,20 @@
 /**
  * 验证用户token、ip、访问权限等相关信息
  */
+
 namespace App\Http\Middleware;
 
+use App\Enum\CheckMfaScenarios;
 use App\Enum\Code;
+use App\Enum\ConfigUuid;
 use App\Enum\HttpStatus;
 use App\Enum\LogChannel;
+use App\Enum\UserMfaStatus;
 use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
 use App\Logging\Logger;
 use App\Services\AuthorizeService;
+use App\Services\ConfigService;
 use App\Services\ResponseService as Response;
 use App\Services\UserService;
 use Closure;
@@ -50,6 +55,19 @@ class AdminAuth
 
             // ignore.* 只验证token不验证权限
             if (!$request->routeIs('ignore.*')) {
+                // 验证MFA身份验证器是否验证过：验证开关，验证是否登录校验过
+                $MFACheckEnable = ConfigService::getCache(ConfigUuid::MFA_CHECK_ENABLE);
+                if (!$MFACheckEnable) {
+                    $MFACheckEnable = $user['mfa_status'] == UserMfaStatus::ENABLED;
+                }
+                // 校验开启，开始校验登录验证状态
+                if ($MFACheckEnable) {
+                    $val = $userService->getLoginCheckMfaFlag($uid);
+                    if (!$val || $val < strtotime($user['last_login_time'])) {
+                        return Response::json(false, Code::CHECK_MFA_CODE, null, $userService->getUserMfaInfo($uid, CheckMfaScenarios::LOGIN->value));
+                    }
+                }
+
                 // 受限的接口必须验证权限, 根据路由名称验证权限
                 $routeName = $request->route()->getName();
                 if (!(new AuthorizeService)->check($uid, $routeName)) {

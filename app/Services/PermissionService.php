@@ -408,7 +408,7 @@ class PermissionService extends Service
      */
     public static function delPermissionModuleCache(int $permissionIds): int
     {
-        return self::redis()->hDel(RedisKeys::PERMISSION_MODULE, $permissionIds);
+        return RedisService::redis()->hDel(RedisKeys::PERMISSION_MODULE, $permissionIds);
     }
 
     /**
@@ -419,7 +419,7 @@ class PermissionService extends Service
      */
     public static function delPermissionUuidCache(int $permissionIds): int
     {
-        return self::redis()->hDel(RedisKeys::PERMISSION_UUID, $permissionIds);
+        return RedisService::redis()->hDel(RedisKeys::PERMISSION_UUID, $permissionIds);
     }
 
     /**

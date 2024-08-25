@@ -23,11 +23,13 @@ enum RedisKeys: string
 
     // TABLE 数据缓存 keys end
 
-    const ADMIN_TOKEN = 'admin_token' . self::DELIMIT; // 用户token String admin_token:{user.id}
-    const ADMIN_USERINFO = 'admin_userinfo' . self::DELIMIT; // 用户信息 Hash admin_userinfo:{user.id}
-    const ADMIN_USER_ROLES = 'admin_user_roles' . self::DELIMIT; // 用户权限 Set admin_user_roles:{user.id}
-    const ADMIN_USER_TWO_STEP = 'admin_user_two_step' . self::DELIMIT; // 用户权限 String admin_user_two_step:{user.id}
-    const ADMIN_MFA_SECRET = 'admin_mfa_secret' . self::DELIMIT; // 用户权限 String admin_mfa_secret:{user.id}
+    // APP_NAME 多应用使用同一个redis, 用于区分存储信息，避免冲突
+    const TOKEN = 'token' . self::DELIMIT; // 用户token String {APP_NAME}token:{user.id}
+    const USERINFO = 'userinfo' . self::DELIMIT; // 用户信息 Hash {APP_NAME}userinfo:{user.id}
+    const USER_ROLES = 'user_roles' . self::DELIMIT; // 用户权限 Set {APP_NAME}user_roles:{user.id}
+    const USER_TWO_STEP = 'user_two_step' . self::DELIMIT; // 两步校验 String {APP_NAME}user_two_step:{user.id}:{CheckMfaScenarios::xxx验证场景}
+    const MFA_SECRET = 'mfa_secret' . self::DELIMIT; // MFA设备秘钥 String {APP_NAME}mfa_secret:{user.id}
+    const LOGIN_CHECK_MFA_FLAG = 'login_check_mfa_flag' . self::DELIMIT; // MFA设备秘钥 String {APP_NAME}login_check_mfa_flag:{user.id}
 
 
 }

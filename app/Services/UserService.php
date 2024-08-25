@@ -41,7 +41,7 @@ class UserService extends Service
      */
     public function setTokenCache(int $uid, string $value): bool
     {
-        return self::redis()->setex(RedisKeys::ADMIN_TOKEN . $uid, 3600, $value);
+        return self::redis()->setex(self::$APP_NAME . RedisKeys::TOKEN . $uid, 3600, $value);
     }
 
     /**
@@ -52,7 +52,7 @@ class UserService extends Service
      */
     public function getTokenCache(int $uid): mixed
     {
-        return self::redis()->get(RedisKeys::ADMIN_TOKEN . $uid);
+        return self::redis()->get(self::$APP_NAME . RedisKeys::TOKEN . $uid);
     }
 
     /**
@@ -64,7 +64,7 @@ class UserService extends Service
      */
     public function renewTokenCache(int $uid, int $ttl = 3600): bool
     {
-        return self::redis()->expire(RedisKeys::ADMIN_TOKEN . $uid, $ttl);
+        return self::redis()->expire(self::$APP_NAME . RedisKeys::TOKEN . $uid, $ttl);
     }
 
     /**
@@ -75,7 +75,7 @@ class UserService extends Service
      */
     public static function delTokenCache(int $uid): int
     {
-        return self::redis()->del(RedisKeys::ADMIN_TOKEN . $uid);
+        return self::redis()->del(self::$APP_NAME . RedisKeys::TOKEN . $uid);
     }
 
     /**
@@ -87,9 +87,9 @@ class UserService extends Service
      */
     public function setUserInfoCache(int $uid, array $userInfo): bool
     {
-        $res = self::redis()->hMSet(RedisKeys::ADMIN_USERINFO . $uid, $userInfo);
+        $res = self::redis()->hMSet(self::$APP_NAME . RedisKeys::USERINFO . $uid, $userInfo);
         if ($res) {
-            self::redis()->expire(RedisKeys::ADMIN_USERINFO . $uid, 3600 * 8);
+            self::redis()->expire(self::$APP_NAME . RedisKeys::USERINFO . $uid, 3600 * 8);
         }
         return $res;
     }
@@ -104,9 +104,9 @@ class UserService extends Service
     public function getUserInfoCache(int $uid, array $fields = []): array
     {
         if (empty($fields)) {
-            return self::redis()->hGetAll(RedisKeys::ADMIN_USERINFO . $uid);
+            return self::redis()->hGetAll(self::$APP_NAME . RedisKeys::USERINFO . $uid);
         }
-        return self::redis()->hMGet(RedisKeys::ADMIN_USERINFO . $uid, $fields);
+        return self::redis()->hMGet(self::$APP_NAME . RedisKeys::USERINFO . $uid, $fields);
     }
 
     /**
@@ -117,7 +117,7 @@ class UserService extends Service
      */
     public function checkUserInfoCacheExists(int $uid): bool|int
     {
-        return self::redis()->exists(RedisKeys::ADMIN_USERINFO . $uid);
+        return self::redis()->exists(self::$APP_NAME . RedisKeys::USERINFO . $uid);
     }
 
 
@@ -129,7 +129,7 @@ class UserService extends Service
      */
     public function delUserInfoCache(int $uid): int
     {
-        return self::redis()->del(RedisKeys::ADMIN_USERINFO . $uid);
+        return self::redis()->del(self::$APP_NAME . RedisKeys::USERINFO . $uid);
     }
 
     /**
@@ -141,7 +141,7 @@ class UserService extends Service
      */
     public function setUserRoleCache(int $uid, array $roles): bool
     {
-        $key = RedisKeys::ADMIN_USER_ROLES . $uid;
+        $key = self::$APP_NAME . RedisKeys::USER_ROLES . $uid;
         $res = self::redis()->sAddArray($key, $roles);
         if ($res) {
             self::redis()->expire($key, 3600 * 24);
@@ -157,7 +157,7 @@ class UserService extends Service
      */
     public static function getUserRoleCache(int $uid): array
     {
-        return self::redis()->sMembers(RedisKeys::ADMIN_USER_ROLES . $uid);
+        return self::redis()->sMembers(self::$APP_NAME . RedisKeys::USER_ROLES . $uid);
     }
 
     /**
@@ -168,7 +168,7 @@ class UserService extends Service
      */
     public function checkUserRoleCacheExists(int $uid): bool|int
     {
-        return self::redis()->exists(RedisKeys::ADMIN_USER_ROLES . $uid);
+        return self::redis()->exists(self::$APP_NAME . RedisKeys::USER_ROLES . $uid);
     }
 
     /**
@@ -179,7 +179,7 @@ class UserService extends Service
      */
     public static function delUserRoleCache(int $uid): int
     {
-        return self::redis()->del(RedisKeys::ADMIN_USER_ROLES . $uid);
+        return self::redis()->del(self::$APP_NAME . RedisKeys::USER_ROLES . $uid);
     }
 
 
@@ -548,14 +548,17 @@ class UserService extends Service
             throw new CustomizeException(Code::E100015);
         }
 
+        // 强检验
+        $MFACheckEnable = ConfigService::getCache(ConfigUuid::MFA_CHECK_ENABLE);
+
         // 校验安全验证码
-        if (UserMfaStatus::DISABLED->value != intval($user['mfa_status'])) {
+        if ($MFACheckEnable || UserMfaStatus::DISABLED->value != intval($user['mfa_status'])) {
             if ($user['mfa_secure_key']) {
                 if (GoogleAuthenticator::CheckCode(Crypt::decryptString($user['mfa_secure_key']), $secure)) {
                     return true;
                 }
+                return false;
             }
-            return false;
         }
 
         // 验证密码
@@ -580,8 +583,11 @@ class UserService extends Service
             throw new CustomizeException(Code::E100015);
         }
 
+        // 强检验
+        $MFACheckEnable = ConfigService::getCache(ConfigUuid::MFA_CHECK_ENABLE);
+
         // 校验安全验证码
-        if (UserMfaStatus::DISABLED->value != intval($user['mfa_status'])) {
+        if ($MFACheckEnable || UserMfaStatus::DISABLED->value != intval($user['mfa_status'])) {
             if ($user['mfa_secure_key']) {
                 if (GoogleAuthenticator::CheckCode(Crypt::decryptString($user['mfa_secure_key']), $secure)) {
                     return true;
@@ -590,7 +596,7 @@ class UserService extends Service
             return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -738,21 +744,24 @@ class UserService extends Service
     }
 
     /**
-     * 清楚用户缓存信息
+     * 清除用户缓存信息
      * @param int $uid 用户id
      * @return bool
      * @throws RedisException
      */
     public function clearUserInfo(int $uid): bool
     {
-        // 清楚用户token
+        // 清除用户token
         $this->delTokenCache($uid);
 
-        // 清楚用户信息缓存
+        // 清除用户信息缓存
         $this->delUserInfoCache($uid);
 
-        // 清楚用户角色缓存
+        // 清除用户角色缓存
         $this->delUserRoleCache($uid);
+
+        // 清除用户登录校验MFA设备标识
+
         return true;
     }
 
@@ -819,54 +828,131 @@ class UserService extends Service
         ];
 
         $res = $user->update($update);
+
+        // 更新缓存
         $this->cacheUserInfo($user);
+
+        // 绑定成功删除缓存
+        $this->delMfaSecret($user->id);
+
         return $res;
     }
 
 
     /**
      * 设置两步验证码
-     * @param string $key
      * @param int $uid
+     * @param int $scenarios CheckMfaScenarios::xxx校验场景
+     * @param int $expire 过期时间
      * @return array
-     * @throws CustomizeException|RedisException
+     * @throws CustomizeException
+     * @throws RedisException
      */
-    public static function setTwoStepCode(string $key, int $uid): array
+    public function setTwoStepCode(int $uid, int $scenarios, int $expire = 1800): array
     {
-        // 生成随机码
-        $code = rand(60466176, 2176782335); // 100000-zzzzzz
-        // 转换后缀
-        $suffix = base_convert($code, 10, 36);
-        // 值
-        $twoStepCode = base64_encode(json_encode(['code' => $code, 'stime' => time(), 'expire' => 1800, 'id' => $uid]));
         // 拼接key
-        $key .= $uid . RedisKeys::DELIMIT . $suffix;
+        $key = self::$APP_NAME . RedisKeys::USER_TWO_STEP . $uid . RedisKeys::DELIMIT . $scenarios;
+
+        // 生成随机码
+        $code = rand(60466176, 2176782335); // 60466176 - 2176782335 => 100000 - zzzzzz
+
+        // 十进制转36进制
+        // $suffix = base_convert($code, 10, 36); // 100000-zzzzzz
+
+        // 值
+        $twoStepCode = base64_encode(json_encode(['code' => $code, 'stime' => time(), 'expire' => $expire, 'id' => $uid]));
 
         // 存入缓存
-        if (!RedisService::set($key, $twoStepCode, 1800)) {
+        if (!Service::set($key, $twoStepCode, $expire)) {
             throw new CustomizeException(Code::F5006, ['flag' => 'set']);
         }
 
-        return ['key' => $suffix, 'expire' => time() + 1800, 'value' => $twoStepCode];
+        return ['scenarios' => $scenarios, 'expire' => time() + $expire, 'value' => $twoStepCode];
     }
 
     /**
      * 校验两步验证码
-     * @param string $key
      * @param int $uid
-     * @param $suffix
+     * @param int $scenarios CheckMfaScenarios::xxx校验场景
      * @return string
      * @throws RedisException
      */
-    public static function checkTwoStepCode(string $key, int $uid, $suffix): string
+    public function checkTwoStepCode(int $uid, int $scenarios): string
     {
         // 拼接key
-        $key .= $uid . RedisKeys::DELIMIT . $suffix;
+        $key = self::$APP_NAME . RedisKeys::USER_TWO_STEP . $uid . RedisKeys::DELIMIT . $scenarios;
         if (Service::redis()->exists($key)) {
             return Service::redis()->get($key);
         }
 
         return '';
+    }
+
+    /**
+     * 设置用户登录校验MFA设备标识
+     * @param $uid
+     * @return bool
+     * @throws RedisException
+     */
+    public function setLoginCheckMfaFlag($uid): bool
+    {
+        return Service::set(self::$APP_NAME . RedisKeys::LOGIN_CHECK_MFA_FLAG . $uid, time(), 24 * 60 * 60);
+    }
+
+    /**
+     * 获取用户登录检验MFA设备标识
+     * @param int $uid
+     * @return mixed
+     * @throws RedisException
+     */
+    public function getLoginCheckMfaFlag(int $uid): mixed
+    {
+        return Service::get(self::$APP_NAME . RedisKeys::LOGIN_CHECK_MFA_FLAG . $uid);
+    }
+
+    /**
+     * 获取秘钥
+     * @param int $uid
+     * @return mixed
+     * @throws RedisException
+     */
+    public function getCacheMfaSecret(int $uid)
+    {
+        return Service::get(self::$APP_NAME . RedisKeys::MFA_SECRET . $uid);
+    }
+
+    /**
+     * 设置秘钥缓存
+     * @param int $uid
+     * @param string $secret
+     * @return bool
+     * @throws RedisException
+     */
+    public function setCacheMfaSecret(int $uid, string $secret): bool
+    {
+        return Service::set(self::$APP_NAME . RedisKeys::MFA_SECRET . $uid, $secret, 300);
+    }
+
+    /**
+     * 获取秘钥缓存过期时间
+     * @param int $uid
+     * @return bool|int
+     * @throws RedisException
+     */
+    public function getMfaSecretTtl(int $uid): bool|int
+    {
+        return Service::redis()->ttl(self::$APP_NAME . RedisKeys::MFA_SECRET . $uid);
+    }
+
+    /**
+     * 删除秘钥缓存
+     * @param int $uid
+     * @return false|int
+     * @throws RedisException
+     */
+    public function delMfaSecret(int $uid): bool|int
+    {
+        return Service::redis()->del(self::$APP_NAME . RedisKeys::MFA_SECRET . $uid);
     }
 
     /**
@@ -1131,5 +1217,34 @@ class UserService extends Service
         }
 
         return $roles;
+    }
+
+
+    /**
+     * 获取用户MFA信息（适用当前登录的用户）
+     * @param int $uid
+     * @param int $scenarios CheckMfaScenarios ::xxx校验场景
+     * @return array
+     * @throws RedisException
+     */
+    public function getUserMfaInfo(int $uid, int $scenarios): array
+    {
+        // 获取用户缓存信息
+        $user = $this->getUserInfo($uid);
+
+        $userMfaInfo = [];
+        $userMfaInfo['exist_mfa'] = $user['mfa_secure_key'] != ''; // 是否已绑定
+        $sign = $this->generateSign(['id' => $uid, 'name' => $user['name']]);
+        $userMfaInfo['build_mfa_url'] = "/mfa/secret/$sign"; // 绑定地址
+        $userMfaInfo['scenarios'] = $scenarios; // 校验场景
+        $userMfaInfo['mfa_status'] = (int)$user['mfa_status']; // 用户启用状态
+        $userMfaInfo['mfa_check'] = $userMfaInfo['mfa_status']; // 校验状态
+        // 是否强制启用登录校验
+        $MFACheckEnable = ConfigService::getCache(ConfigUuid::MFA_CHECK_ENABLE);
+        if ($MFACheckEnable) {
+            $userMfaInfo['mfa_check'] = UserMfaStatus::ENABLED;
+        }
+
+        return $userMfaInfo;
     }
 }
