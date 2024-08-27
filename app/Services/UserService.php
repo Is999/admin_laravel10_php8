@@ -867,7 +867,7 @@ class UserService extends Service
             throw new CustomizeException(Code::F5006, ['flag' => 'set']);
         }
 
-        return ['scenarios' => $scenarios, 'expire' => time() + $expire, 'value' => $twoStepCode];
+        return ['key' => $scenarios, 'expire' => time() + $expire, 'value' => $twoStepCode];
     }
 
     /**
@@ -882,10 +882,10 @@ class UserService extends Service
         // 拼接key
         $key = self::$APP_NAME . RedisKeys::USER_TWO_STEP . $uid . RedisKeys::DELIMIT . $scenarios;
         if (Service::redis()->exists($key)) {
-            return Service::redis()->get($key);
+            return Service::get($key);
         }
 
-        return '';
+        return false;
     }
 
     /**

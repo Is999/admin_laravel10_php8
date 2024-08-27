@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
@@ -958,6 +959,13 @@ class UserController extends Controller
                         'required',
                         new Enum(UserMfaStatus::class),
                     ],
+                    'twoStepKey' => [
+                        'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
+                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_STATUS->value]),
+                    ],
+                    'twoStepValue' => [
+                        'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
+                    ],
                 ]);
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
@@ -970,6 +978,17 @@ class UserController extends Controller
                 $userService->checkEditStatus($adminId, $id);
             }
             $input = $validator->validated();
+
+            // 关闭身份验证器需先验证身份
+            if (Arr::get($input, 'mfa_status') == UserMfaStatus::DISABLED->value) {
+                // 允许使用登录身份验证信息
+                $key = Arr::get($input, 'twoStepKey');
+                $value = Arr::get($input, 'twoStepValue');
+                if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
+                    throw new CustomizeException(Code::F10006);
+                }
+            }
+
             $result = $userService->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('mfa_status') ? Code::F2004 : Code::F2005);
