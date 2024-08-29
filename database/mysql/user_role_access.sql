@@ -11,7 +11,7 @@
  Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 13/07/2024 00:41:13
+ Date: 29/08/2024 17:11:33
 */
 
 SET NAMES utf8mb4;
@@ -21,9 +21,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Table structure for user_role_access
 -- ----------------------------
 DROP TABLE IF EXISTS `user_role_access`;
-CREATE TABLE `user_role_access`
-(
-    `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+CREATE TABLE `user_role_access` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` int unsigned NOT NULL COMMENT '用户id',
   `role_id` int unsigned NOT NULL COMMENT '角色id',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -36,10 +35,8 @@ CREATE TABLE `user_role_access`
 -- Records of user_role_access
 -- ----------------------------
 BEGIN;
-INSERT INTO `user_role_access` (`id`, `user_id`, `role_id`, `created_at`)
-VALUES (1, 1, 1, '2022-04-05 16:30:56');
-INSERT INTO `user_role_access` (`id`, `user_id`, `role_id`, `created_at`)
-VALUES (2, 2, 2, '2023-06-16 00:24:01');
+INSERT INTO `user_role_access` (`id`, `user_id`, `role_id`, `created_at`) VALUES (1, 1, 1, '2022-04-05 16:30:56');
+INSERT INTO `user_role_access` (`id`, `user_id`, `role_id`, `created_at`) VALUES (2, 2, 2, '2023-06-16 00:24:01');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
