@@ -148,8 +148,8 @@ class SignatureData
      */
     public function getSignStr(array $data, array $signParams, string $requestId, string $appId): string
     {
-        // 参数key按ASCII编码顺序排序
-        ksort($signParams);
+        // 按ASCII编码顺序排序
+        sort($signParams);
 
         $str = '';
         foreach ($signParams as $k) {

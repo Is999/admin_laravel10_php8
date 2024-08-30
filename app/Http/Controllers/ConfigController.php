@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\AppEnv;
 use App\Enum\Code;
 use App\Enum\ConfigType;
 use App\Enum\LogChannel;
@@ -44,8 +45,9 @@ class ConfigController extends Controller
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
+            $adminId = $request->offsetGet('user.id');
             // 查询数据
-            $result = (new ConfigService)->list($validator->validated());
+            $result = (new ConfigService)->list($validator->validated(), $adminId);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -64,6 +66,11 @@ class ConfigController extends Controller
     public function add(Request $request): JsonResponse
     {
         try {
+            // 其它环境通过sql 添加
+            if (strtolower(env('APP_ENV')) != AppEnv::DEV) {
+                throw new CustomizeException(Code::INVALID_AUTHORIZATION);
+            }
+
             // 验证参数
             $validator = Validator::make($request->input()
                 , [
@@ -139,8 +146,9 @@ class ConfigController extends Controller
             // 校验值
             $input['value'] = $config->checkAndReformValue($input['type'], $input['value']);
 
+            $adminId = $request->offsetGet('user.id');
             // 编辑
-            $result = $config->edit($id, $input);
+            $result = $config->edit($id, $input, $adminId);
 
             if (!$result) {
                 throw new CustomizeException(Code::F2001);

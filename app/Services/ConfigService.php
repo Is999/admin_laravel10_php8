@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Enum\Code;
 use App\Enum\ConfigType;
+use App\Enum\ConfigUuid;
 use App\Enum\OrderBy;
 use App\Enum\RedisKeys;
 use App\Exceptions\CustomizeException;
 use App\Models\Config;
+use App\Models\Role;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use RedisException;
@@ -19,9 +21,11 @@ class ConfigService extends Service
     /**
      * 列表
      * @param array $input
+     * @param int $uid
      * @return array
+     * @throws RedisException
      */
-    public function list(array $input): array
+    public function list(array $input, int $uid): array
     {
         // 分页, 排序
         $orderByField = Arr::get($input, 'field', 'id'); // 排序字段
@@ -46,6 +50,22 @@ class ConfigService extends Service
                 ->offset($pageSize * ($page - 1))
                 ->limit($pageSize)
                 ->get();
+
+            // 获取用户的角色
+            $roles = (new UserService())->getUserRole($uid);
+
+            // 判断用户是否拥有超级管理员权限
+            $isSuper = false;
+            if (in_array(Role::getSuperRole(), $roles)) {
+                $isSuper = true;
+            }
+
+            foreach ($items as $k => $item) {
+                $items[$k]['editable'] = 1;
+                if (!$isSuper && in_array($item['uuid'], ConfigUuid::superOnlyUuids())) {
+                    $items[$k]['editable'] = 0; // 非超级管理不可编辑
+                }
+            }
         }
         return ['total' => $total, 'items' => $items];
     }
@@ -80,15 +100,30 @@ class ConfigService extends Service
      * config.edit
      * @param int $id
      * @param array $input
+     * @param $uid
      * @return bool
-     * @throws CustomizeException|RedisException
+     * @throws CustomizeException
+     * @throws RedisException
      */
-    public function edit(int $id, array $input): bool
+    public function edit(int $id, array $input, $uid): bool
     {
+        // 获取用户的角色
+        $roles = (new UserService())->getUserRole($uid);
+
+        // 敏感操作，校验是否有权限编辑
+        if (!in_array(Role::getSuperRole(), $roles) && in_array($input['uuid'], ConfigUuid::superOnlyUuids())) {
+            throw new CustomizeException(Code::E100071);
+        }
+
         // 查找配置
         $model = Config::find($id);
         if (!$model) {
             throw new CustomizeException(Code::E100055);
+        }
+
+        // 校验数据类型是否一致
+        if ($model->type != $input['type']) {
+            throw new CustomizeException(Code::E100070);
         }
 
         $model->value = Arr::get($input, 'value', $model->value);

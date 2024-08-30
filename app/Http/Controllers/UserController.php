@@ -458,20 +458,26 @@ class UserController extends Controller
             $userService = new UserService;
             // 校验安全码
             $isOk = $userService->checkMfaSecure($adminId, $input['secure']);
-
+            $info = $userService->getUserMfaInfo($adminId, $input['scenarios']);
             $twoStep = [];
-
             if ($isOk) {
                 // 登录场景, 设置检验标识
                 if (CheckMfaScenarios::LOGIN->value == $input['scenarios']) {
                     $userService->setLoginCheckMfaFlag($adminId);
                 }
 
-                // 存储两步校验码时间30分钟
-                $twoStep = $userService->setTwoStepCode($adminId, $input['scenarios']);
-            }
+                // 是否有频率设置
+                $times = intval($info['frequency']);
+                $Key = $input['scenarios'];
+                $expire = 300; // 5分钟
+                if ($times > 0) {
+                    $Key = CheckMfaScenarios::LOGIN->value;
+                    $expire = $times;
+                }
 
-            $info = $userService->getUserMfaInfo($adminId, $input['scenarios']);
+                // 存储两步校验码时间5分钟FREQUENCY
+                $twoStep = $userService->setTwoStepCode($adminId, $Key, $expire);
+            }
 
             return Response::success(array_merge($info, ['isOk' => $isOk, 'twoStep' => $twoStep]));
         } catch (CustomizeException $e) {
@@ -539,7 +545,9 @@ class UserController extends Controller
 
             $userInfo = array_merge($userInfo, $userService->getUserMfaInfo($user['id'], CheckMfaScenarios::LOGIN->value));
 
-            return Response::success($userInfo);
+            // return Response::success($userInfo);
+            // 返回加密数据
+            return Response::success($userInfo)->header('X-Cipher', 'cipher');
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
@@ -580,13 +588,42 @@ class UserController extends Controller
 //                        ->uncompromised(1) // 确保密码未泄露
                     ], // 新密码
                 ]);
+
+            // 开启的状态下修改秘钥需先验证MFA设备
+            $mfaStatus = $request->offsetGet("user.mfa_status");
+            if ($mfaStatus == UserMfaStatus::ENABLED->value) {
+                $validator->addRules([
+                    'twoStepKey' => [
+                        'required',
+                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::CHANGE_PASSWORD->value]), // 允许使用登录身份验证信息
+                    ],
+                    'twoStepValue' => [
+                        'required',
+                    ],
+                ]);
+            }
+
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
-            $res = (new UserService)->updatePassword(
+
+            $input = $validator->validated();
+
+            $userService = new UserService;
+            // 开启的状态下修改秘钥需先验证MFA设备
+            if ($mfaStatus == UserMfaStatus::ENABLED->value) {
+                $adminId = $request->offsetGet("user.id");
+                $key = $input['twoStepKey'];
+                $value = $input['twoStepValue'];
+                if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
+                    throw new CustomizeException(Code::F10006);
+                }
+            }
+
+            $res = $userService->updatePassword(
                 $request->offsetGet('user.id'),
-                $request->input('passwordOld'),
-                $request->input('passwordNew')
+                $input['passwordOld'],
+                $input['passwordNew']
             );
             if (!$res) {
                 return Response::fail(Code::F2001);
@@ -612,17 +649,42 @@ class UserController extends Controller
     public function updateMfaSecureKey(Request $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->input()
-                , [
-                    'mfa_secure_key' => 'required|min:16', // 安全码
+            $validator = Validator::make($request->input(), [
+                'mfa_secure_key' => 'required|min:16', // 安全码
+            ]);
+
+            // 开启的状态下修改秘钥需先验证MFA设备
+            $mfaStatus = $request->offsetGet("user.mfa_status");
+            if ($mfaStatus == UserMfaStatus::ENABLED->value) {
+                $validator->addRules([
+                    'twoStepKey' => [
+                        'required',
+                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_SECURE_KEY->value]), // 允许使用登录身份验证信息
+                    ],
+                    'twoStepValue' => [
+                        'required',
+                    ],
                 ]);
+            }
+
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
             $input = $validator->validated();
 
-            $result = (new UserService)->editAccount($request->offsetGet('user.id'), $input);
+            $userService = new UserService;
+            // 开启的状态下修改秘钥需先验证MFA设备
+            if ($mfaStatus == UserMfaStatus::ENABLED->value) {
+                $adminId = $request->offsetGet("user.id");
+                $key = $input['twoStepKey'];
+                $value = $input['twoStepValue'];
+                if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
+                    throw new CustomizeException(Code::F10006);
+                }
+            }
+
+            $result = $userService->editAccount($request->offsetGet('user.id'), $input);
             if (!$result) {
                 return Response::fail(Code::F2001);
             }
@@ -959,19 +1021,26 @@ class UserController extends Controller
                         'required',
                         new Enum(UserMfaStatus::class),
                     ],
+                ]);
+
+            $adminId = $request->offsetGet('user.id');
+            if ($id == $adminId) {
+                $validator->addRules([
                     'twoStepKey' => [
                         'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
-                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_STATUS->value]),
+                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_STATUS->value]), // 允许使用登录身份验证信息
                     ],
                     'twoStepValue' => [
                         'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
                     ],
                 ]);
+            }
+
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
-            $adminId = $request->offsetGet('user.id');
+
             $userService = new UserService;
             if ($id != $adminId) {
                 // 非下级角色状态不能修改
@@ -980,10 +1049,9 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 关闭身份验证器需先验证身份
-            if (Arr::get($input, 'mfa_status') == UserMfaStatus::DISABLED->value) {
-                // 允许使用登录身份验证信息
-                $key = Arr::get($input, 'twoStepKey');
-                $value = Arr::get($input, 'twoStepValue');
+            if ($id == $adminId && $input['mfa_status'] == UserMfaStatus::DISABLED->value) {
+                $key = $input['twoStepKey'];
+                $value = $input['twoStepValue'];
                 if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
                     throw new CustomizeException(Code::F10006);
                 }

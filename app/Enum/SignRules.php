@@ -15,15 +15,35 @@ enum SignRules
      */
     const signRules = [
         'user.login' => self::userLogin,
+        'ignore.user.updateMfaSecureKey' => self::userUpdateMfaSecureKey,
+        'ignore.user.updatePassword' => self::userUpdatePassword,
     ];
 
     /**
-     * 签名参数
+     * 登录签名参数
      * request 请求签名参数
      * response 响应签名参数
      */
     const userLogin = [
         'request' => ['name', 'password', 'secureCode'],
         'response' => ['token'],
+    ];
+
+    /**
+     * 修改秘钥签名参数
+     * request 请求签名参数
+     * response 响应签名参数
+     */
+    const userUpdateMfaSecureKey = [
+        'request' => ['mfa_secure_key'],
+    ];
+
+    /**
+     * 修改密码签名参数
+     * request 请求签名参数
+     * response 响应签名参数
+     */
+    const userUpdatePassword = [
+        'request' => ['passwordOld', 'passwordNew'],
     ];
 }

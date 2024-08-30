@@ -848,7 +848,7 @@ class UserService extends Service
      * @throws CustomizeException
      * @throws RedisException
      */
-    public function setTwoStepCode(int $uid, int $scenarios, int $expire = 1800): array
+    public function setTwoStepCode(int $uid, int $scenarios, int $expire = 300): array
     {
         // 拼接key
         $key = self::$APP_NAME . RedisKeys::USER_TWO_STEP . $uid . RedisKeys::DELIMIT . $scenarios;
@@ -860,14 +860,14 @@ class UserService extends Service
         // $suffix = base_convert($code, 10, 36); // 100000-zzzzzz
 
         // 值
-        $twoStepCode = base64_encode(json_encode(['code' => $code, 'stime' => time(), 'expire' => $expire, 'id' => $uid]));
+        $twoStepCode = base64_encode(json_encode(['code' => $code, 'time' => time(), 'expire' => $expire, 'id' => $uid]));
 
         // 存入缓存
         if (!Service::set($key, $twoStepCode, $expire)) {
             throw new CustomizeException(Code::F5006, ['flag' => 'set']);
         }
 
-        return ['key' => $scenarios, 'expire' => time() + $expire, 'value' => $twoStepCode];
+        return ['key' => $scenarios, 'expire' => $expire, 'time' => time(), 'value' => $twoStepCode];
     }
 
     /**
@@ -1237,6 +1237,7 @@ class UserService extends Service
         $sign = $this->generateSign(['id' => $uid, 'name' => $user['name']]);
         $userMfaInfo['build_mfa_url'] = "/mfa/secret/$sign"; // 绑定地址
         $userMfaInfo['scenarios'] = $scenarios; // 校验场景
+        $userMfaInfo['frequency'] = ConfigService::getCache(ConfigUuid::MFA_CHECK_FREQUENCY); // 校验频率
         $userMfaInfo['mfa_status'] = (int)$user['mfa_status']; // 用户启用状态
         $userMfaInfo['mfa_check'] = $userMfaInfo['mfa_status']; // 校验状态
         // 是否强制启用登录校验

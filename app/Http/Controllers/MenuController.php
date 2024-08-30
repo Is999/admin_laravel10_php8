@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\AppEnv;
 use App\Enum\Code;
 use App\Enum\LogChannel;
 use App\Enum\MenuShortcut;
@@ -72,6 +73,11 @@ class MenuController extends Controller
     public function add(Request $request): JsonResponse
     {
         try {
+            // 其它环境通过sql 添加
+            if (strtolower(env('APP_ENV')) != AppEnv::DEV) {
+                throw new CustomizeException(Code::INVALID_AUTHORIZATION);
+            }
+
             // 验证参数
             $validator = Validator::make($request->input()
                 , [
