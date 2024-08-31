@@ -1021,11 +1021,6 @@ class UserController extends Controller
                         'required',
                         new Enum(UserMfaStatus::class),
                     ],
-                ]);
-
-            $adminId = $request->offsetGet('user.id');
-            if ($id == $adminId) {
-                $validator->addRules([
                     'twoStepKey' => [
                         'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
                         Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_STATUS->value]), // 允许使用登录身份验证信息
@@ -1034,13 +1029,12 @@ class UserController extends Controller
                         'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
                     ],
                 ]);
-            }
 
             if ($validator->fails()) {
                 throw new CustomizeException(Code::FAIL, $validator->errors()->first());
             }
 
-
+            $adminId = $request->offsetGet('user.id');
             $userService = new UserService;
             if ($id != $adminId) {
                 // 非下级角色状态不能修改
@@ -1049,7 +1043,7 @@ class UserController extends Controller
             $input = $validator->validated();
 
             // 关闭身份验证器需先验证身份
-            if ($id == $adminId && $input['mfa_status'] == UserMfaStatus::DISABLED->value) {
+            if ($input['mfa_status'] == UserMfaStatus::DISABLED->value) {
                 $key = $input['twoStepKey'];
                 $value = $input['twoStepValue'];
                 if ($userService->checkTwoStepCode($adminId, $key) !== $value) {

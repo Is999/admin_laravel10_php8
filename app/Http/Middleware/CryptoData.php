@@ -2,12 +2,18 @@
 /**
  * 对响应和请求的`敏感数据`进行加密解密
  *
+ * 加密解密支持 RSA、AES
+ *
  * 加密解密的参数放在header['X-Cipher']中：
  * 1. 整体加密解密：`X-Cipher`值等于cipher，加密解密ciphertext参数或body数据；
  * 2. 细分加密解密：`X-Cipher`值不等于cipher，原始类型是一个数组，进行了json编码和base64编码；
  *
- * 加密解密的参数只能是请求或响应的`首层数据`
- * Array或者Object类型的数据要标记`json:`标签
+ * 注意事项：加密解密的参数只能是请求或响应的`首层数据`
+ * Array或者Object类型的数据要在参数前面标记`json:`，否则不用标记
+ *
+ * 响应头设置示例：
+ * response()->header('X-Cipher', base64_encode(json_encode(['json:user'，'token'])))
+ * response()->header('X-Cipher', 'cipher')
  */
 
 namespace App\Http\Middleware;

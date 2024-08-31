@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * 对响应和请求的`敏感数据`进行签名和验签
+ *
+ * 签名和验签支持 RSA、AES、MD5
+ *
+ * 签名及验证签名规则在 \App\Enum\SignRules 定义
+ */
 namespace App\Http\Middleware;
 
 use App\Contracts\Signature;
