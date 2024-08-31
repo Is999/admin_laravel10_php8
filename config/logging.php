@@ -55,6 +55,7 @@ return [
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', env('LOG_STACK', 'single')),
+	        'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
             'ignore_exceptions' => false,
         ],
 
@@ -127,6 +128,50 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // sql日志
+        'sql' => [
+            'driver' => 'daily',
+            'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+            'path' => storage_path('logs/sql.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 10,
+        ],
+
+        // 开发调试日志
+        'dev' => [
+            'driver' => 'daily',
+            'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+            'path' => storage_path('logs/dev.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'formatter_with' => [
+                'dateFormat' => 'Y-m-d H:i:s.u',
+            ],
+            'days' => 30,
+        ],
+
+        // 网关日志
+        'gateway' => [
+            'driver' => 'daily',
+            'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+            'path' => storage_path('logs/gateway.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'formatter_with' => [
+                'dateFormat' => 'Y-m-d H:i:s.u',
+            ],
+            'days' => 30,
+        ],
+
+        // 缓存日志
+        'cache' => [
+            'driver' => 'daily',
+            'tap' => [App\Logging\CustomizeFormatter::class], // 自定义日志格式解析类
+            'path' => storage_path('logs/cache.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'formatter_with' => [
+                'dateFormat' => 'Y-m-d H:i:s.u',
+            ],
+            'days' => 30,
+        ],
     ],
 
 ];
