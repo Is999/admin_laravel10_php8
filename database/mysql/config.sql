@@ -45,7 +45,7 @@ INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (4, 'ADMIN_SIGNATURE_DISABLE', '禁用签名', 3, '1', '0', '[生产建议配置：0 启用] 禁用签名：0 启用；1 禁用', '2024-04-22 12:04:47', '2024-06-30 18:06:23');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (5, 'MFA_CHECK_ENABLE', '强校验MFA设备验证码', 3, '0', '1', '[生产建议配置：1 强启用] 强启用MFA设备（身份验证器）登录校验：1 强启用校验（用户设置MFA状态失效）；0 非强启用（默认使用用户设置的MFA状态）', '2024-08-25 12:47:13', '2024-08-29 16:45:13');
 INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (6, 'MFA_CHECK_FREQUENCY', 'MFA设备校验频率', 1, '1800', '0', 'MFA设备校验频率（单位秒），建议配置5分钟(300秒)以上: 0 需要校验的地方每次都校验，大于0 秒在该时间内只不再重复校验（x秒时间内只校验一次）', '2024-08-29 16:59:12', '2024-08-29 16:59:12');
-INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (7, 'CHECK_MFA_SCENARIOS', '校验MFA设备应用场景', 4, '{\"1\":\"修改秘密\",\"2\":\"修改MFA状态（关闭）\",\"3\":\"修改MFA秘钥\",\"4\":\"修改用户状态\",\"5\":\"添加用户\",\"6\":\"修改用户\"}', '{\"1\":\"修改秘密\",\"2\":\"修改MFA状态（关闭）\",\"3\":\"修改MFA秘钥\"}', '校验MFA设备应用场景，请到菜单【系统管理/MFA管理】配置相关选项', '2024-09-02 21:12:48', '2024-09-02 21:12:48');
+INSERT INTO `config` (`id`, `uuid`, `title`, `type`, `value`, `example`, `remark`, `created_at`, `updated_at`) VALUES (7, 'CHECK_MFA_SCENARIOS_DISABLE', '禁用MFA设备校验应用场景', 4, '{}', '{\"1\":\"修改秘密\",\"2\":\"修改MFA状态（关闭）\",\"3\":\"修改MFA秘钥\"}', '校验MFA设备应用场景，请到菜单【系统管理/MFA管理】配置相关选项', '2024-09-02 21:12:48', '2024-09-02 22:07:38');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
