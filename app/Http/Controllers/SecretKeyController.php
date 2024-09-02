@@ -7,6 +7,7 @@ use App\Enum\LogChannel;
 use App\Enum\OrderBy;
 use App\Enum\SecretKeyStatus;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\SecretKeyValidation;
 use App\Logging\Logger;
 use App\Services\ResponseService as Response;
 use App\Services\SecretKeyService;
@@ -27,25 +28,7 @@ class SecretKeyController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'title' => 'string|max:100', // 标题
-                    'uuid' => 'string|max:64', // 标题
-                    'status' => [ // 状态
-                        new Enum(SecretKeyStatus::class),
-                    ],
-                    'field' => 'string', // 排序字段
-                    'order' => [ // 排序方式
-                        new Enum(OrderBy::class),
-                    ],
-                    'page' => 'integer|min:1', // 页码
-                    'pageSize' => 'integer|between:10,100', // 每页条数
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new SecretKeyValidation())->index($request);
 
             // 查询数据
             $result = (new SecretKeyService())->list($input);

@@ -8,6 +8,8 @@ use App\Enum\RedisKeys;
 use App\Enum\RedisType;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\CacheValidation;
+use App\Http\Validators\ConfigValidation;
 use App\Logging\Logger;
 use App\Services\RedisService;
 use App\Services\ResponseService as Response;
@@ -61,19 +63,7 @@ class CacheController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'key' => 'required|string',
-                    'type' => [ // 类型: 1 菜单, 0 目录
-                        'required',
-                        new Enum(RedisType::class),
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new CacheValidation())->renew($request);
 
             // 刷新缓存
             $result = RedisService::initTable($input['key']);
@@ -147,15 +137,8 @@ class CacheController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'key' => 'required|string',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new CacheValidation())->keyInfo($request);
 
-            $input = $validator->validated();
             $key = $input['key'];
             $redis = Service::redis();
             $type = $redis->type($input['key']);
@@ -191,15 +174,8 @@ class CacheController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'key' => 'required|string',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new CacheValidation())->searchKey($request);
 
-            $input = $validator->validated();
             $result = $this->Scan($input['key']);
             return Response::success($result);
         } catch (Throwable $e) {

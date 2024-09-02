@@ -10,6 +10,7 @@ use App\Enum\PermissionStatus;
 use App\Enum\PermissionType;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\PermissionValidation;
 use App\Logging\Logger;
 use App\Services\PermissionService;
 use App\Services\ResponseService as Response;
@@ -31,32 +32,10 @@ class PermissionController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'uuid' => 'string|max:100', // 唯一标识
-                    'title' => 'string|max:100', // 权限名称
-                    'module' => 'string|max:250', // 权限匹配模型(路由名称 | 控制器/方法)
-                    'type' => [ // 类型
-                        'array',
-                        Rule::in(PermissionType::values()),
-                    ],
-                    'status' => [ // 状态：1 启用, 0 禁用
-                        new Enum(PermissionStatus::class),
-                    ],
-                    'pid' => 'integer|min:0', // 上级id
-                    'is_genealogy' => 'integer|min:0', // 0 直属, 1 族谱
-                    'field' => 'string', // 排序字段
-                    'order' => [ // 排序方式
-                        new Enum(OrderBy::class),
-                    ],
-                    'cache' => 'boolean' // true 查缓存, 1 查表
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new PermissionValidation())->index($request);
 
             // 查询数据
-            $result = (new PermissionService)->permissionList($validator->validated());
+            $result = (new PermissionService)->permissionList($input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -81,27 +60,7 @@ class PermissionController extends Controller
             }
 
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'uuid' => 'required|string|max:100', // 唯一标识(前端权限标识)
-                    'title' => 'required|string|max:100', // 权限名称
-                    'module' => 'nullable|string|max:250', // 后端权限匹配模型(路由名称 | 控制器/方法)
-                    'type' => [ // 类型
-                        'required',
-                        new Enum(PermissionType::class),
-                    ],
-                    'status' => [ // 状态：1 启用, 0 禁用
-                        'required',
-                        new Enum(PermissionStatus::class),
-                    ],
-                    'pid' => 'required|integer|min:0', // 上级id
-                    'describe' => 'required|string|max:255',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new PermissionValidation())->add($request);
 
             // 新增权限
             $result = (new PermissionService)->permissionAdd($input);
@@ -122,7 +81,7 @@ class PermissionController extends Controller
     }
 
     /**
-     * 编辑
+     * 编辑权限
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -131,25 +90,7 @@ class PermissionController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'title' => 'required|string|max:100', // 权限名称
-                    'module' => 'nullable|string|max:250', // 后端权限匹配模型(路由名称 | 控制器/方法)
-                    'type' => [ // 类型
-                        'required',
-                        new Enum(PermissionType::class),
-                    ],
-                    'status' => [ // 状态：1 启用, 0 禁用
-                        'required',
-                        new Enum(PermissionStatus::class),
-                    ],
-                    'describe' => 'required|string|max:255',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new PermissionValidation())->edit($request);
 
             // 编辑权限
             $result = (new PermissionService)->permissionEdit($id, $input);
@@ -179,18 +120,7 @@ class PermissionController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'status' => [ // 状态：1 启用, 0 禁用
-                        'required',
-                        new Enum(PermissionStatus::class),
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new PermissionValidation())->editStatus($request);
 
             // 更新权限状态
             $result = (new PermissionService)->permissionEdit($id, $input);

@@ -11,6 +11,7 @@ use App\Enum\MenuType;
 use App\Enum\OrderBy;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\MenuValidation;
 use App\Logging\Logger;
 use App\Services\MenuService;
 use App\Services\ResponseService as Response;
@@ -31,30 +32,10 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'permissions_uuid' => 'string|max:100', // 唯一标识
-                    'title' => 'string|max:100', // 菜单名称
-                    'pid' => 'integer|min:0', // 上级id
-                    'is_genealogy' => 'integer|min:0', // 0 直属, 1 族谱
-                    'status' => [ // 状态：1 显示, 0 隐藏
-                        new Enum(MenuStatus::class),
-                    ],
-                    'is_shortcut' => [ // 是否快捷
-                        new Enum(MenuShortcut::class),
-                    ],
-                    'field' => 'string', // 排序字段
-                    'order' => [ // 排序方式
-                        new Enum(OrderBy::class),
-                    ],
-                    'cache' => 'boolean' // true 查缓存, 1 查表
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new MenuValidation())->index($request);
 
             // 查询数据
-            $result = (new MenuService)->menuList($validator->validated());
+            $result = (new MenuService)->menuList($input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -66,7 +47,7 @@ class MenuController extends Controller
     }
 
     /**
-     * 新增
+     * 新增菜单
      * @param Request $request
      * @return JsonResponse
      */
@@ -79,35 +60,7 @@ class MenuController extends Controller
             }
 
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'permissions_uuid' => 'required|string|max:100', // 权限标识
-                    'title' => 'required|string|max:100', // 菜单名称
-                    'title_lang' => 'required|string|max:200', // 菜单名称
-                    'icon' => 'required|string|max:255', // 图标
-                    'path' => 'string|max:255', // 路由地址
-                    'component' => 'string|max:255', // 组件路径
-                    'status' => [ // 状态: 1 显示, 0 隐藏
-                        'required',
-                        new Enum(MenuStatus::class),
-                    ],
-                    'is_shortcut' => [ // 是否快捷: 1 是, 0 否
-                        'required',
-                        new Enum(MenuShortcut::class),
-                    ],
-                    'type' => [ // 类型: 1 菜单, 0 目录
-                        'required',
-                        new Enum(MenuType::class),
-                    ],
-                    'pid' => 'required|integer|min:0', // 上级id
-                    'sort' => 'integer', // 排序
-                    'describe' => 'string|max:255', // 描述
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new MenuValidation())->add($request);
 
             // 新增权限
             $result = (new MenuService)->menuAdd($input);
@@ -129,7 +82,7 @@ class MenuController extends Controller
     }
 
     /**
-     * 编辑
+     * 编辑菜单
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -138,35 +91,7 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'permissions_uuid' => 'required|string|max:100', // 权限标识
-                    'title' => 'required|string|max:100', // 菜单名称
-                    'title_lang' => 'required|string|max:200', // 菜单名称
-                    'icon' => 'required|string|max:255', // 图标
-                    'path' => 'string|max:255', // 路由地址
-                    'status' => [ // 状态: 1 显示, 0 隐藏
-                        'required',
-                        new Enum(MenuStatus::class),
-                    ],
-                    'is_shortcut' => [ // 是否快捷: 1 是, 0 否
-                        'required',
-                        new Enum(MenuShortcut::class),
-                    ],
-                    'type' => [ // 类型: 1 菜单, 0 目录
-                        'required',
-                        new Enum(MenuType::class),
-                    ],
-                    'pid' => 'required|integer|min:0', // 上级id
-                    'sort' => 'integer', // 排序
-                    'component' => 'string|max:255', // 组件路径
-                    'describe' => 'string|max:255',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new MenuValidation())->edit($request);
 
             // 编辑权限
             $result = (new MenuService)->menuEdit($id, $input);
@@ -187,7 +112,7 @@ class MenuController extends Controller
     }
 
     /**
-     * 显示/隐藏
+     * 编辑菜单状态[显示/隐藏]
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -196,18 +121,7 @@ class MenuController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'status' => [
-                        'required',
-                        new Enum(MenuStatus::class),
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new MenuValidation())->editStatus($request);
 
             // 编辑角色状态
             $result = (new MenuService)->menuEdit($id, $input);

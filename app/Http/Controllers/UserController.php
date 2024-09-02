@@ -6,11 +6,10 @@ use App\Enum\CheckMfaScenarios;
 use App\Enum\Code;
 use App\Enum\ConfigUuid;
 use App\Enum\LogChannel;
-use App\Enum\OrderBy;
 use App\Enum\UserAction;
 use App\Enum\UserMfaStatus;
-use App\Enum\UserStatus;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\UserValidation;
 use App\Logging\Logger;
 use App\Models\User;
 use App\Services\ConfigService;
@@ -18,14 +17,10 @@ use App\Services\IpService;
 use App\Services\ResponseService as Response;
 use App\Services\UserService;
 use Carbon\Carbon;
-use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
 class UserController extends Controller
@@ -40,19 +35,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'name' => 'required|string|min:6|max:32',
-                    'password' => 'required',
-                    'key' => 'required|string',
-                    'captcha' => 'required', // 验证码
-                ]);
-
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new UserValidation())->login($request);
 
             // 校验验证码
             if (!captcha_api_check($input["captcha"], $input["key"])) {
@@ -242,15 +225,8 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'roles' => 'required|array', // 角色id
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->editRole($request);
 
-            $input = $validator->validated();
             $admin = $request->offsetGet('user.id');
             $res = (new UserService)->userEditRole($admin, $id, $input);
             if (!$res) {
@@ -280,15 +256,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'roleId' => 'required|integer|min:1', // 角色id
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new UserValidation())->addRole($request);
 
             $admin = $request->offsetGet('user.id');
             $res = (new UserService)->userAddRole($admin, $id, $input);
@@ -318,15 +286,8 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'user_roles_id' => 'required|integer|min:1', // 角色与用户关系 user_roles_access.id
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->delRole($request);
 
-            $input = $validator->validated();
             $admin = $request->offsetGet('user.id');
             $res = (new UserService)->userDelRole($admin, $id, $input);
             if (!$res) {
@@ -412,16 +373,10 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'secure' => 'required',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->checkSecure($request);
 
             // 校验安全码
-            $isOk = (new UserService)->checkSecure($request->offsetGet('user.id'), $validator->validated()['secure']);
+            $isOk = (new UserService)->checkSecure($request->offsetGet('user.id'), $input['secure']);
             return Response::success(['isOk' => $isOk]);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -441,18 +396,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'secure' => 'required',
-                    'scenarios' => [ // 校验MFA设备应用场景
-                        'required',
-                        new Enum(CheckMfaScenarios::class),
-                    ]
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-            $input = $validator->validated();
+            $input = (new UserValidation())->checkMfaSecure($request);
 
             $adminId = $request->offsetGet('user.id');
             $userService = new UserService;
@@ -498,27 +442,10 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'name' => 'string|max:100', // 账号
-                    'email' => 'string|email', // 邮箱
-                    'status' => [ // 排序方式
-                        new Enum(UserStatus::class),
-                    ],
-                    'role' => 'integer|min:1', // 角色
-                    'field' => 'string', // 排序字段
-                    'order' => [ // 排序方式
-                        new Enum(OrderBy::class),
-                    ],
-                    'page' => 'integer|min:1', // 页码
-                    'pageSize' => 'integer|between:10,100', // 每页条数
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->index($request);
 
             // 查询数据
-            $result = (new UserService)->list($validator->validated());
+            $result = (new UserService)->list($input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -563,54 +490,12 @@ class UserController extends Controller
     public function updatePassword(Request $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->input()
-                , [
-                    'passwordOld' => [
-                        'required', // 接收前端MD5后的密码
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-                    ],
-                    'passwordNew' => [
-                        'required', // 接收前端MD5后的密码
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-//                        Password::min(6) // 至少需要 6 个字符
-//                        ->letters() // 至少需要一个字母
-//                        ->mixedCase() // 至少需要一个大写字母和一个小写字母
-//                        ->numbers() // 至少需要一个数字
-//                        ->symbols() // 至少需要一个符号
-//                        ->uncompromised(1) // 确保密码未泄露
-                    ], // 新密码
-                ]);
-
-            // 开启的状态下修改秘钥需先验证MFA设备
-            $mfaStatus = $request->offsetGet("user.mfa_status");
-            if ($mfaStatus == UserMfaStatus::ENABLED->value) {
-                $validator->addRules([
-                    'twoStepKey' => [
-                        'required',
-                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::CHANGE_PASSWORD->value]), // 允许使用登录身份验证信息
-                    ],
-                    'twoStepValue' => [
-                        'required',
-                    ],
-                ]);
-            }
-
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            // 验证参数
+            $input = (new UserValidation())->updatePassword($request);
 
             $userService = new UserService;
             // 开启的状态下修改秘钥需先验证MFA设备
+            $mfaStatus = $request->offsetGet("user.mfa_status");
             if ($mfaStatus == UserMfaStatus::ENABLED->value) {
                 $adminId = $request->offsetGet("user.id");
                 $key = $input['twoStepKey'];
@@ -649,32 +534,12 @@ class UserController extends Controller
     public function updateMfaSecureKey(Request $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->input(), [
-                'mfa_secure_key' => 'required|min:16', // 安全码
-            ]);
-
-            // 开启的状态下修改秘钥需先验证MFA设备
-            $mfaStatus = $request->offsetGet("user.mfa_status");
-            if ($mfaStatus == UserMfaStatus::ENABLED->value) {
-                $validator->addRules([
-                    'twoStepKey' => [
-                        'required',
-                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_SECURE_KEY->value]), // 允许使用登录身份验证信息
-                    ],
-                    'twoStepValue' => [
-                        'required',
-                    ],
-                ]);
-            }
-
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            // 验证参数
+            $input = (new UserValidation())->updateMfaSecureKey($request);
 
             $userService = new UserService;
             // 开启的状态下修改秘钥需先验证MFA设备
+            $mfaStatus = $request->offsetGet("user.mfa_status");
             if ($mfaStatus == UserMfaStatus::ENABLED->value) {
                 $adminId = $request->offsetGet("user.id");
                 $key = $input['twoStepKey'];
@@ -712,68 +577,8 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'name' => [
-                        'required',
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[a-zA-Z0-9]{6,20}$/", $value)) {
-                                $fail("$attribute 长度必须为6-20位的字母+数字组合");
-                            }
-                            $user = User::where(['name' => $value])->first();
-                            if ($user) {
-                                $fail("$attribute 已存在，请更换一个$attribute");
-                            }
-                        },
-                    ],
-                    'real_name' => 'required|min:2|max:20',
-                    'password' => [
-                        'required', // 接收前端MD5后的密码
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-//                        Password::min(6) // 至少需要 6 个字符
-//                        ->letters() // 至少需要一个字母
-//                        ->mixedCase() // 至少需要一个大写字母和一个小写字母
-//                        ->numbers() // 至少需要一个数字
-//                        ->symbols() // 至少需要一个符号
-//                        ->uncompromised(1) // 确保密码未泄露
-                    ],
-                    'email' => 'required|email',
-                    'phone' => [
-                        'required',
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^1[3-9]\d{9}$/", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-                    ],
-                    'status' => [
-                        'required',
-                        new Enum(UserStatus::class),
-                    ],
-                    'mfa_status' => [
-                        'required',
-                        new Enum(UserMfaStatus::class),
-                    ],
-                    'mfa_secure_key' => [
-                        'string',
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[A-Za-z0-9]{16,32}$/", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-                    ],
-                    'avatar' => 'string',
-                    'remark' => 'string',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->add($request);
 
-            $input = $validator->validated();
             // 新增账号
             $result = (new UserService)->addAccount($input);
             if (!$result) {
@@ -806,56 +611,8 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'name' => [
-                        'required',
-                    ],
-                    'real_name' => 'required|min:2|max:20',
-                    'password' => [
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[A-Za-z0-9]{32}$/i", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-//                        Password::min(6) // 至少需要 6 个字符
-//                        ->letters() // 至少需要一个字母
-//                        ->mixedCase() // 至少需要一个大写字母和一个小写字母
-//                        ->numbers() // 至少需要一个数字
-//                        ->symbols() // 至少需要一个符号
-//                        ->uncompromised(1) // 确保密码未泄露
-                    ],
-                    'email' => 'required|email',
-                    'phone' => [
-                        'required',
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^1[3-9]\d{9}$/", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-                    ],
-                    'status' => [
-                        new Enum(UserStatus::class),
-                    ],
-                    'mfa_status' => [
-                        new Enum(UserMfaStatus::class),
-                    ],
-                    'mfa_secure_key' => [
-                        'string',
-                        function (string $attribute, mixed $value, Closure $fail) {
-                            if (!preg_match("/^[A-Za-z0-9]{16,32}$/", $value)) {
-                                $fail("$attribute 格式不正确");
-                            }
-                        },
-                    ],
-                    'avatar' => 'string',
-                    'remark' => 'string',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->edit($request);
 
-            $input = $validator->validated();
             $userService = new UserService;
             // 校验是否可以编辑状态
             if (Arr::get($input, 'status') !== null) {
@@ -912,26 +669,18 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'avatar' => 'required',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->updateAvatar($request);
 
-            $input = $validator->validated();
-
-            $id = $request->offsetGet('user.id');
+            $adminId = $request->offsetGet('user.id');
 
             // 编辑账号
-            $result = (new UserService)->editAccount($id, $input);
+            $result = (new UserService)->editAccount($adminId, $input);
             if (!$result) {
                 throw new CustomizeException(Code::F2003);
             }
 
             // 记录操作日志
-            $this->addUserLog(__FUNCTION__, UserAction::EDIT_USER, 'user.id=' . $id, $input);
+            $this->addUserLog(__FUNCTION__, UserAction::EDIT_USER, 'user.id=' . $adminId, $input);
 
             return Response::success([], Code::S1003);
         } catch (CustomizeException $e) {
@@ -963,16 +712,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'status' => [
-                        'required',
-                        new Enum(UserStatus::class),
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->editStatus($request);
 
             $adminId = $request->offsetGet('user.id');
 
@@ -985,7 +725,6 @@ class UserController extends Controller
             // 非下级角色状态不能修改
             $userService->checkEditStatus($adminId, $id);
 
-            $input = $validator->validated();
             $result = $userService->editAccount($id, $input);
             if (!$result) {
                 throw new CustomizeException($request->input('status') ? Code::F2004 : Code::F2005);
@@ -1015,24 +754,7 @@ class UserController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'mfa_status' => [
-                        'required',
-                        new Enum(UserMfaStatus::class),
-                    ],
-                    'twoStepKey' => [
-                        'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
-                        Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_STATUS->value]), // 允许使用登录身份验证信息
-                    ],
-                    'twoStepValue' => [
-                        'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
-                    ],
-                ]);
-
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new UserValidation())->editMfaStatus($request);
 
             $adminId = $request->offsetGet('user.id');
             $userService = new UserService;
@@ -1040,7 +762,6 @@ class UserController extends Controller
                 // 非下级角色状态不能修改
                 $userService->checkEditStatus($adminId, $id);
             }
-            $input = $validator->validated();
 
             // 关闭身份验证器需先验证身份
             if ($input['mfa_status'] == UserMfaStatus::DISABLED->value) {

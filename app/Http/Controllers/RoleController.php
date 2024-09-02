@@ -8,6 +8,7 @@ use App\Enum\LogChannel;
 use App\Enum\RoleStatus;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\RoleValidation;
 use App\Logging\Logger;
 use App\Services\ResponseService as Response;
 use App\Services\RoleService;
@@ -45,22 +46,10 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'title' => 'string|max:100', // 角色名称
-                    'status' => [ // 角色状态
-                        new Enum(RoleStatus::class),
-                    ],
-                    'pid' => 'integer|min:0', // 上级id
-                    'is_genealogy' => 'integer|min:0', // 0 直属, 1 族谱
-                    'cache' => 'boolean' // true 查缓存, 1 查表
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new RoleValidation())->index($request);
 
             // 查询数据
-            $result = (new RoleService)->roleList($validator->validated());
+            $result = (new RoleService)->roleList($input);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -80,21 +69,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'title' => 'required|string|max:100',
-                    'pid' => 'required|integer|min:1',
-                    'describe' => 'required|string|max:255',
-                    'permissions' => [
-                        'required',
-                        'array',
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new RoleValidation())->add($request);
 
             // 新增角色
             $admin = $request->offsetGet('user.id');
@@ -124,24 +99,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'title' => 'required|string|max:100',
-                    'describe' => 'required|string|max:255',
-                    'status' => [
-                        'required',
-                        new Enum(RoleStatus::class),
-                    ],
-                    'permissions' => [
-                        'required',
-                        'array',
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new RoleValidation())->edit($request);
 
             // 编辑角色信息
             $admin = $request->offsetGet('user.id');
@@ -200,18 +158,7 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'status' => [
-                        'required',
-                        new Enum(RoleStatus::class),
-                    ],
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
+            $input = (new RoleValidation())->editStatus($request);
 
             // 编辑角色状态
             $admin = $request->offsetGet('user.id');
@@ -242,22 +189,8 @@ class RoleController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'permissions' => [
-                        'required',
-                        'array',
-                    ],
-                    'is_extends' => [
-                        'required',
-                        'integer',
-                    ]
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new RoleValidation())->editPermission($request);
 
-            $input = $validator->validated();
             // 编辑角色权限
             $admin = $request->offsetGet('user.id');
             $result = (new RoleService)->roleEdit($admin, $id, $input);

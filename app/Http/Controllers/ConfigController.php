@@ -9,6 +9,7 @@ use App\Enum\LogChannel;
 use App\Enum\OrderBy;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
+use App\Http\Validators\ConfigValidation;
 use App\Logging\Logger;
 use App\Services\ConfigService;
 use App\Services\ResponseService as Response;
@@ -22,7 +23,7 @@ class ConfigController extends Controller
 {
 
     /**
-     * 列表
+     * 字典管理列表
      * @param Request $request
      * @return JsonResponse
      */
@@ -30,24 +31,11 @@ class ConfigController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'uuid' => 'string', // 唯一标识
-                    'title' => 'string', // 名称
-                    'field' => 'string', // 排序字段
-                    'order' => [ // 排序方式
-                        new Enum(OrderBy::class),
-                    ],
-                    'page' => 'integer|min:1', // 页码
-                    'pageSize' => 'integer|between:10,100', // 每页条数
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new ConfigValidation())->index($request);
 
             $adminId = $request->offsetGet('user.id');
             // 查询数据
-            $result = (new ConfigService)->list($validator->validated(), $adminId);
+            $result = (new ConfigService)->list($input, $adminId);
             return Response::success($result);
         } catch (CustomizeException $e) {
             return Response::fail($e->getCode(), $e->getMessage());
@@ -59,7 +47,7 @@ class ConfigController extends Controller
     }
 
     /**
-     * 添加
+     * 添加字典
      * @param Request $request
      * @return JsonResponse
      */
@@ -72,23 +60,8 @@ class ConfigController extends Controller
             }
 
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'uuid' => 'required|string|max:255',
-                    'title' => 'required|string|max:255',
-                    'value' => 'required',
-                    'example' => 'required',
-                    'type' => [ // 类型
-                        'required',
-                        new Enum(ConfigType::class),
-                    ],
-                    'remark' => 'required|string|max:255',
-                ]);
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
+            $input = (new ConfigValidation())->add($request);
 
-            $input = $validator->validated();
             $config = new ConfigService();
 
             // 校验值
@@ -115,7 +88,7 @@ class ConfigController extends Controller
     }
 
     /**
-     * 编辑
+     * 修改字典
      * @param Request $request
      * @param int $id
      * @return JsonResponse
@@ -124,24 +97,8 @@ class ConfigController extends Controller
     {
         try {
             // 验证参数
-            $validator = Validator::make($request->input()
-                , [
-                    'uuid' => 'required|string|max:255',
-                    'title' => 'required|string|max:255',
-                    'value' => 'required',
-                    'example' => 'required',
-                    'type' => [ // 类型
-                        'required',
-                        new Enum(ConfigType::class),
-                    ],
-                    'remark' => 'required|string|max:255',
-                ]);
+            $input = (new ConfigValidation())->edit($request);
 
-            if ($validator->fails()) {
-                throw new CustomizeException(Code::FAIL, $validator->errors()->first());
-            }
-
-            $input = $validator->validated();
             $config = new ConfigService();
             // 校验值
             $input['value'] = $config->checkAndReformValue($input['type'], $input['value']);
