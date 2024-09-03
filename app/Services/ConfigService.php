@@ -182,6 +182,7 @@ class ConfigService extends Service
     }
 
     /**
+     * 检查数据是否符合指定类型
      * @param $type
      * @param $value
      * @return bool|float|int|string
@@ -221,5 +222,16 @@ class ConfigService extends Service
             default:
                 return $value;
         }
+    }
+
+    /**
+     * 指定场景是否需要验证MFA设备（后端服务验证两步验证参数）
+     * @param string $scenarios 应用场景
+     * @return bool
+     * @throws RedisException
+     */
+    public static function isCheckMfa(string $scenarios): bool{
+        $value = self::getCache(ConfigUuid::CHECK_MFA_SCENARIOS_DISABLE);
+        return !array_key_exists($scenarios, $value);
     }
 }

@@ -55,7 +55,7 @@ class PermissionController extends Controller
     {
         try {
             // 其它环境通过sql 添加
-            if (strtolower(env('APP_ENV')) != AppEnv::DEV) {
+            if (strtolower(env('APP_ENV')) != AppEnv::DEV->value) {
                 throw new CustomizeException(Code::INVALID_AUTHORIZATION);
             }
 

@@ -19,6 +19,9 @@ enum SignRules
         'user.login' => self::userLogin,
         'ignore.user.updateMfaSecureKey' => self::userUpdateMfaSecureKey,
         'ignore.user.updatePassword' => self::userUpdatePassword,
+        'ignore.user.updateMine' => self::userEdit,
+        'user.edit' => self::userEdit,
+        'user.add' => self::userAdd,
     ];
 
     /**
@@ -47,5 +50,24 @@ enum SignRules
      */
     const array userUpdatePassword = [
         'request' => ['passwordOld', 'passwordNew'],
+    ];
+
+    /**
+     * 添加账号签名参数
+     * request 请求签名参数
+     * response 响应签名参数
+     */
+    const array userAdd = [
+        'request' => ['name', 'email', 'phone', 'password', 'mfa_secure_key'],
+    ];
+
+
+    /**
+     * 修改账号签名参数
+     * request 请求签名参数
+     * response 响应签名参数
+     */
+    const array userEdit = [
+        'request' => ['name', 'email', 'phone', 'password', 'mfa_secure_key'],
     ];
 }

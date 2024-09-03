@@ -439,8 +439,15 @@ class UserService extends Service
         $data = [
             'superUserRole' => 0, // 是否是超级管理员
             // 'roles' => [], // 角色
-            'permissions' => [] // 权限
+            'permissions' => [], // 权限
+            'check_mfa_scenarios_disable' => [] // 权限
         ];
+
+        // 获取无需验证MFA设备的场景配置
+        $scenarios = ConfigService::getCache(ConfigUuid::CHECK_MFA_SCENARIOS_DISABLE);
+        if($scenarios){
+            $data['check_mfa_scenarios_disable'] = array_keys($scenarios);
+        }
 
         // 获取用户的角色
         $roles = $this->getUserRole($uid);
