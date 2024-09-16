@@ -11,9 +11,7 @@ use App\Models\User;
 use App\Services\ConfigService;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 use RedisException;
@@ -227,13 +225,6 @@ class UserValidation extends BaseValidation
                 ], // 新密码
             ]);
 
-        // 验证身份: 两步校验，MFA设备开启的状态下，修改密码需先验证MFA设备。
-        $mfaStatus = $request->offsetGet("user.mfa_status");
-        $key = CheckMfaScenarios::CHANGE_PASSWORD->value;
-        if ($mfaStatus == UserMfaStatus::ENABLED->value && ConfigService::isCheckMfa($key)) {
-            $validator->addRules($this->twoStepRule([$key]));
-        }
-
         if ($validator->fails()) {
             throw new CustomizeException(Code::FAIL, $validator->errors()->first());
         }
@@ -246,7 +237,7 @@ class UserValidation extends BaseValidation
      * @param Request $request
      * @return array
      * @throws CustomizeException
-     * @throws ValidationException|RedisException
+     * @throws ValidationException
      */
     public function updateMfaSecureKey(Request $request): array
     {
@@ -254,13 +245,6 @@ class UserValidation extends BaseValidation
         $validator = Validator::make($request->input(), [
             'mfa_secure_key' => 'required|min:16', // 安全码
         ]);
-
-        // 验证身份: 两步校验，MFA设备开启的状态下，修改MFA设备秘钥需先验证旧MFA设备。
-        $mfaStatus = $request->offsetGet("user.mfa_status");
-        $key = CheckMfaScenarios::MFA_SECURE_KEY->value;
-        if ($mfaStatus == UserMfaStatus::ENABLED->value && ConfigService::isCheckMfa($key)) {
-            $validator->addRules($this->twoStepRule([$key]));
-        }
 
         if ($validator->fails()) {
             throw new CustomizeException(Code::FAIL, $validator->errors()->first());
@@ -274,7 +258,7 @@ class UserValidation extends BaseValidation
      * @param Request $request
      * @return array
      * @throws CustomizeException
-     * @throws ValidationException
+     * @throws ValidationException|RedisException
      */
     public function add(Request $request): array
     {
@@ -355,7 +339,7 @@ class UserValidation extends BaseValidation
      * @param Request $request
      * @return array
      * @throws CustomizeException
-     * @throws ValidationException
+     * @throws ValidationException|RedisException
      */
     public function edit(Request $request): array
     {
@@ -446,7 +430,7 @@ class UserValidation extends BaseValidation
      * @param Request $request
      * @return array
      * @throws CustomizeException
-     * @throws ValidationException|RedisException
+     * @throws ValidationException
      */
     public function editStatus(Request $request): array
     {
@@ -459,11 +443,11 @@ class UserValidation extends BaseValidation
                 ],
             ]);
 
-        // 验证身份: 两步校验
+        /*// 验证身份: 两步校验
         $key = CheckMfaScenarios::USER_STATUS->value;
         if (ConfigService::isCheckMfa($key)) {
             $validator->addRules($this->twoStepRule([$key]));
-        }
+        }*/
 
         if ($validator->fails()) {
             throw new CustomizeException(Code::FAIL, $validator->errors()->first());
@@ -478,7 +462,7 @@ class UserValidation extends BaseValidation
      * @param Request $request
      * @return array
      * @throws CustomizeException
-     * @throws ValidationException|RedisException
+     * @throws ValidationException
      */
     public function editMfaStatus(Request $request): array
     {
@@ -489,20 +473,7 @@ class UserValidation extends BaseValidation
                     'required',
                     new Enum(UserMfaStatus::class),
                 ],
-//                'twoStepKey' => [
-//                    'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
-//                    Rule::in([CheckMfaScenarios::LOGIN->value, CheckMfaScenarios::MFA_STATUS->value]), // 允许使用登录身份验证信息
-//                ],
-//                'twoStepValue' => [
-//                    'required_if:mfa_status,' . UserMfaStatus::DISABLED->value,
-//                ],
             ]);
-
-        // 验证身份: 两步校验, 关闭身份验证器需先验证身份
-        $key = CheckMfaScenarios::MFA_STATUS->value;
-        if ($request->input('mfa_status', 0) == UserMfaStatus::DISABLED->value && ConfigService::isCheckMfa($key)) {
-            $validator->addRules($this->twoStepRule([$key]));
-        }
 
         if ($validator->fails()) {
             throw new CustomizeException(Code::FAIL, $validator->errors()->first());

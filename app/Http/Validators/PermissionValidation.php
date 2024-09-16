@@ -3,7 +3,6 @@
 namespace App\Http\Validators;
 
 use App\Enum\Code;
-use App\Enum\OrderBy;
 use App\Enum\PermissionStatus;
 use App\Enum\PermissionType;
 use App\Exceptions\CustomizeException;

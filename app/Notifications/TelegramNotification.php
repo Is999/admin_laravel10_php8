@@ -26,7 +26,7 @@ class TelegramNotification extends Notification implements ShouldQueue
             $chatId = env("TELEGRAM_CHAT_ID");
         }
         $this->chatId = $chatId;
-        $this->onConnection('redis');
+        // $this->onConnection('redis');
     }
 
     /**
@@ -60,7 +60,7 @@ class TelegramNotification extends Notification implements ShouldQueue
      *
      * @return array<int, string>
      */
-    public function via(object $notifiable): array
+    public function via($notifiable): array
     {
         return [TelegramChannel::class];
     }

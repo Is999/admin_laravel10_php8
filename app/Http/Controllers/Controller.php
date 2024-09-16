@@ -47,7 +47,7 @@ Method: {$method}
 
 File: {$e->getFile()}:{$e->getLine()}
 
-Code: {$e->getCode()} 
+Code: {$e->getCode()}
 
 Message: {$e->getMessage()}
 ``
@@ -69,6 +69,7 @@ message;
                 // 超过长度发送消息，未超过长度合并消息
                 if (strlen($traceMessage) + strlen($message) > 4096) {
                     SendTelegramMessage::dispatchAfterResponse($message)->onQueue('systemException');
+                    //Notification::send($message, new TelegramNotification(env('TELEGRAM_CHAT_ID')));
                     $message = $uuid . PHP_EOL . $traceMessage; // 发送后重置消息内容
                 } else {
                     $message .= $traceMessage; // 合并消息内容
@@ -77,6 +78,7 @@ message;
                 // 最后一次直接发送消息
                 if ($k == count($trace) - 1) {
                     SendTelegramMessage::dispatchAfterResponse($message)->onQueue('systemException');
+                    //Notification::send($message, new TelegramNotification(env('TELEGRAM_CHAT_ID')));
                     break;
                 }
             }

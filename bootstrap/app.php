@@ -6,6 +6,7 @@ use App\Http\Middleware\CryptoData;
 use App\Http\Middleware\Lang;
 use App\Http\Middleware\SignatureData;
 use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\VerifyTwoStep;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -45,6 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 中间件别名
         $middleware->alias([
             'adminAuth' => AdminAuth::class, //添加Token和权限认证中间件
+            'verifyTwoStep' => VerifyTwoStep::class, // 两步验证
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

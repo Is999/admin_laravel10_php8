@@ -7,7 +7,6 @@ use App\Enum\Code;
 use App\Enum\ConfigUuid;
 use App\Enum\LogChannel;
 use App\Enum\UserAction;
-use App\Enum\UserMfaStatus;
 use App\Exceptions\CustomizeException;
 use App\Http\Validators\UserValidation;
 use App\Logging\Logger;
@@ -494,16 +493,6 @@ class UserController extends Controller
             $input = (new UserValidation())->updatePassword($request);
 
             $userService = new UserService();
-            // 验证身份: 两步校验，MFA设备开启的状态下，修改密码需先验证MFA设备。
-            $mfaStatus = $request->offsetGet("user.mfa_status");
-            if ($mfaStatus == UserMfaStatus::ENABLED->value && ConfigService::isCheckMfa(CheckMfaScenarios::CHANGE_PASSWORD->value)) {
-                $adminId = $request->offsetGet("user.id");
-                $key = $input['twoStepKey'];
-                $value = $input['twoStepValue'];
-                if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
-                    throw new CustomizeException(Code::F10006);
-                }
-            }
 
             $res = $userService->updatePassword(
                 $request->offsetGet('user.id'),
@@ -538,16 +527,6 @@ class UserController extends Controller
             $input = (new UserValidation())->updateMfaSecureKey($request);
 
             $userService = new UserService();
-            // 验证身份: 两步校验，MFA设备开启的状态下，修改MFA设备秘钥需先验证旧MFA设备。
-            $mfaStatus = $request->offsetGet("user.mfa_status");
-            if ($mfaStatus == UserMfaStatus::ENABLED->value && ConfigService::isCheckMfa(CheckMfaScenarios::MFA_SECURE_KEY->value)) {
-                $adminId = $request->offsetGet("user.id");
-                $key = $input['twoStepKey'];
-                $value = $input['twoStepValue'];
-                if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
-                    throw new CustomizeException(Code::F10006);
-                }
-            }
 
             $result = $userService->editAccount($request->offsetGet('user.id'), $input);
             if (!$result) {
@@ -743,14 +722,14 @@ class UserController extends Controller
 
             $userService = new UserService;
 
-            // 验证身份: 两步校验
+            /*// 验证身份: 两步校验
             if (ConfigService::isCheckMfa(CheckMfaScenarios::USER_STATUS->value)) {
                 $key = $input['twoStepKey'];
                 $value = $input['twoStepValue'];
                 if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
                     throw new CustomizeException(Code::F10006);
                 }
-            }
+            }*/
 
             // 非下级角色状态不能修改
             $userService->checkEditStatus($adminId, $id);
@@ -791,15 +770,6 @@ class UserController extends Controller
             if ($id != $adminId) {
                 // 非下级角色状态不能修改
                 $userService->checkEditStatus($adminId, $id);
-            }
-
-            // 验证身份: 两步校验, 关闭身份验证器需先验证身份
-            if ($input['mfa_status'] == UserMfaStatus::DISABLED->value && ConfigService::isCheckMfa(CheckMfaScenarios::MFA_STATUS->value)) {
-                $key = $input['twoStepKey'];
-                $value = $input['twoStepValue'];
-                if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
-                    throw new CustomizeException(Code::F10006);
-                }
             }
 
             $result = $userService->editAccount($id, $input);

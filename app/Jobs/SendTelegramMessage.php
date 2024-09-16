@@ -39,7 +39,8 @@ class SendTelegramMessage extends Job
     public function handle(): void
     {
         try {
-            Notification::sendNow($this->message, new TelegramNotification($this->chatId));
+            // 命令执行 php artisan queue:listen
+            Notification::send($this->message, new TelegramNotification($this->chatId));
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, __METHOD__, [$this->chatId], $e);
         }
