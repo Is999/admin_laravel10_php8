@@ -722,14 +722,16 @@ class UserController extends Controller
 
             $userService = new UserService;
 
-            /*// 验证身份: 两步校验
+            /*
+             // 验证身份: 两步校验
             if (ConfigService::isCheckMfa(CheckMfaScenarios::USER_STATUS->value)) {
                 $key = $input['twoStepKey'];
                 $value = $input['twoStepValue'];
                 if ($userService->checkTwoStepCode($adminId, $key) !== $value) {
                     throw new CustomizeException(Code::F10006);
                 }
-            }*/
+            }
+            */
 
             // 非下级角色状态不能修改
             $userService->checkEditStatus($adminId, $id);

@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\Enum\AppEnv;
 use App\Enum\Code;
 use App\Enum\LogChannel;
-use App\Enum\MenuShortcut;
-use App\Enum\MenuStatus;
-use App\Enum\MenuType;
-use App\Enum\OrderBy;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Http\Validators\MenuValidation;
@@ -17,8 +13,6 @@ use App\Services\MenuService;
 use App\Services\ResponseService as Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
 class MenuController extends Controller

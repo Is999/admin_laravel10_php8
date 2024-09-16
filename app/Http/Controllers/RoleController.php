@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enum\Code;
 use App\Enum\Delete;
 use App\Enum\LogChannel;
-use App\Enum\RoleStatus;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Http\Validators\RoleValidation;
@@ -14,8 +13,6 @@ use App\Services\ResponseService as Response;
 use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
 class RoleController extends Controller

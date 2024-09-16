@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enum\Code;
 use App\Enum\LogChannel;
-use App\Enum\OrderBy;
 use App\Enum\SecretKeyStatus;
 use App\Exceptions\CustomizeException;
 use App\Http\Validators\SecretKeyValidation;

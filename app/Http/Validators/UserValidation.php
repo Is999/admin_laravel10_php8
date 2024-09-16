@@ -443,11 +443,13 @@ class UserValidation extends BaseValidation
                 ],
             ]);
 
-        /*// 验证身份: 两步校验
+        /*
+        // 验证身份: 两步校验
         $key = CheckMfaScenarios::USER_STATUS->value;
         if (ConfigService::isCheckMfa($key)) {
             $validator->addRules($this->twoStepRule([$key]));
-        }*/
+        }
+        */
 
         if ($validator->fails()) {
             throw new CustomizeException(Code::FAIL, $validator->errors()->first());

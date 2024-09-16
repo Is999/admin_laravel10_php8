@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enum\AppEnv;
 use App\Enum\Code;
-use App\Enum\ConfigType;
 use App\Enum\LogChannel;
-use App\Enum\OrderBy;
 use App\Enum\UserAction;
 use App\Exceptions\CustomizeException;
 use App\Http\Validators\ConfigValidation;
@@ -15,8 +13,6 @@ use App\Services\ConfigService;
 use App\Services\ResponseService as Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
 class ConfigController extends Controller
