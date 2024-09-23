@@ -39,6 +39,11 @@ class UserLogController extends Controller
         }
     }
 
+    /**
+     * 操作类型列表
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function actionList(Request $request): JsonResponse
     {
         try {

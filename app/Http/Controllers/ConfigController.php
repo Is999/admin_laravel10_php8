@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enum\AppEnv;
+use App\Enum\CheckMfaScenarios;
 use App\Enum\Code;
 use App\Enum\LogChannel;
 use App\Enum\UserAction;
@@ -138,7 +139,6 @@ class ConfigController extends Controller
         }
     }
 
-
     /**
      * 查看缓存中数据
      * @param Request $request
@@ -154,6 +154,22 @@ class ConfigController extends Controller
             // 记录操作日志
             $this->addUserLog(__FUNCTION__, UserAction::RENEW_CONFIG, 'uuid=' . $uuid);
             return Response::success([], Code::S1001);
+        } catch (Throwable $e) {
+            Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
+            $this->systemException(__METHOD__, $e);
+            return Response::fail(Code::SYSTEM_ERR);
+        }
+    }
+
+    /**
+     * MFA身份验证场景列表
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function checkMfaScenariosList(Request $request): JsonResponse
+    {
+        try {
+            return Response::success(CheckMfaScenarios::forSelect());
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEFAULT, __METHOD__, [], $e);
             $this->systemException(__METHOD__, $e);
