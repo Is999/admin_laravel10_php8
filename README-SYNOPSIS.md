@@ -48,7 +48,25 @@
 
 
 3. 数据库使用Mysql,
-   表数据导入到数据库：https://github.com/Is999/laravel-admin/blob/master/database/mysql/admin_db_all_table.sql
+
+    1. 表数据导入到数据库：https://github.com/Is999/laravel-admin/blob/master/database/mysql/admin_db_all_table.sql
+
+    2. 迁移数据表（php artisan migrate）
+
+       ```
+       -- 如果使用的是Docker环境，进入Docker安装的PHP环境，进入项目根目录
+       
+       -- 迁移/database/migrations所有表文件
+       php artisan migrate
+       
+       -- 如果需要迁移指定表文件可参考下列命令
+       -- 1. SESSION驱动「如果.env文件SESSION_DRIVER参数配置的是database」需执行以下数据库迁移命令
+       php artisan migrate --path=/database/migrations/0001_01_01_000000_create_sessions_table.php
+       -- 2. CACHE驱动「如果.env文件CACHE_STORE参数配置的是database」需执行以下数据库迁移命令
+       php artisan migrate --path=/database/migrations/0001_01_01_000001_create_cache_table.php
+       -- 3. QUEUE驱动「如果.env文件QUEUE_CONNECTION参数配置的是database」需执行以下数据库迁移命令
+       php artisan migrate --path=/database/migrations/0001_01_01_000002_create_jobs_table.php
+       ```
 
 
 4. 加密、解密、签名、验签（可参考登录接口）
@@ -145,7 +163,19 @@
    ```
 
 
-6. 前端页面使用Vue项目： https://github.com/Is999/vue-vben-admin
+6. 监听任务队列（Telegram推送消息等）
+
+   ```sh
+   -- 监听任务队列(本地开发环境使用)
+   php artisan queue:listen
+   
+   -- 生产环境使用 --daemon：让队列以守护进程方式运行（推荐用于生产环境）
+   php artisan queue:work --daemon
+   
+   -- 说明：telegram 异步消息「.env文件TELEGRAM_ASYNC_REQUESTS参数配置的是true」在本地开发环境中使用 php artisan queue:listen可以正常推送消息，使用php artisan queue:work 无法正常推送消息，可以将异步消息配置设置false
+   ```
+
+7. 前端页面使用Vue项目： https://github.com/Is999/vue-vben-admin
 
 
 7. 登录密码，谷歌、微软身份验证器
@@ -478,7 +508,7 @@
 2. Laravel 命令参考
 
     ```sh
-    
+    php artisan config:clear 清除配置
     php artisan cache:clear：清除应用程序缓存
     php artisan command:make 命令名：在 app/commands 目录下生成一个名为 命令名.php 的自定义命令文件
     php artisan controller:make 控制器名：在 app/controllers 目录下生成一个名为 控制器名.php 的控制器文件

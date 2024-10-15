@@ -101,6 +101,7 @@ Route::prefix('api')->middleware(['adminAuth'])->group(function () {
         Route::prefix('config')->name('config.')->group(function () {
             // 查看配置缓存
             Route::get('getCache/{uuid}', [ConfigController::class, 'getCache'])->name('getCache');
+            // 验证MFA设备应用场景类型下拉框
             Route::get('checkMfaScenariosList', [ConfigController::class, 'checkMfaScenariosList'])->name('checkMfaScenariosList');
         });
     });
