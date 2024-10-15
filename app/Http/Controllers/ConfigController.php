@@ -52,7 +52,7 @@ class ConfigController extends Controller
     {
         try {
             // 其它环境通过sql 添加
-            if (strtolower(env('APP_ENV')) != AppEnv::DEV->value) {
+            if (strtolower(config('app.env')) != AppEnv::DEV->value) {
                 throw new CustomizeException(Code::INVALID_AUTHORIZATION);
             }
 

@@ -17,7 +17,7 @@ class Service
 
     public function __construct()
     {
-        self::$APP_NAME = Str::slug(env('APP_NAME', 'laravel'), '_') . '_';
+        self::$APP_NAME = Str::slug(config('app.name', 'laravel'), '_') . '_';
     }
 
     /**

@@ -187,13 +187,14 @@ class UserService extends Service
      * 生成token
      * @param User $user
      * @return string
+     * @throws CustomizeException
      */
     public function generateToken(User $user): string
     {
         try {
             $now = time();
             $tokenArr = [
-                'env' => env('APP_NAME'), //应用
+                'env' => config('app.name'), //应用
                 'now' => $now, //时间
                 'exp' => $now + 3600 * 24, //过期时间
                 'id' => $user->id, //当前用户id
@@ -201,14 +202,14 @@ class UserService extends Service
                 'ip' => $user->last_login_ip, //登录ip
             ];
 
-            $token = JWT::encode($tokenArr, env('APP_KEY'), 'HS256');
+            $token = JWT::encode($tokenArr, config('app.key'), 'HS256');
             $this->setTokenCache($user->id, $token); //token 保存redis服务器
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, '生成token异常', [
                 'id' => $user->id,
                 'name' => $user->name,
             ], $e);
-            return '';
+            throw new CustomizeException(Code::SYSTEM_ERR);
         }
 
         return $token;
@@ -224,7 +225,7 @@ class UserService extends Service
     public function checkToken(string $token, $ip): int
     {
         try {
-            $jwt = JWT::decode($token, new Key(env('APP_KEY'), 'HS256'));
+            $jwt = JWT::decode($token, new Key(config('app.key'), 'HS256'));
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, 'JWT::decode 解析token异常', [
                 'token' => $token,
@@ -238,7 +239,7 @@ class UserService extends Service
         }
 
         // 验证应用
-        if ($jwt->env !== env('APP_NAME')) {
+        if ($jwt->env !== config('app.name')) {
             throw new CustomizeException(Code::UNAUTHORIZED);
         }
 
@@ -284,14 +285,14 @@ class UserService extends Service
         try {
             $now = time();
             $singArr = [
-                'env' => env('APP_NAME'), //应用
+                'env' => config('app.name'), //应用
                 'now' => $now, //时间
                 'exp' => $now + $exp, //过期时间
             ];
             $singArr = array_merge($singArr, $arr);
 
 
-            $token = JWT::encode($singArr, env('APP_KEY'), 'HS256');
+            $token = JWT::encode($singArr, config('app.key'), 'HS256');
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, '生成Sign异常', $arr, $e);
             return '';
@@ -309,7 +310,7 @@ class UserService extends Service
     public function checkSign(string $sign): stdClass
     {
         try {
-            $jwt = JWT::decode($sign, new Key(env('APP_KEY'), 'HS256'));
+            $jwt = JWT::decode($sign, new Key(config('app.key'), 'HS256'));
         } catch (Throwable $e) {
             Logger::error(LogChannel::DEV, 'JWT::decode 解析token异常', [
                 'sign' => $sign,
@@ -318,7 +319,7 @@ class UserService extends Service
         }
 
         // 验证应用
-        if ($jwt->env !== env('APP_NAME')) {
+        if ($jwt->env !== config('app.name')) {
             throw new CustomizeException(Code::UNAUTHORIZED);
         }
 
